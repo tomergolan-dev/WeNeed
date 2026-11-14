@@ -10,3 +10,16 @@ Send the bot a message like "need 2 cartons of milk and eggs" and the shared lis
 ## Status
 
 Stage 0 — setup.
+
+## Getting started
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in the values
+npm run dev
+```
+
+Useful scripts:
+
+- `npm run typecheck`, `npm run lint`, `npm run build`
+- `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle Kit)
