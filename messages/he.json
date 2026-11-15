@@ -3,8 +3,80 @@
     "title": "צריכים",
     "description": "רשימות קניות ומטלות משותפות דרך וואטסאפ"
   },
-  "Home": {
-    "title": "צריכים",
-    "subtitle": "רשימות קניות ומטלות משותפות, דרך וואטסאפ."
+  "Nav": {
+    "shopping": "קניות",
+    "history": "היסטוריה",
+    "logOut": "יציאה"
+  },
+  "Shopping": {
+    "title": "רשימת קניות",
+    "empty": "הרשימה ריקה. מה צריך?",
+    "inCart": "נקנו ({count})",
+    "finish": "סיום רשימה",
+    "finishTitle": "לסיים את הרשימה?",
+    "finishDescription": "{remaining, plural, =0 {הכל נקנה.} one {פריט אחד לא נקנה.} other {# פריטים לא נקנו.}} אחרי הסיום הרשימה ננעלת ועוברת להיסטוריה.",
+    "finishConfirm": "כן, לסיים",
+    "cancel": "ביטול",
+    "noActiveTitle": "אין רשימה פעילה",
+    "noActiveDescription": "פותחים רשימה חדשה ומתחילים להוסיף פריטים.",
+    "carryOver": "{count, plural, one {להעביר את הפריט שלא נקנה} other {להעביר את # הפריטים שלא נקנו}}: {names}",
+    "openList": "פתיחת רשימה חדשה"
+  },
+  "ItemForm": {
+    "addPlaceholder": "מה צריך?",
+    "add": "הוספה",
+    "more": "פרטים",
+    "name": "שם",
+    "quantity": "כמות",
+    "unit": "יחידה",
+    "unitPlaceholder": "למשל: קרטון, ק״ג",
+    "category": "מחלקה",
+    "editTitle": "עריכת פריט",
+    "save": "שמירה",
+    "delete": "מחיקה"
+  },
+  "History": {
+    "title": "היסטוריה",
+    "empty": "עוד אין רשימות שהסתיימו.",
+    "summary": "{bought} מתוך {total} נקנו",
+    "finishedBy": "הסתיימה ע״י {name}",
+    "finishedOn": "הסתיימה ב-{date}",
+    "locked": "הרשימה נעולה לקריאה בלבד.",
+    "notBought": "לא נקנו",
+    "back": "חזרה להיסטוריה"
+  },
+  "Login": {
+    "title": "כניסה לצריכים",
+    "instructions": "כדי להיכנס, שלחו לבוט בוואטסאפ את ההודעה ״שלח לי קישור״ ופתחו את הקישור שתקבלו.",
+    "linkTitle": "ברוכים הבאים לצריכים",
+    "linkDescription": "לחצו כדי להיכנס.",
+    "enter": "כניסה",
+    "invalid": "הקישור לא תקף. ייתכן שכבר השתמשו בו או שפג תוקפו. בקשו קישור חדש מהבוט."
+  },
+  "Errors": {
+    "unauthorized": "צריך להיכנס מחדש.",
+    "invalid": "משהו בפרטים לא תקין.",
+    "notFound": "הפריט כבר לא קיים.",
+    "listLocked": "הרשימה כבר הסתיימה.",
+    "noActiveList": "אין רשימה פעילה.",
+    "generic": "משהו השתבש. נסו שוב."
+  },
+  "Categories": {
+    "produce": "פירות וירקות",
+    "bakery": "מאפים ולחם",
+    "dairy": "מוצרי חלב וביצים",
+    "meat_fish": "בשר ודגים",
+    "deli": "מעדנייה",
+    "pantry": "מזווה",
+    "canned": "שימורים",
+    "spices": "תבלינים ורטבים",
+    "snacks": "חטיפים ומתוקים",
+    "drinks": "שתייה",
+    "frozen": "קפואים",
+    "cleaning": "ניקיון",
+    "personal_care": "טיפוח והיגיינה",
+    "baby": "תינוקות",
+    "home": "לבית",
+    "other": "אחר"
   }
 }

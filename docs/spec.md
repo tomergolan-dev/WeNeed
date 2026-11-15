@@ -98,6 +98,11 @@ The web app is a mobile-first PWA in Hebrew with RTL, reached from a link the bo
 | Household settings | Members and phone numbers, add a member |
 
 - **Login:** a one-time link from the bot that creates a cookie session. No password and no Google.
+  - The link opens a page with a "Log in" button; the token is consumed only when the button is pressed (POST), so WhatsApp link previews, which fetch the page, can't use it up.
+  - Links are valid for 24 hours and work once. The session cookie is signed with `SESSION_SECRET` and lasts a year.
+  - Until the bot exists (Stage 2), households are created and links generated with CLI scripts (`npm run household:create`, `npm run login-link`).
+- **Store sections:** a fixed list of categories in store walking order (`src/lib/categories.ts`). On the web the section is picked manually; from Stage 3 Claude picks it.
+- **No active list:** the shopping screen offers to open a new list and, if the last finished list has unbought items, to carry them over.
 - **Updates:** polling every few seconds while the screen is open. Move to real-time only if needed.
 - **Locked list:** once finished, it is read-only in both the web app and the bot.
 
@@ -137,7 +142,7 @@ The bot and the web app read and write the same database, so any change in one s
 ## Development stages
 
 - [ ] **Stage 0, setup:** private GitHub repo, Next.js project, Neon database, an app in Meta for Developers with a test number.
-- [ ] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
+- [x] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
 - [ ] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
 - [ ] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
 - [ ] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.

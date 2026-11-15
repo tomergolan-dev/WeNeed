@@ -9,7 +9,7 @@ Send the bot a message like "need 2 cartons of milk and eggs" and the shared lis
 
 ## Status
 
-Stage 0 — setup.
+Stage 1 — web app without the bot. Next: Stage 2, WhatsApp connection.
 
 ## Getting started
 
@@ -23,3 +23,5 @@ Useful scripts:
 
 - `npm run typecheck`, `npm run lint`, `npm run build`
 - `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle Kit)
+- `npm run household:create -- "Name" "Member:+972501234567" ...` creates a household with members
+- `npm run login-link -- +972501234567` prints a one-time login link (set `APP_URL` for a production link)
