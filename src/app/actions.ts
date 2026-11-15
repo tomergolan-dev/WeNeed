@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { items, lists } from "@/db/schema";
+import { households, items, lists } from "@/db/schema";
 import { getCurrentMember } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { consumeLoginToken } from "@/lib/login-tokens";
@@ -156,6 +156,23 @@ export async function openList(carryOver: boolean): Promise<ActionResult> {
     `);
   }
 
+  refresh();
+  return ok;
+}
+
+const householdName = z.string().trim().min(1).max(60);
+
+export async function renameHousehold(name: string): Promise<ActionResult> {
+  const member = await getCurrentMember();
+  if (!member) return fail("unauthorized");
+
+  const parsed = householdName.safeParse(name);
+  if (!parsed.success) return fail("invalid");
+
+  await db
+    .update(households)
+    .set({ name: parsed.data })
+    .where(eq(households.id, member.householdId));
   refresh();
   return ok;
 }

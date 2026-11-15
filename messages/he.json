@@ -6,7 +6,8 @@
   "Nav": {
     "shopping": "קניות",
     "history": "היסטוריה",
-    "logOut": "יציאה"
+    "logOut": "יציאה",
+    "settings": "הגדרות"
   },
   "Shopping": {
     "title": "רשימת קניות",
@@ -78,5 +79,12 @@
     "baby": "תינוקות",
     "home": "לבית",
     "other": "אחר"
+  },
+  "Settings": {
+    "title": "הגדרות הבית",
+    "householdName": "שם הבית",
+    "save": "שמירה",
+    "saved": "נשמר",
+    "members": "חברי הבית"
   }
 }

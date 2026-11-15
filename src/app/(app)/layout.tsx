@@ -16,6 +16,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link href="/history" className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {t("history")}
           </Link>
+          <Link href="/settings" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            {t("settings")}
+          </Link>
         </nav>
         <form action={logOut}>
           <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">

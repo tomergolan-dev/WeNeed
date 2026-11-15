@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { items, lists, members, type Item, type List } from "@/db/schema";
+import { households, items, lists, members, type Item, type List } from "@/db/schema";
 
 type ListType = List["type"];
 
@@ -66,4 +66,17 @@ export async function getHouseholdList(householdId: string, listId: string) {
     .leftJoin(members, eq(members.id, lists.completedBy))
     .where(and(eq(lists.id, listId), eq(lists.householdId, householdId)));
   return row ?? null;
+}
+
+export async function getHousehold(householdId: string) {
+  const [household] = await db
+    .select({ id: households.id, name: households.name })
+    .from(households)
+    .where(eq(households.id, householdId));
+  const people = await db
+    .select({ id: members.id, name: members.name, phone: members.phone })
+    .from(members)
+    .where(eq(members.householdId, householdId))
+    .orderBy(asc(members.createdAt));
+  return household ? { ...household, members: people } : null;
 }
