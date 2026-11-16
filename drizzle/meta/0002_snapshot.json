@@ -1,41 +1,9 @@
 {
-  "id": "fee45937-87e2-4146-a87b-d9ed4e364bc5",
-  "prevId": "a5b9ec30-344b-4eb9-aa57-0a11fa8239c2",
+  "id": "27001ffb-5ce8-488a-855f-ba75eaf6830e",
+  "prevId": "c53bfa44-d5f2-4e54-b260-4da9946fbf27",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.allowed_emails": {
-      "name": "allowed_emails",
-      "schema": "",
-      "columns": {
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.households": {
       "name": "households",
       "schema": "",

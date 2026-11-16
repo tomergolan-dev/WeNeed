@@ -1,6 +1,6 @@
 -- Moves the single-household data into places and users.
 -- Members keep their ids as user ids, so every existing reference stays valid.
--- Their emails are added later with npm run email:allow -- <email> --phone <phone>.
+-- Their emails are added later with npm run user:link-email -- <email> <phone>.
 INSERT INTO "places" ("id", "name", "created_at")
 SELECT "id", "name", "created_at" FROM "households";--> statement-breakpoint
 INSERT INTO "users" ("id", "name", "phone", "pending_action", "created_at")

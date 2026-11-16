@@ -1,41 +1,9 @@
 {
-  "id": "bdd4b0ec-d849-458e-adb1-2a7be2cf6824",
-  "prevId": "fee45937-87e2-4146-a87b-d9ed4e364bc5",
+  "id": "0eff8e54-1be3-44a4-bbfc-9e99c219724c",
+  "prevId": "27001ffb-5ce8-488a-855f-ba75eaf6830e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.allowed_emails": {
-      "name": "allowed_emails",
-      "schema": "",
-      "columns": {
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.items": {
       "name": "items",
       "schema": "",

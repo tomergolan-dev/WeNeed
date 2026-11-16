@@ -12,21 +12,21 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1794868336186,
+      "when": 1794869992344,
       "tag": "0001_places_and_users",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
-      "when": 1794868336550,
+      "when": 1794869992727,
       "tag": "0002_copy_households_to_places",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "7",
-      "when": 1794868336951,
+      "when": 1794869993194,
       "tag": "0003_drop_households",
       "breakpoints": true
     }

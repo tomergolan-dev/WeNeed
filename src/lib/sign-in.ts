@@ -3,18 +3,21 @@ import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import { db } from "@/db";
-import { allowedEmails, signInCodes, users } from "@/db/schema";
+import { signInCodes, users } from "@/db/schema";
 import { locale } from "@/i18n/request";
 import messages from "../../messages/he.json";
 import { sendSignInCode } from "./sign-in-delivery";
 
-// Sign-in by email: a one-time code, or Google (see google.ts). Either way
-// only addresses on the allowlist get in, so strangers can't trigger emails.
+// Sign-in by email: a one-time code, or Google (see google.ts). Anyone can
+// sign up; the limits below keep a bot from flooding an inbox or using up
+// the email quota (Resend's free plan sends 100 emails a day).
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const MAX_CODES_PER_WINDOW = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_CODES_PER_DAY = 80;
 
 const t = createTranslator({ locale, messages, namespace: "SignInEmail" });
 
@@ -24,24 +27,21 @@ function hashCode(email: string, code: string): string {
   return createHmac("sha256", secret).update(`${email}:${code}`).digest("hex");
 }
 
-async function isAllowed(email: string): Promise<boolean> {
-  const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
-  if (user) return true;
-  const [allowed] = await db.select().from(allowedEmails).where(eq(allowedEmails.email, email));
-  return Boolean(allowed);
-}
-
-export type RequestCodeResult = "sent" | "notAllowed" | "tooMany" | "deliveryFailed";
+export type RequestCodeResult = "sent" | "tooMany" | "busy" | "deliveryFailed";
 
 export async function requestSignInCode(email: string): Promise<RequestCodeResult> {
-  if (!(await isAllowed(email))) return "notAllowed";
-
   const since = new Date(Date.now() - RATE_WINDOW_MS);
   const [{ recent }] = await db
     .select({ recent: sql<number>`count(*)::int` })
     .from(signInCodes)
     .where(and(eq(signInCodes.email, email), gt(signInCodes.createdAt, since)));
   if (recent >= MAX_CODES_PER_WINDOW) return "tooMany";
+
+  const [{ today }] = await db
+    .select({ today: sql<number>`count(*)::int` })
+    .from(signInCodes)
+    .where(gt(signInCodes.createdAt, new Date(Date.now() - DAY_MS)));
+  if (today >= MAX_CODES_PER_DAY) return "busy";
 
   const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
   await db.insert(signInCodes).values({
@@ -59,7 +59,7 @@ export async function requestSignInCode(email: string): Promise<RequestCodeResul
   }
 }
 
-export type VerifyCodeResult = { ok: true; userId: string } | { ok: false; error: "wrongCode" | "expired" | "notAllowed" };
+export type VerifyCodeResult = { ok: true; userId: string } | { ok: false; error: "wrongCode" | "expired" };
 
 /** Checks the latest code for the address; on success returns the user. */
 export async function verifySignInCode(email: string, code: string): Promise<VerifyCodeResult> {
@@ -88,29 +88,23 @@ export async function verifySignInCode(email: string, code: string): Promise<Ver
     .returning({ id: signInCodes.id });
   if (!used) return { ok: false, error: "expired" };
 
-  const userId = await findOrCreateUser(email);
-  return userId ? { ok: true, userId } : { ok: false, error: "notAllowed" };
+  return { ok: true, userId: await findOrCreateUser(email) };
 }
 
 /**
- * The user with this verified address. On first sign-in, an allowlisted
- * address gets a new user named after the allowlist entry (or fallbackName).
- * Returns null for addresses that are not allowed.
+ * The user with this verified address, created on first sign-in. The name
+ * comes from Google when available, otherwise from the address.
  */
-export async function findOrCreateUser(email: string, fallbackName?: string): Promise<string | null> {
+export async function findOrCreateUser(email: string, name?: string): Promise<string> {
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
   if (existing) return existing.id;
 
-  const [allowed] = await db.select().from(allowedEmails).where(eq(allowedEmails.email, email));
-  if (!allowed) return null;
-
-  const name = allowed.name?.trim() || fallbackName?.trim() || email.split("@")[0];
   const [created] = await db
     .insert(users)
-    .values({ email, name })
+    .values({ email, name: name?.trim() || email.split("@")[0] })
     .onConflictDoNothing()
     .returning({ id: users.id });
   if (created) return created.id;
   const [raced] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
-  return raced?.id ?? null;
+  return raced.id;
 }

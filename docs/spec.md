@@ -77,12 +77,12 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - Two ways in, both by email address. No password.
   - **Sign in with Google:** one tap; Google confirms the address.
-  - **Code by email:** a 6-digit code sent through Resend. It is valid for 10 minutes, allows 5 attempts and works once; at most 3 codes per address every 15 minutes.
-- **Only allowed addresses can sign in.** Tomer manages an allowlist (`npm run email:allow`). Any other address is refused, and no email is sent to it.
-- On first sign-in a user is created, named after the allowlist entry (or the Google profile name).
-- Users from the bot era (Tomer, Nurit) are linked to their address with `npm run email:allow -- <email> --phone <number>`, keeping their places and history.
+  - **Code by email:** a 6-digit code sent through Resend from `weneed@tomergolan.dev`. It is valid for 10 minutes, allows 5 attempts and works once.
+- **Open sign-up:** anyone can sign in; a user is created on first sign-in, named after the Google profile (or the address). Users see only the places they belong to.
+- Limits against abuse: at most 3 codes per address every 15 minutes, and at most 80 codes a day in total (Resend's free plan sends 100 emails a day). Google sign-in has no limit.
+- Users from the bot era (Tomer, Nurit) are linked to their address with `npm run user:link-email -- <email> <phone>`, keeping their places and history.
 - The session lasts a long time (a year), so users rarely need to sign in again.
-- Decided 2026-11-17, instead of SMS codes: free, no SMS provider, and Google makes it one tap.
+- Decided 2026-11-17, instead of SMS codes to an allowlist: email is free, so there is no cost to protect, and Google makes it one tap.
 
 ## Invites
 
@@ -113,7 +113,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - Production address: `weneed.tomergolan.dev`.
 - `tomergolan.dev` is registered at Namecheap (already used for CheckPlease). The subdomain is attached to the Vercel project and points to Vercel with a CNAME record at Namecheap.
-- Sign-in emails are sent from the same subdomain, verified in Resend with DNS records at Namecheap.
+- Sign-in emails are sent from `tomergolan.dev`, already verified in Resend for CheckPlease.
 - Hosting: Vercel. Database: Neon Postgres.
 
 ## Architecture and stack
@@ -122,7 +122,6 @@ We Need is also a portfolio project, so it includes a public demo.
 - **Data model:**
   - `users` with a unique email address (the phone number stays only for the paused bot). *(Stage B)*
   - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
-  - `allowed_emails`: the sign-in allowlist, with the name used on first sign-in. *(Stage B)*
   - `sign_in_codes`: hashed one-time email codes with expiry and attempt count. *(Stage B)*
   - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
   - `lists`: place, kind (`shopping` / `chores` / `checklist`), name.
@@ -135,9 +134,10 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - [x] **Stage A, design:** mockup of the main screens (place selector, the three list kinds, AI chat, invites), approved on 2026-11-16.
   - Mockup: https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
-- [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, for allowed addresses.
-  - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners) and to the allowlist.
-  - Before release: Google sign-in credentials, Resend with a verified sending domain, the `weneed` DNS record, and linking Tomer's and Nurit's addresses. Then run the migrations on production and deploy.
+- [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, open to everyone.
+  - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners).
+  - Done: Resend key and sender, the `weneed` DNS record.
+  - Before release: Google sign-in credentials and linking Nurit's address. Then run the migrations on production and deploy.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
 - [ ] **Stage E, checklists:** check all / uncheck all.
@@ -148,7 +148,6 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Open questions
 
 - [ ] Invites through the WhatsApp bot: in the first version, or later?
-- [ ] Does inviting an address add it to the sign-in allowlist automatically, or does Tomer approve each new address?
 - [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
 - [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
 - [ ] "Due soon": how long before the due time does the yellow sign appear?

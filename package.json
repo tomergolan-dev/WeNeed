@@ -12,7 +12,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "typecheck": "next typegen && tsc --noEmit",
-    "email:allow": "tsx --env-file=.env.local scripts/allow-email.ts",
+    "user:link-email": "tsx --env-file=.env.local scripts/link-email.ts",
     "eval:parser": "tsx --conditions=react-server --env-file=.env.local scripts/eval-parser.mts"
   },
   "dependencies": {

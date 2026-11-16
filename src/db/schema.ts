@@ -25,7 +25,7 @@ export const placeRole = pgEnum("place_role", ["owner", "member"]);
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  // Lowercase. Set on first sign-in; users carried over from the bot era get it from npm run email:allow.
+  // Lowercase. Set on first sign-in; users carried over from the bot era get it from npm run user:link-email.
   email: text("email").unique(),
   // E.164, e.g. +972501234567. Only the paused WhatsApp bot uses it.
   phone: text("phone").unique(),
@@ -56,15 +56,6 @@ export const placeMembers = pgTable(
   },
   (t) => [primaryKey({ columns: [t.placeId, t.userId] }), index("place_members_user_idx").on(t.userId)],
 );
-
-// Only these addresses can sign in (managed with npm run email:allow).
-export const allowedEmails = pgTable("allowed_emails", {
-  // Lowercase.
-  email: text("email").primaryKey(),
-  // The user's name on first sign-in.
-  name: text("name"),
-  createdAt: createdAt(),
-});
 
 export const signInCodes = pgTable(
   "sign_in_codes",

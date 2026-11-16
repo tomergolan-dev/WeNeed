@@ -270,7 +270,7 @@ export async function switchPlace(placeId: string): Promise<ActionResult> {
 
 // Sign-in: an email address, then a one-time code sent to it.
 
-export type SignInError = "invalidEmail" | "notAllowed" | "tooMany" | "deliveryFailed" | "wrongCode" | "expired";
+export type SignInError = "invalidEmail" | "tooMany" | "busy" | "deliveryFailed" | "wrongCode" | "expired";
 
 export async function requestCode(
   emailInput: string,

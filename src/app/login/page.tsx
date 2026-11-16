@@ -4,8 +4,6 @@ import { Brand } from "@/components/brand";
 import { isGoogleConfigured } from "@/lib/google";
 import { LoginForm } from "./login-form";
 
-const LINK_ERRORS = ["googleFailed", "notAllowed"] as const;
-type LinkError = (typeof LINK_ERRORS)[number];
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const t = await getTranslations("Login");
@@ -29,6 +27,5 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 async function Form({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
   // Set by the Google callback when it sends the user back here.
   const { error } = await searchParams;
-  const linkError = LINK_ERRORS.find((e) => e === error) ?? null;
-  return <LoginForm google={isGoogleConfigured()} initialError={linkError satisfies LinkError | null} />;
+  return <LoginForm google={isGoogleConfigured()} initialError={error === "googleFailed" ? error : null} />;
 }

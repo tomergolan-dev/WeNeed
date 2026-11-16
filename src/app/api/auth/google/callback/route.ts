@@ -7,8 +7,8 @@ import { findOrCreateUser } from "@/lib/sign-in";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const fail = (error: "googleFailed" | "notAllowed") =>
-    Response.redirect(new URL(`/login?error=${error}`, url.origin));
+  const fail = () =>
+    Response.redirect(new URL("/login?error=googleFailed", url.origin));
 
   const jar = await cookies();
   const state = jar.get(GOOGLE_STATE_COOKIE)?.value;
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   jar.delete(GOOGLE_VERIFIER_COOKIE);
 
   const code = url.searchParams.get("code");
-  if (!code || !state || !verifier || url.searchParams.get("state") !== state) return fail("googleFailed");
+  if (!code || !state || !verifier || url.searchParams.get("state") !== state) return fail();
 
   let claims: GoogleClaims;
   try {
@@ -25,15 +25,12 @@ export async function GET(request: Request) {
     claims = decodeIdToken(tokens.idToken()) as GoogleClaims;
   } catch (error) {
     console.error("[sign-in] Google exchange failed", error);
-    return fail("googleFailed");
+    return fail();
   }
 
   const email = claims.email && claims.email_verified ? normalizeEmail(claims.email) : null;
-  if (!email) return fail("googleFailed");
+  if (!email) return fail();
 
-  const userId = await findOrCreateUser(email, claims.name);
-  if (!userId) return fail("notAllowed");
-
-  await startSession(userId);
+  await startSession(await findOrCreateUser(email, claims.name));
   return Response.redirect(new URL("/", url.origin));
 }

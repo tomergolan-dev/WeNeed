@@ -1,10 +1,4 @@
 CREATE TYPE "public"."place_role" AS ENUM('owner', 'member');--> statement-breakpoint
-CREATE TABLE "allowed_emails" (
-	"email" text PRIMARY KEY NOT NULL,
-	"name" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "place_members" (
 	"place_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
