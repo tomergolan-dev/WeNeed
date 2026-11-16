@@ -15,11 +15,11 @@ import {
   getListItems,
 } from "@/lib/lists";
 import { createLoginToken, loginUrl } from "@/lib/login-tokens";
-import { sendText, type IncomingMessage } from "@/lib/whatsapp";
+import { sendButtons, sendText, type Button, type IncomingMessage } from "@/lib/whatsapp";
 import messages from "../../../messages/he.json";
 import { normalizeName } from "./normalize";
 import { parseAnswer } from "./parse-answer";
-import { parseMessage } from "./parse-message";
+import { parseMessage, type Target } from "./parse-message";
 import { clearPending, readPending, setPending, type NewItem, type PendingAction } from "./pending";
 
 const t = createTranslator({ locale, messages, namespace: "Bot" });
@@ -63,18 +63,65 @@ export async function handleMessage(message: IncomingMessage): Promise<void> {
     return;
   }
 
-  await sendText(message.from, await reply(member, message.text));
+  const answer = await reply(member, message.text, message.buttonId);
+  if (typeof answer === "string") await sendText(message.from, answer);
+  else await sendButtons(message.from, answer.body, answer.buttons);
 }
 
-async function reply(member: Member, text: string): Promise<string> {
+type Reply = string | { body: string; buttons: Button[] };
+type Choice = "chores" | "shopping" | "both";
+type ParsedChore = { title: string; assignee: string | null };
+
+const CHOICE_BUTTONS: Button[] = [
+  { id: "list:chores", title: t("chooseChores") },
+  { id: "list:shopping", title: t("chooseShopping") },
+  { id: "list:both", title: t("chooseBoth") },
+];
+
+/** A pressed button, or the same answer typed as text. */
+function readChoice(buttonId: string | null, text: string): Choice | null {
+  if (buttonId?.startsWith("list:")) {
+    const choice = buttonId.slice("list:".length);
+    return choice === "chores" || choice === "shopping" || choice === "both" ? choice : null;
+  }
+  const word = text.trim().replace(/[.!?]+$/u, "").replace(/^[^\p{L}]+/u, "");
+  if (/^(מטלה|מטלות|משימה|משימות|למטלות)$/u.test(word)) return "chores";
+  if (/^(קניות|לקניות|רשימת קניות|קנייה)$/u.test(word)) return "shopping";
+  if (/^(גם וגם|שניהם|שתיהן|both)$/iu.test(word)) return "both";
+  return null;
+}
+
+/** "מטלה: ..." / "קניות: ..." at the start picks the list without guessing. */
+function readTarget(text: string): { target: Target | null; text: string } {
+  const match = text.match(/^\s*(מטלה|מטלות|משימה|משימות|קניות|רשימת קניות)\s*[:\-–]\s*/u);
+  if (!match) return { target: null, text };
+  const target: Target = match[1].includes("קניות") ? "shopping" : "chores";
+  return { target, text: text.slice(match[0].length) };
+}
+
+async function reply(member: Member, rawText: string, buttonId: string | null): Promise<Reply> {
   const pending = readPending(member.pendingAction);
-  if (pending) {
-    const answer = await answerPending(member, pending, text);
+  if (pending?.type === "choose_list") {
+    const choice = readChoice(buttonId, rawText);
+    await clearPending(member.id);
+    if (choice) {
+      return addParsed(
+        member,
+        choice === "shopping" ? [] : pending.chores,
+        choice === "chores" ? [] : pending.items,
+      );
+    }
+    // Not an answer: the question is dropped and the message handled as new.
+  } else if (pending) {
+    const answer = await answerPending(member, pending, rawText);
     if (answer !== null) return answer;
     // Not an answer to the question: drop it and treat the message as new.
-  } else if (member.pendingAction) {
-    await clearPending(member.id); // expired or malformed
+  } else {
+    if (member.pendingAction) await clearPending(member.id); // expired or malformed
+    if (buttonId?.startsWith("list:")) return t("questionExpired");
   }
+
+  const { target, text } = readTarget(rawText);
 
   const list = await getActiveList(member.householdId, "shopping");
   const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
@@ -86,19 +133,28 @@ async function reply(member: Member, text: string): Promise<string> {
     text,
     open.map((item) => item.name),
     { sender: member.name, members: people.map((p) => p.name) },
+    target,
   );
   if (!parsed) return t("notUnderstood");
 
   switch (parsed.intent) {
     case "add_items": {
       if (parsed.items.length === 0 && parsed.chores.length === 0) return t("notUnderstood");
-      const choresReply = parsed.chores.length > 0 ? await addChores(member, parsed.chores, people) : "";
-      const shoppingReply = parsed.items.length > 0 ? await addShopping(member, list, parsed.items, open) : "";
-      // One link per reply: the shopping part brings its own when it added items.
-      if (choresReply && !shoppingReply.includes(appUrl())) {
-        return [`${choresReply}\n${appUrl()}/chores`, shoppingReply].filter(Boolean).join("\n\n");
+      if (parsed.ambiguous && !target && parsed.chores.length > 0 && parsed.items.length > 0) {
+        await setPending(member.id, {
+          type: "choose_list",
+          chores: parsed.chores,
+          items: parsed.items.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category })),
+        });
+        return {
+          body: t("chooseList", {
+            chores: parsed.chores.map((c) => c.title).join(", "),
+            items: parsed.items.map(describe).join(", "),
+          }),
+          buttons: CHOICE_BUTTONS,
+        };
       }
-      return [choresReply, shoppingReply].filter(Boolean).join("\n\n");
+      return addParsed(member, parsed.chores, parsed.items, { list, open, people });
     }
     case "show_list":
       return formatList(open);
@@ -115,9 +171,33 @@ async function reply(member: Member, text: string): Promise<string> {
 
 type Person = { id: string; name: string };
 
+/** Adds chores and shopping items from one message; a single link at the end. */
+async function addParsed(
+  member: Member,
+  chores: ParsedChore[],
+  requested: RequestedItem[],
+  loaded?: { list: List | null; open: Item[]; people: Person[] },
+): Promise<string> {
+  let context = loaded;
+  if (!context) {
+    const list = await getActiveList(member.householdId, "shopping");
+    const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
+    const people = (await getHousehold(member.householdId))?.members ?? [];
+    context = { list, open, people };
+  }
+  const choresReply = chores.length > 0 ? await addChores(member, chores, context.people) : "";
+  const shoppingReply =
+    requested.length > 0 ? await addShopping(member, context.list, requested, context.open) : "";
+  // One link per reply: the shopping part brings its own when it added items.
+  if (choresReply && !shoppingReply.includes(appUrl())) {
+    return [`${choresReply}\n${appUrl()}/chores`, shoppingReply].filter(Boolean).join("\n\n");
+  }
+  return [choresReply, shoppingReply].filter(Boolean).join("\n\n");
+}
+
 async function addChores(
   member: Member,
-  chores: { title: string; assignee: string | null }[],
+  chores: ParsedChore[],
   people: Person[],
 ): Promise<string> {
   const list = await ensureActiveList(member.householdId, "tasks");
@@ -237,7 +317,11 @@ async function addItems(
   return parts.join("\n\n");
 }
 
-async function answerPending(member: Member, pending: PendingAction, text: string): Promise<string | null> {
+async function answerPending(
+  member: Member,
+  pending: Exclude<PendingAction, { type: "choose_list" }>,
+  text: string,
+): Promise<string | null> {
   const options =
     pending.type === "duplicates"
       ? pending.items.map((item) => item.name)

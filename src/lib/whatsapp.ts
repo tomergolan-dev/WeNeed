@@ -31,15 +31,26 @@ export type IncomingMessage = {
   /** E.164, e.g. +972501234567 */
   from: string;
   type: string;
+  /** Message text, or the title of a pressed reply button. */
   text: string | null;
+  /** Id of a pressed reply button, if this message is a button press. */
+  buttonId: string | null;
 };
+
+export type Button = { id: string; title: string };
 
 type WebhookPayload = {
   entry?: {
     changes?: {
       field?: string;
       value?: {
-        messages?: { id: string; from: string; type: string; text?: { body?: string } }[];
+        messages?: {
+          id: string;
+          from: string;
+          type: string;
+          text?: { body?: string };
+          interactive?: { type?: string; button_reply?: { id?: string; title?: string } };
+        }[];
       };
     }[];
   }[];
@@ -53,20 +64,47 @@ export function parseMessages(payload: unknown): IncomingMessage[] {
       .filter((change) => change.field === "messages")
       .flatMap((change) => change.value?.messages ?? [])
       .filter((m) => typeof m?.id === "string" && typeof m?.from === "string")
-      .map((m) => ({
-        id: m.id,
-        from: `+${m.from.replace(/^\+/, "")}`,
-        type: m.type,
-        text: m.type === "text" ? (m.text?.body ?? null) : null,
-      })),
+      .map((m) => {
+        const button = m.type === "interactive" ? m.interactive?.button_reply : undefined;
+        return {
+          id: m.id,
+          from: `+${m.from.replace(/^\+/, "")}`,
+          type: m.type,
+          text: m.type === "text" ? (m.text?.body ?? null) : (button?.title ?? null),
+          buttonId: button?.id ?? null,
+        };
+      }),
   );
 }
 
 /** Sends a plain text reply. Allowed within 24h of the user's last message. */
 export async function sendText(to: string, body: string): Promise<void> {
+  // No link preview card: it pushes the reply text down.
+  await send(to, { type: "text", text: { body, preview_url: false } }, body);
+}
+
+/** Sends a message with up to 3 reply buttons (titles up to 20 characters). */
+export async function sendButtons(to: string, body: string, buttons: Button[]): Promise<void> {
+  await send(
+    to,
+    {
+      type: "interactive",
+      interactive: {
+        type: "button",
+        body: { text: body },
+        action: {
+          buttons: buttons.map((b) => ({ type: "reply", reply: { id: b.id, title: b.title } })),
+        },
+      },
+    },
+    `${body}\n${buttons.map((b) => `[${b.title}]`).join(" ")}`,
+  );
+}
+
+async function send(to: string, message: Record<string, unknown>, preview: string): Promise<void> {
   // Local testing: log replies instead of sending real WhatsApp messages.
   if (process.env.WHATSAPP_DRY_RUN === "1") {
-    console.log(`[whatsapp:dry-run] to ${to}:\n${body}\n---`);
+    console.log(`[whatsapp:dry-run] to ${to}:\n${preview}\n---`);
     return;
   }
   const res = await fetch(
@@ -77,13 +115,7 @@ export async function sendText(to: string, body: string): Promise<void> {
         Authorization: `Bearer ${env("WHATSAPP_ACCESS_TOKEN")}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: to.replace(/^\+/, ""),
-        type: "text",
-        // No link preview card: it pushes the reply text down.
-        text: { body, preview_url: false },
-      }),
+      body: JSON.stringify({ messaging_product: "whatsapp", to: to.replace(/^\+/, ""), ...message }),
     },
   );
   if (!res.ok) {

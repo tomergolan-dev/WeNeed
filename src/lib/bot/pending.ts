@@ -19,6 +19,13 @@ const NewItem = z.object({
 export type NewItem = z.infer<typeof NewItem>;
 
 export const PendingAction = z.discriminatedUnion("type", [
+  // "Add as a chore, to shopping, or both?" (reply buttons)
+  z.object({
+    type: z.literal("choose_list"),
+    createdAt: z.string(),
+    chores: z.array(z.object({ title: z.string(), assignee: z.string().nullable() })),
+    items: z.array(NewItem),
+  }),
   // "Milk is already on the list (2 cartons). Add 1 more, making it 3?"
   z.object({
     type: z.literal("duplicates"),

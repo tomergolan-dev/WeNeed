@@ -10,6 +10,7 @@ type Exp = {
   list?: string[];
   items?: [string, number | null, string, (string | null)?][];
   chores?: [string, string | null][]; // [title substring, assignee]
+  ambiguous?: boolean;
 };
 const people = { sender: "תומר", members: ["תומר", "נורית"] };
 const cases: [string, Exp][] = [
@@ -42,7 +43,13 @@ const cases: [string, Exp][] = [
   ["צריך להחליף נורה במטבח", { intent: "add_items", chores: [["נורה", null]] }],
   ["צריך חלב ונורית צריכה להתקשר לאינסטלטור", { intent: "add_items", items: [["חלב", null, "dairy"]], chores: [["אינסטלטור", "נורית"]] }],
   ["מה המטלות?", { intent: "show_chores" }],
-  ["אני צריך להכין למחר צוהריים - חזה עוף בנינג'ה ולתוספת פתיתים", { intent: "add_items", chores: [["פתיתים", "תומר"]] }],
+  ["אני צריך להכין למחר צוהריים - חזה עוף בנינג'ה ולתוספת פתיתים", { intent: "add_items", ambiguous: true, chores: [["פתיתים", "תומר"]], items: [["חזה עוף", null, "meat_fish"], ["פתיתים", null, "pantry"]] }],
+  ["להכין חזה עוף ופתיתים לצוהריים", { intent: "add_items", ambiguous: true, chores: [["חזה עוף", null]], items: [["חזה עוף", null, "meat_fish"], ["פתיתים", null, "pantry"]] }],
+  ["זיתים מגולענים שימורים", { intent: "add_items", ambiguous: false, items: [["זיתים מגולענים", null, "canned"]] }],
+  ["מעדני שוקולד 12 יחידות", { intent: "add_items", ambiguous: false, items: [["מעדני שוקולד", 12, "dairy|snacks"]] }],
+  ["לתקן את הברז", { intent: "add_items", ambiguous: false, chores: [["ברז", null]] }],
+  ["להכין שקשוקה", { intent: "add_items", ambiguous: false, chores: [["שקשוקה", null]] }],
+  ["לבשל אורז עם שעועית", { intent: "add_items", ambiguous: true, chores: [["אורז", null]], items: [["אורז", null, "pantry"], ["שעועית", null, "pantry|canned|produce"]] }],
   ["לעבור מחר בסופר יודה לקנות בצל לבן", { intent: "add_items", items: [["בצל לבן", null, "produce"]] }],
   ["מה אני צריך לעשות?", { intent: "show_chores" }],
   ["צריך נורות", { intent: "add_items", items: [["נור", null, "home"]] }],
@@ -55,6 +62,7 @@ for (const [msg, exp] of cases) {
   if (!r) errs.push("null");
   else {
     if (r.intent !== exp.intent) errs.push(`intent ${r.intent}`);
+    if (exp.ambiguous !== undefined && r.ambiguous !== exp.ambiguous) errs.push(`ambiguous ${r.ambiguous}`);
     const want = exp.items ?? [];
     if (r.items.length !== want.length) errs.push(`count ${r.items.length}`);
     const wantChores = exp.chores ?? [];

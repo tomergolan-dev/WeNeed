@@ -22,6 +22,8 @@ const ParsedMessage = z.object({
       existing: z.string().nullable(),
     }),
   ),
+  // True when the message can be read either as a chore or as shopping.
+  ambiguous: z.boolean(),
   chores: z.array(
     z.object({
       title: z.string(),
@@ -43,7 +45,7 @@ Classify the message into exactly one intent:
 - login_link: the sender asks for a link to the list or to log in, e.g. "שלח לי קישור", "לינק".
 - other: anything else (greetings, thanks, questions, unclear text).
 
-For add_items, extract every product as a separate item:
+For add_items, extract every product as a separate item. Products are separated by commas, "ו", or new lines; words like "שימורים", "קפוא", "טרי", "מגולענים" describe the same product ("זיתים מגולענים שימורים" is one item with that full name).
 - name: the product only, without quantity, unit or packaging words ("2 קרטוני חלב" -> name "חלב"). Copy the product words exactly as the sender wrote them: never fix spelling, never expand slang or abbreviations, never translate ("גבנצ 15%" stays "גבנצ 15%", "יוגורטים מולר פרוטאין עם פקאן" stays as is). Keep a brand or variety when given ("חלב 3%", "קוטג' תנובה").
 - quantity: the number to buy when the sender states one, otherwise null. Hebrew number words count ("שני", "שלושה", "חצי"). A number written with x or × ("x18", "18x", "×6") is a count of units: "חבילת ביצים x18" -> name "ביצים", quantity 18, unit null; "14 מעדני שוקולד" -> name "מעדני שוקולד", quantity 14, unit null. Packaging words without a count ("חבילת", "תבנית") are dropped.
 - unit: the unit as the sender wrote it, in Hebrew if the message is in Hebrew ("קרטונים", "ק״ג", "בקבוקים", "חבילות", "שישיות"), otherwise null. Never put a unit when the sender gave none; a plain count of items has unit null ("2 שישיות מים" -> name "מים", quantity 2, unit "שישיות").
@@ -54,19 +56,33 @@ Always return every requested item, including ones already on the list.
 
 Chores are tasks to do rather than things to buy ("לתקן את הברז", "להוציא את הזבל", "לקבוע תור לרופא", "call the plumber"). Put them in chores, never in items; a message can have both:
 - title: the whole task in infinitive form, without the person's name, keeping every detail the sender gave (what, when, where, how) in the sender's wording ("תומר צריך לתקן את הברז באמבטיה" -> "לתקן את הברז באמבטיה"; "אני צריך להכין למחר צהריים - חזה עוף בנינג'ה ולתוספת פתיתים" -> "להכין למחר צהריים - חזה עוף בנינג'ה ופתיתים"). One task stays one chore; do not split its details into separate chores or items.
-- assignee: who should do it, copied exactly from the household members list. Only "אני", "עליי", "I" (the sender speaking about themselves) mean the sender. An impersonal "צריך ל..." / "need to ..." with no person named is unassigned: null. null also when the name is not in the list.
+- assignee: who should do it, copied exactly from the household members list. Only "אני", "עליי", "I" (the sender speaking about themselves) mean the sender. An impersonal "צריך ל..." / "need to ..." or a bare infinitive ("להכין ...", "לתקן ...") with no person named is unassigned: null. null also when the name is not in the list.
 - Objects and ingredients mentioned inside a chore are not shopping items unless the sender also asks to buy them ("צריך להחליף נורה במטבח" -> one chore, no items).
 - Going to a store to buy things is shopping, not a chore: "לעבור מחר בסופר לקנות בצל לבן" -> item "בצל לבן", no chores.
-Return an empty chores array when there are none, and empty items and chores arrays for intents other than add_items.`;
+Return an empty chores array when there are none, and empty items and chores arrays for intents other than add_items.
+
+ambiguous: true only when a task in the message involves products, so the sender might mean "do this" or "buy these" ("להכין חזה עוף ופתיתים לצהריים", "לבשל אורז עם שעועית"). Then return the task in chores AND the products the sender actually wrote in items ("חזה עוף", "פתיתים"). Never add ingredients or products the sender did not write: "להכין שקשוקה" and "לאפות עוגה" name no products, so they are plain chores, not ambiguous. Otherwise false:
+- a bare product or product list is shopping, never ambiguous ("זיתים מגולענים שימורים", "מעדני שוקולד 12 יחידות");
+- a task without products to buy is a chore, never ambiguous ("לתקן את הברז", "להחליף נורה במטבח", "לקבוע תור לרופא");
+- a message with separate clear parts is not ambiguous ("צריך חלב ונורית צריכה להתקשר לאינסטלטור").
+If the context says the sender chose a list, follow it: put everything in that list and set ambiguous false.`;
 
 export type People = { sender: string; members: string[] };
+
+export type Target = "chores" | "shopping";
 
 export async function parseMessage(
   text: string,
   currentItems: string[],
   people: People,
+  target: Target | null = null,
 ): Promise<ParsedMessage | null> {
   const context = [
+    ...(target === "chores"
+      ? ["The sender chose the chores list: everything in the message is chores, no items."]
+      : target === "shopping"
+        ? ["The sender chose the shopping list: everything in the message is items to buy, no chores."]
+        : []),
     `Sender: ${people.sender}`,
     `Household members: ${people.members.join(", ")}`,
     currentItems.length ? `Current list: ${currentItems.join(", ")}` : "The current list is empty.",

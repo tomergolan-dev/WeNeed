@@ -102,6 +102,9 @@ A chore with no name stays unassigned.
 
 - "I need to ..." assigns the sender; an impersonal "need to ..." stays unassigned. Names must match a household member.
 - One message can mix shopping items and chores; each goes to its own list.
+- **Chore or shopping?** Bare products go to shopping and tasks without products go to chores, without asking. When a task names products ("make chicken breast and ptitim for lunch"), the bot asks with three reply buttons: 📋 chore, 🛒 shopping, ✌️ both. The products offered are only the ones the sender wrote.
+- Starting a message with "מטלה:" or "קניות:" picks the list without guessing or asking.
+- Typing the answer ("מטלה", "קניות", "גם וגם") works like pressing the button; any other message drops the question. A button pressed after the question expired gets a short "no longer valid" reply.
 - "What are the chores?" lists open chores: the sender's first, then others', then unassigned.
 - Chores have no duplicate check and are checked off in the web app.
 - **Chore list lifecycle:** chores live on one ongoing `tasks` list that opens on first use and is never finished. The web app shows open chores plus chores done in the last 7 days; older done chores stay in the database.
