@@ -27,3 +27,4 @@ Useful scripts:
 - `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle Kit)
 - `npm run household:create -- "Name" "Member:+972501234567" ...` creates a household with members
 - `npm run login-link -- +972501234567` prints a one-time login link (set `APP_URL` for a production link)
+- `npm run eval:parser` runs sample WhatsApp messages through the Claude parser (calls the real API)

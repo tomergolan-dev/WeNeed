@@ -13,7 +13,8 @@
     "db:studio": "drizzle-kit studio",
     "typecheck": "next typegen && tsc --noEmit",
     "household:create": "tsx --env-file=.env.local scripts/create-household.ts",
-    "login-link": "tsx --env-file=.env.local scripts/login-link.ts"
+    "login-link": "tsx --env-file=.env.local scripts/login-link.ts",
+    "eval:parser": "tsx --conditions=react-server --env-file=.env.local scripts/eval-parser.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
