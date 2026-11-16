@@ -42,6 +42,8 @@ const cases: [string, Exp][] = [
   ["צריך להחליף נורה במטבח", { intent: "add_items", chores: [["נורה", null]] }],
   ["צריך חלב ונורית צריכה להתקשר לאינסטלטור", { intent: "add_items", items: [["חלב", null, "dairy"]], chores: [["אינסטלטור", "נורית"]] }],
   ["מה המטלות?", { intent: "show_chores" }],
+  ["אני צריך להכין למחר צוהריים - חזה עוף בנינג'ה ולתוספת פתיתים", { intent: "add_items", chores: [["פתיתים", "תומר"]] }],
+  ["לעבור מחר בסופר יודה לקנות בצל לבן", { intent: "add_items", items: [["בצל לבן", null, "produce"]] }],
   ["מה אני צריך לעשות?", { intent: "show_chores" }],
   ["צריך נורות", { intent: "add_items", items: [["נור", null, "home"]] }],
   ["פסטה ורוטב עגבניות", { intent: "add_items", items: [["פסטה", null, "pantry"], ["רוטב עגבניות", null, "spices|canned"]] }],

@@ -81,7 +81,8 @@ export async function sendText(to: string, body: string): Promise<void> {
         messaging_product: "whatsapp",
         to: to.replace(/^\+/, ""),
         type: "text",
-        text: { body, preview_url: true },
+        // No link preview card: it pushes the reply text down.
+        text: { body, preview_url: false },
       }),
     },
   );

@@ -94,6 +94,10 @@ async function reply(member: Member, text: string): Promise<string> {
       if (parsed.items.length === 0 && parsed.chores.length === 0) return t("notUnderstood");
       const choresReply = parsed.chores.length > 0 ? await addChores(member, parsed.chores, people) : "";
       const shoppingReply = parsed.items.length > 0 ? await addShopping(member, list, parsed.items, open) : "";
+      // One link per reply: the shopping part brings its own when it added items.
+      if (choresReply && !shoppingReply.includes(appUrl())) {
+        return [`${choresReply}\n${appUrl()}/chores`, shoppingReply].filter(Boolean).join("\n\n");
+      }
       return [choresReply, shoppingReply].filter(Boolean).join("\n\n");
     }
     case "show_list":
@@ -128,7 +132,7 @@ async function addChores(
   if (rows.length === 0) return "";
   await db.insert(items).values(rows);
   const names = rows.map((row) => describeChore(row.name, row.assigneeId, people)).join(", ");
-  return t("choresAdded", { chores: names, url: `${appUrl()}/chores` });
+  return t("choresAdded", { chores: names });
 }
 
 /** Adds shopping items, asking first whether to open a new list when there is none. */

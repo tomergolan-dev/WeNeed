@@ -90,7 +90,7 @@
     "members": "חברי הבית"
   },
   "Bot": {
-    "added": "הוספתי ✅ {items}\n{url}",
+    "added": "הוספתי לקניות ✅ {items}\n{url}",
     "list": "🛒 ברשימה:\n\n{sections}\n\n{url}",
     "listEmpty": "הרשימה ריקה 🎉\n{url}",
     "loginLink": "הנה קישור כניסה לרשימה (לשימוש חד-פעמי, תקף ל-24 שעות):\n{url}",
@@ -108,7 +108,7 @@
     "listOpened": "פתחתי רשימה חדשה 📝",
     "listOpenedCarried": "פתחתי רשימה חדשה 📝 והעברתי אליה: {names}",
     "answerUnclear": "לא הבנתי את התשובה 🙂 אפשר לענות ״כן״, ״לא״ או לפרט אילו.",
-    "choresAdded": "נוסף למטלות ✅ {chores}\n{url}",
+    "choresAdded": "נוסף למטלות ✅ {chores}",
     "choresList": "📋 מטלות פתוחות:\n{lines}\n\n{url}",
     "choresEmpty": "אין מטלות פתוחות 🎉\n{url}"
   },

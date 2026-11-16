@@ -53,9 +53,10 @@ For add_items, extract every product as a separate item:
 Always return every requested item, including ones already on the list.
 
 Chores are tasks to do rather than things to buy ("לתקן את הברז", "להוציא את הזבל", "לקבוע תור לרופא", "call the plumber"). Put them in chores, never in items; a message can have both:
-- title: the task in short Hebrew infinitive form (or English if written in English), without the person's name ("תומר צריך לתקן את הברז באמבטיה" -> "לתקן את הברז באמבטיה"). Keep the sender's wording otherwise.
+- title: the whole task in infinitive form, without the person's name, keeping every detail the sender gave (what, when, where, how) in the sender's wording ("תומר צריך לתקן את הברז באמבטיה" -> "לתקן את הברז באמבטיה"; "אני צריך להכין למחר צהריים - חזה עוף בנינג'ה ולתוספת פתיתים" -> "להכין למחר צהריים - חזה עוף בנינג'ה ופתיתים"). One task stays one chore; do not split its details into separate chores or items.
 - assignee: who should do it, copied exactly from the household members list. Only "אני", "עליי", "I" (the sender speaking about themselves) mean the sender. An impersonal "צריך ל..." / "need to ..." with no person named is unassigned: null. null also when the name is not in the list.
-- Objects mentioned inside a chore are not shopping items unless the sender also asks to buy them ("צריך להחליף נורה במטבח" -> one chore, no items).
+- Objects and ingredients mentioned inside a chore are not shopping items unless the sender also asks to buy them ("צריך להחליף נורה במטבח" -> one chore, no items).
+- Going to a store to buy things is shopping, not a chore: "לעבור מחר בסופר לקנות בצל לבן" -> item "בצל לבן", no chores.
 Return an empty chores array when there are none, and empty items and chores arrays for intents other than add_items.`;
 
 export type People = { sender: string; members: string[] };
