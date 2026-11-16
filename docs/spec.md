@@ -100,6 +100,12 @@ After a list is finished, the next message starts this flow:
 
 A chore with no name stays unassigned.
 
+- "I need to ..." assigns the sender; an impersonal "need to ..." stays unassigned. Names must match a household member.
+- One message can mix shopping items and chores; each goes to its own list.
+- "What are the chores?" lists open chores: the sender's first, then others', then unassigned.
+- Chores have no duplicate check and are checked off in the web app.
+- **Chore list lifecycle:** chores live on one ongoing `tasks` list that opens on first use and is never finished. The web app shows open chores plus chores done in the last 7 days; older done chores stay in the database.
+
 ### Logging in to the web app
 
 "Send me a link" (or any reply that includes a link) returns a personal one-time link that logs the user in to the app.
@@ -159,9 +165,9 @@ The bot and the web app read and write the same database, so any change in one s
 
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel.
 - **Webhook:** at `/api/whatsapp/webhook`. GET handles Meta's verification; POST receives messages, checks the signature (`X-Hub-Signature-256`), returns 200 right away and continues processing via `after()`.
-- **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the names of the unchecked items on the active list (and, from Stage 5, the members' names) to detect duplicates and assign chores.
+- **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the sender's name, the household members' names and the unchecked items on the active list, to detect duplicates and assign chores.
   - Model `claude-haiku-5-5` at `low` effort (switched from Opus after it passed the same sample messages; about 40x cheaper).
-  - Intents so far: `add_items`, `show_list`, `login_link`, `other` (replies with a short help text).
+  - Intents: `add_items` (shopping items and/or chores), `show_list`, `show_chores`, `login_link`, `other` (replies with a short help text).
 - **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.
 - **Meta setup notes:**
   - The access token belongs to a System User (`weneed-bot`) in the business portfolio, with full control of the app and the WhatsApp account; it does not expire. Temporary tokens from API Setup expire within hours.
@@ -175,7 +181,7 @@ The bot and the web app read and write the same database, so any change in one s
 - [x] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
 - [x] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
 - [x] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
-- [ ] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
+- [x] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
 - [ ] **Stage 6, go live:** real phone number, deploy to Vercel, onboarding mom.
 
 ## Open questions

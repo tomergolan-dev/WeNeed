@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { households, items, lists, members, type Item, type List } from "@/db/schema";
 
@@ -90,4 +90,18 @@ export async function ensureActiveList(householdId: string, type: ListType) {
   const created = await getActiveList(householdId, type);
   if (!created) throw new Error("Failed to open an active list");
   return created;
+}
+
+const DONE_CHORES_VISIBLE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Open chores plus chores done in the last week, on the ongoing tasks list. */
+export async function getChores(householdId: string): Promise<Item[]> {
+  const list = await getActiveList(householdId, "tasks");
+  if (!list) return [];
+  const since = new Date(Date.now() - DONE_CHORES_VISIBLE_MS);
+  return db
+    .select()
+    .from(items)
+    .where(and(eq(items.listId, list.id), or(eq(items.done, false), gt(items.doneAt, since))))
+    .orderBy(asc(items.createdAt));
 }

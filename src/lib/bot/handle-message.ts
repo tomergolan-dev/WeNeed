@@ -6,7 +6,14 @@ import { items, lists, members, processedMessages, type Item, type List } from "
 import { locale } from "@/i18n/request";
 import { isCategory } from "@/lib/categories";
 import { formatQuantity, groupByCategory } from "@/lib/items";
-import { ensureActiveList, getActiveList, getLastCompletedList, getListItems } from "@/lib/lists";
+import {
+  ensureActiveList,
+  getActiveList,
+  getChores,
+  getHousehold,
+  getLastCompletedList,
+  getListItems,
+} from "@/lib/lists";
 import { createLoginToken, loginUrl } from "@/lib/login-tokens";
 import { sendText, type IncomingMessage } from "@/lib/whatsapp";
 import messages from "../../../messages/he.json";
@@ -72,33 +79,27 @@ async function reply(member: Member, text: string): Promise<string> {
   const list = await getActiveList(member.householdId, "shopping");
   const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
 
+  const household = await getHousehold(member.householdId);
+  const people = household?.members ?? [];
+
   const parsed = await parseMessage(
     text,
     open.map((item) => item.name),
+    { sender: member.name, members: people.map((p) => p.name) },
   );
   if (!parsed) return t("notUnderstood");
 
   switch (parsed.intent) {
     case "add_items": {
-      if (parsed.items.length === 0) return t("notUnderstood");
-      if (list) return addItems(member, list, parsed.items, open);
-
-      const previous = await getLastCompletedList(member.householdId, "shopping");
-      if (previous && previous.leftovers.length > 0) {
-        await setPending(member.id, {
-          type: "open_list",
-          previousListId: previous.list.id,
-          leftovers: previous.leftovers,
-          items: parsed.items.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category })),
-        });
-        const names = previous.leftovers.map((item) => item.name);
-        return t("noActiveList", { count: names.length, names: names.join(", "), example: names[0] });
-      }
-      const created = await ensureActiveList(member.householdId, "shopping");
-      return addItems(member, created, parsed.items, []);
+      if (parsed.items.length === 0 && parsed.chores.length === 0) return t("notUnderstood");
+      const choresReply = parsed.chores.length > 0 ? await addChores(member, parsed.chores, people) : "";
+      const shoppingReply = parsed.items.length > 0 ? await addShopping(member, list, parsed.items, open) : "";
+      return [choresReply, shoppingReply].filter(Boolean).join("\n\n");
     }
     case "show_list":
       return formatList(open);
+    case "show_chores":
+      return formatChores(member, await getChores(member.householdId), people);
     case "login_link": {
       const token = await createLoginToken(member.id);
       return t("loginLink", { url: loginUrl(token) });
@@ -106,6 +107,52 @@ async function reply(member: Member, text: string): Promise<string> {
     case "other":
       return t("help", { name: member.name });
   }
+}
+
+type Person = { id: string; name: string };
+
+async function addChores(
+  member: Member,
+  chores: { title: string; assignee: string | null }[],
+  people: Person[],
+): Promise<string> {
+  const list = await ensureActiveList(member.householdId, "tasks");
+  const rows = chores
+    .filter((chore) => chore.title.trim())
+    .map((chore) => ({
+      listId: list.id,
+      name: chore.title.trim(),
+      assigneeId: people.find((p) => p.name === chore.assignee)?.id ?? null,
+      addedBy: member.id,
+    }));
+  if (rows.length === 0) return "";
+  await db.insert(items).values(rows);
+  const names = rows.map((row) => describeChore(row.name, row.assigneeId, people)).join(", ");
+  return t("choresAdded", { chores: names, url: `${appUrl()}/chores` });
+}
+
+/** Adds shopping items, asking first whether to open a new list when there is none. */
+async function addShopping(
+  member: Member,
+  list: List | null,
+  requested: RequestedItem[],
+  open: Item[],
+): Promise<string> {
+  if (list) return addItems(member, list, requested, open);
+
+  const previous = await getLastCompletedList(member.householdId, "shopping");
+  if (previous && previous.leftovers.length > 0) {
+    await setPending(member.id, {
+      type: "open_list",
+      previousListId: previous.list.id,
+      leftovers: previous.leftovers,
+      items: requested.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category })),
+    });
+    const names = previous.leftovers.map((item) => item.name);
+    return t("noActiveList", { count: names.length, names: names.join(", "), example: names[0] });
+  }
+  const created = await ensureActiveList(member.householdId, "shopping");
+  return addItems(member, created, requested, []);
 }
 
 /**
@@ -274,4 +321,22 @@ function formatList(open: Item[]): string {
     )
     .join("\n\n");
   return t("list", { sections, url: appUrl() });
+}
+
+function describeChore(title: string, assigneeId: string | null, people: Person[]): string {
+  const name = people.find((p) => p.id === assigneeId)?.name;
+  return name ? `${title} (${name})` : title;
+}
+
+function formatChores(member: Member, chores: Item[], people: Person[]): string {
+  const open = chores.filter((chore) => !chore.done);
+  const url = `${appUrl()}/chores`;
+  if (open.length === 0) return t("choresEmpty", { url });
+  // The sender's chores first, then everyone else's, then unassigned.
+  const rank = (chore: Item) => (chore.assigneeId === member.id ? 0 : chore.assigneeId ? 1 : 2);
+  const lines = [...open]
+    .sort((a, b) => rank(a) - rank(b))
+    .map((chore) => `• ${describeChore(chore.name, chore.assigneeId, people)}`)
+    .join("\n");
+  return t("choresList", { lines, url });
 }

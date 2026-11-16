@@ -5,11 +5,11 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { households, items, lists } from "@/db/schema";
+import { households, items, lists, members } from "@/db/schema";
 import { getCurrentMember } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { consumeLoginToken } from "@/lib/login-tokens";
-import { getActiveList, getLastCompletedList } from "@/lib/lists";
+import { ensureActiveList, getActiveList, getLastCompletedList } from "@/lib/lists";
 import { endSession, startSession } from "@/lib/session";
 
 // Error codes map to messages under "Errors" in messages/he.json.
@@ -156,6 +156,61 @@ export async function openList(carryOver: boolean): Promise<ActionResult> {
     `);
   }
 
+  refresh();
+  return ok;
+}
+
+const choreInput = z.object({
+  title: z.string().trim().min(1).max(200),
+  assigneeId: z.uuid().nullable(),
+});
+export type ChoreInput = z.input<typeof choreInput>;
+
+async function isHouseholdMember(memberId: string | null, householdId: string) {
+  if (memberId === null) return true;
+  const [row] = await db
+    .select({ id: members.id })
+    .from(members)
+    .where(and(eq(members.id, memberId), eq(members.householdId, householdId)));
+  return Boolean(row);
+}
+
+/** Chores live on one ongoing "tasks" list that is opened on first use. */
+export async function addChore(input: ChoreInput): Promise<ActionResult> {
+  const member = await getCurrentMember();
+  if (!member) return fail("unauthorized");
+
+  const parsed = choreInput.safeParse(input);
+  if (!parsed.success) return fail("invalid");
+  if (!(await isHouseholdMember(parsed.data.assigneeId, member.householdId))) return fail("invalid");
+
+  const list = await ensureActiveList(member.householdId, "tasks");
+  await db.insert(items).values({
+    listId: list.id,
+    name: parsed.data.title,
+    assigneeId: parsed.data.assigneeId,
+    addedBy: member.id,
+  });
+  refresh();
+  return ok;
+}
+
+export async function updateChore(itemId: string, input: ChoreInput): Promise<ActionResult> {
+  const member = await getCurrentMember();
+  if (!member) return fail("unauthorized");
+
+  const parsed = choreInput.safeParse(input);
+  if (!parsed.success) return fail("invalid");
+  if (!(await isHouseholdMember(parsed.data.assigneeId, member.householdId))) return fail("invalid");
+
+  const item = await findEditableItem(itemId, member.householdId);
+  if (!item) return fail("notFound");
+  if (item.status !== "active") return fail("listLocked");
+
+  await db
+    .update(items)
+    .set({ name: parsed.data.title, assigneeId: parsed.data.assigneeId })
+    .where(eq(items.id, itemId));
   refresh();
   return ok;
 }

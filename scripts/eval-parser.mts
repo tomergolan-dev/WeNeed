@@ -5,7 +5,13 @@
 // optional existing list item it should match (null = must not match)].
 // The current list is ["לחם"] unless a case gives its own.
 import { parseMessage } from "@/lib/bot/parse-message";
-type Exp = { intent: string; list?: string[]; items?: [string, number | null, string, (string | null)?][] };
+type Exp = {
+  intent: string;
+  list?: string[];
+  items?: [string, number | null, string, (string | null)?][];
+  chores?: [string, string | null][]; // [title substring, assignee]
+};
+const people = { sender: "תומר", members: ["תומר", "נורית"] };
 const cases: [string, Exp][] = [
   ["צריך 2 קרטוני חלב וביצים", { intent: "add_items", items: [["חלב", 2, "dairy"], ["ביצ", null, "dairy"]] }],
   ["נגמר השמן זית", { intent: "add_items", items: [["שמן זית", null, "pantry"]] }],
@@ -30,17 +36,32 @@ const cases: [string, Exp][] = [
   ["צריך לחמניות", { intent: "add_items", list: ["לחם"], items: [["לחמני", null, "bakery", null]] }],
   ["need milk", { intent: "add_items", list: ["חלב"], items: [["milk", null, "dairy", "חלב"]] }],
   ["חלב סויה", { intent: "add_items", list: ["חלב"], items: [["חלב סויה", null, "dairy", null]] }],
+  ["תומר צריך לתקן את הברז באמבטיה", { intent: "add_items", chores: [["ברז", "תומר"]] }],
+  ["נורית צריכה לקבוע תור לרופא שיניים", { intent: "add_items", chores: [["תור", "נורית"]] }],
+  ["אני צריך להוציא את הזבל", { intent: "add_items", chores: [["זבל", "תומר"]] }],
+  ["צריך להחליף נורה במטבח", { intent: "add_items", chores: [["נורה", null]] }],
+  ["צריך חלב ונורית צריכה להתקשר לאינסטלטור", { intent: "add_items", items: [["חלב", null, "dairy"]], chores: [["אינסטלטור", "נורית"]] }],
+  ["מה המטלות?", { intent: "show_chores" }],
+  ["מה אני צריך לעשות?", { intent: "show_chores" }],
+  ["צריך נורות", { intent: "add_items", items: [["נור", null, "home"]] }],
   ["פסטה ורוטב עגבניות", { intent: "add_items", items: [["פסטה", null, "pantry"], ["רוטב עגבניות", null, "spices|canned"]] }],
 ];
 let pass = 0;
 for (const [msg, exp] of cases) {
-  const r = await parseMessage(msg, exp.list ?? ["לחם"]);
+  const r = await parseMessage(msg, exp.list ?? ["לחם"], people);
   const errs: string[] = [];
   if (!r) errs.push("null");
   else {
     if (r.intent !== exp.intent) errs.push(`intent ${r.intent}`);
     const want = exp.items ?? [];
     if (r.items.length !== want.length) errs.push(`count ${r.items.length}`);
+    const wantChores = exp.chores ?? [];
+    if (r.chores.length !== wantChores.length) errs.push(`chores ${r.chores.length}`);
+    wantChores.forEach(([title, who], i) => {
+      const c = r.chores[i]; if (!c) return;
+      if (!c.title.includes(title)) errs.push(`title ${c.title}`);
+      if (c.assignee !== who) errs.push(`assignee ${c.title}=${c.assignee}`);
+    });
     want.forEach(([n, q, c, ex], i) => {
       const it = r.items[i]; if (!it) return;
       if (!it.name.includes(n)) errs.push(`name ${it.name}`);
@@ -50,7 +71,7 @@ for (const [msg, exp] of cases) {
     });
   }
   if (!errs.length) pass++;
-  console.log(`${errs.length ? "FAIL" : "ok  "} | ${msg} -> ${r?.items.map(i => `${i.name}${i.quantity ? "×" + i.quantity : ""}${i.unit ? " " + i.unit : ""}`).join(", ") || r?.intent}${errs.length ? "\n     " + errs.join("; ") : ""}`);
+  console.log(`${errs.length ? "FAIL" : "ok  "} | ${msg} -> ${[...(r?.items.map(i => `${i.name}${i.quantity ? "×" + i.quantity : ""}${i.unit ? " " + i.unit : ""}`) ?? []), ...(r?.chores.map(c => `[${c.title} / ${c.assignee}]`) ?? [])].join(", ") || r?.intent}${errs.length ? "\n     " + errs.join("; ") : ""}`);
 }
 console.log(`${pass}/${cases.length} passed`);
 if (pass < cases.length) process.exitCode = 1;

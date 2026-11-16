@@ -9,7 +9,7 @@ Send the bot a message like "need 2 cartons of milk and eggs" and the shared lis
 
 ## Status
 
-Stage 4 — duplicate confirmation and new-list carry-over in the bot. Next: Stage 5, chores.
+Stage 5 — chores in the bot and the web app. Next: Stage 6, go live.
 
 Production: https://we-need-two.vercel.app
 

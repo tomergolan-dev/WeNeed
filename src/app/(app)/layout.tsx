@@ -13,6 +13,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link href="/" className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {t("shopping")}
           </Link>
+          <Link href="/chores" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            {t("chores")}
+          </Link>
           <Link href="/history" className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {t("history")}
           </Link>
