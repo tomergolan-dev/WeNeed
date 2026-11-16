@@ -77,7 +77,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - Two ways in, both by email address. No password.
   - **Sign in with Google:** one tap; Google confirms the address.
-  - **Code by email:** a 6-digit code sent through Resend from `weneed@tomergolan.dev`. It is valid for 10 minutes, allows 5 attempts and works once.
+  - **Code by email:** a 6-digit code sent through Resend from `noreply@tomergolan.dev`. It is valid for 10 minutes, allows 5 attempts and works once.
 - **Open sign-up:** anyone can sign in; a user is created on first sign-in, named after the Google profile (or the address). Users see only the places they belong to.
 - Limits against abuse: at most 3 codes per address every 15 minutes, and at most 80 codes a day in total (Resend's free plan sends 100 emails a day). Google sign-in has no limit.
 - Users from the bot era (Tomer, Nurit) are linked to their address with `npm run user:link-email -- <email> <phone>`, keeping their places and history.

@@ -1,11 +1,8 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
-import { createTranslator } from "next-intl";
 import { db } from "@/db";
 import { signInCodes, users } from "@/db/schema";
-import { locale } from "@/i18n/request";
-import messages from "../../messages/he.json";
 import { sendSignInCode } from "./sign-in-delivery";
 
 // Sign-in by email: a one-time code, or Google (see google.ts). Anyone can
@@ -18,8 +15,6 @@ const RATE_WINDOW_MS = 15 * 60 * 1000;
 const MAX_CODES_PER_WINDOW = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_CODES_PER_DAY = 80;
-
-const t = createTranslator({ locale, messages, namespace: "SignInEmail" });
 
 function hashCode(email: string, code: string): string {
   const secret = process.env.SESSION_SECRET;
@@ -51,7 +46,7 @@ export async function requestSignInCode(email: string): Promise<RequestCodeResul
   });
 
   try {
-    await sendSignInCode(email, code, t("subject", { code }), t("body", { code }));
+    await sendSignInCode(email, code);
     return "sent";
   } catch (error) {
     console.error("[sign-in] delivery failed", error);
