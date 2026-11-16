@@ -1,15 +1,15 @@
 # We Need
 
-Shared shopping and chore lists, managed through a WhatsApp bot.
+Everything a household needs, in one app: shared shopping lists, chores with due dates, and reusable checklists.
 
-Send the bot a message like "need 2 cartons of milk and eggs" and the shared list updates for everyone in the household. A web app shows the live list, lets you check items off and finish the list when the shopping is done.
+Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates for everyone in the household. A user can belong to several households and switch between them.
 
 - Spec: [docs/spec.md](docs/spec.md)
-- Stack: Next.js, TypeScript, Tailwind, shadcn/ui, Drizzle, Neon Postgres, Vercel, WhatsApp Cloud API, Claude API
+- Stack: Next.js, TypeScript, Tailwind, shadcn/ui, Drizzle, Neon Postgres, Vercel, Claude API
 
 ## Status
 
-Stage 5 — chores in the bot and the web app. Next: Stage 6, go live.
+New direction (2026-11-16): a multi-household web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused. Next: Stage A, design mockup. See `docs/spec.md`.
 
 Production: https://we-need-two.vercel.app
 

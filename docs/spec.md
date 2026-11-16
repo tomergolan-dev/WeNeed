@@ -1,195 +1,129 @@
 # We Need — Product Spec
 
-Living version: https://claude.ai/artifact/QaRFVq4Lf37yvamLiHtjBm (this file is a snapshot from 2026-11-14).
+Last updated: 2026-11-16. This version replaces the WhatsApp-bot spec (see "History" at the end).
 
 ## Vision
 
-We Need manages shared shopping and chore lists through a WhatsApp bot. Instead of opening an app, any household member sends the bot a plain-language message, such as "need 2 cartons of milk and eggs", and the shared list updates for everyone.
+Everything a household "needs" in one place: things to buy at the supermarket, chores to get done, things to pack for a weekend away. We Need is a mobile-first web app where each household keeps shared lists, and an AI chat in every list turns a plain sentence ("need 2 cartons of milk and eggs") into list items.
 
-The problem it solves: when a shopping list lives in a regular chat, items get lost between messages. We Need keeps one organized list, with quantities, grouping by store section and history.
+The name is the product: everything in it is something "we need" to buy, to do, or to take.
 
-Alongside the bot, a web app shows the up-to-date list, lets members check off completed items and manage the list.
+We Need is also a portfolio project, so it includes a demo household that anyone can try.
 
-## Users and main scenario
+## Users and households
 
-The first users are Tomer and his mom, who manage the weekly shopping for his apartment together. The product supports two or more people per household.
+- A **user** signs in with a mobile phone number.
+- A **household** is a shared space with members, for example "Parents' home", "My apartment", "Office".
+- A user can belong to several households and switches between them from a selector at the top of the screen.
+- Every member of a household can view and edit all of its lists.
+- First real households:
+  - "הדירה של תומר ותמיר": Tomer, Tamir and Nurit (Tomer's mom).
+  - "בית משפחת גולן": Nurit.
 
-Key requirement: nothing to install and no password to remember. For the user it is just another WhatsApp contact and another link.
+## Lists
 
-A typical week:
+Each household has lists of three kinds.
 
-1. During the week, Tomer messages the bot whenever something runs out: "out of olive oil", "need 6 yogurts".
-2. The bot confirms each addition and includes a link to the list.
-3. Mom opens the link at the supermarket and checks off what she bought. The list is grouped by store section.
-4. When the shopping is done, someone taps "Finish list", and the list is locked and moved to history.
-5. The next message to the bot opens a new list, and the bot asks whether to carry over items that weren't bought.
+| Kind | Purpose | Lifecycle |
+| --- | --- | --- |
+| 🛒 Shopping | Things to buy | One active list at a time; finishing it locks it and moves it to history |
+| ✅ Chores | Things to do, optionally by a date and time | One ongoing list per household; done chores fade out |
+| 📋 Other | A reusable checklist, e.g. "Weekend up north" | Permanent; never finished or deleted automatically |
 
-## MVP features
+### Shopping list
 
-| Area | What's included |
-| --- | --- |
-| Household | A shared household with members, identified by phone number |
-| Shopping list | Items with quantity and unit, automatic grouping by store section, check-off |
-| Chore list | Chores assigned to a person, check-off |
-| List lifecycle | One active list per type, manual finish only, locking and history |
-| Bot | Free-text adding, duplicate check, "what's on the list?", opening a new list and carrying items over |
-| Web | View, check off, edit, "Finish list" button, history |
-
-Out of scope for the MVP:
-
-- Proactive notifications: the bot only replies to messages and never messages first.
-- A bot inside a WhatsApp group: Meta's Groups API is open only to Official Business Accounts (OBA).
-- Recurring chores and reminders.
-- Voice messages and images.
-
-## Bot flows
-
-The bot identifies the sender by phone number, and Claude classifies each message into one intent. Any question the bot asks is stored as `pending_action` on the member, so the next reply is understood in context. The bot talks to users in Hebrew; the examples below are translated.
-
-### Adding items
-
-- User: "need 2 cartons of milk and eggs"
-- Bot: "Added ✅ milk ×2 cartons, eggs" + a link to the list
-
-Claude extracts a name, quantity, unit and category for each item.
-
-### Item already on the list
-
-The bot doesn't merge silently; it asks first:
-
-- User: "need milk"
-- Bot: "Milk is already on the list (2 cartons). Add 1 more, making it 3?"
-- User: "yes" → quantity updates to 3. "no" → nothing changes.
-
-If the same message also has new items, they are added right away, and only the duplicates wait for confirmation.
-
-- Only unchecked items on the active list count as duplicates. Claude names the matching list item (singular/plural, spelling, other language); a normalized-name match is the fallback.
-- An item without a quantity counts as 1, so "milk" on top of "milk" asks about making it 2.
-- Several duplicates in one message get one question; the reply can be "yes", "no" or a subset ("just the eggs").
-
-### What's on the list?
-
-The bot returns the unchecked items grouped by store section, plus a link to the web app.
-
-### No active list
-
-After a list is finished, the next message starts this flow:
-
-- Bot: "There's no active list. Open a new one? 3 items weren't bought (cheese, oil, toilet paper). Carry them over?"
-- Possible replies: "yes", "no", "just the cheese".
-- After the reply a new list opens, and the items from the original message are added to it.
-- If the finished list has no unbought items, the bot opens a new list without asking.
-- A requested item that was just carried over is not added again (and not asked about).
-
-### Item parsing rules
-
-- Product names are copied exactly as written: no spelling fixes, no expanding slang ("גבנצ" stays "גבנצ").
-- A number with x or × ("x18", "18x") is a count of units, like "18 ביצים".
-- A count without a unit is shown as "18 יח׳" in the app and the bot.
-
-### Pending questions
-
-- Any question the bot asks is stored as `pending_action` on the member and expires after 24 hours.
-- Short replies ("כן", "לא", 👍) are understood without calling Claude; other replies go to Claude, which classifies them as yes, no, some (with the chosen items) or unrelated.
-- An unrelated reply (a new request) drops the question and is handled as a new message.
+- Items have a name, quantity, unit and store section (category), and are grouped by section in store walking order.
+- Check-off while shopping; checked items move to an "in the cart" section.
+- **Finish list:** locks the list and moves it to history. The next list can carry over unbought items.
+- Item rules (from the bot era, kept for the AI chat):
+  - Product names are kept exactly as written: no spelling fixes, no expanding slang ("גבנצ" stays "גבנצ").
+  - A number with x or × ("x18", "18x") is a count of units.
+  - A count without a unit is shown as "18 יח׳".
+  - Adding an item that is already on the list asks whether to increase its quantity instead of adding a duplicate.
 
 ### Chores
 
-- User: "Tomer needs to fix the bathroom faucet"
-- Bot: "Added to chores ✅ fix the bathroom faucet (Tomer)"
+- A chore has a title and optional **due date** and **due time**.
+- Status signs, like traffic signs:
+  - **Due soon:** a yellow warning sign ⚠️.
+  - **Overdue:** a red sign ⛔.
+  - A chore with a date and no time is due at the end of that day.
+- Check-off marks a chore as done.
+- Later: calendar integration (see "Future").
 
-A chore with no name stays unassigned.
+### Other lists (checklists)
 
-- "I need to ..." assigns the sender; an impersonal "need to ..." stays unassigned. Names must match a household member.
-- One message can mix shopping items and chores; each goes to its own list.
-- **Chore or shopping?** Bare products go to shopping and tasks without products go to chores, without asking. When a task names products ("make chicken breast and ptitim for lunch"), the bot asks with three reply buttons: 📋 chore, 🛒 shopping, ✌️ both. The products offered are only the ones the sender wrote.
-- Starting a message with "מטלה:" or "קניות:" picks the list without guessing or asking.
-- Typing the answer ("מטלה", "קניות", "גם וגם") works like pressing the button; any other message drops the question. A button pressed after the question expired gets a short "no longer valid" reply.
-- "What are the chores?" lists open chores: the sender's first, then others', then unassigned.
-- Chores have no duplicate check and are checked off in the web app.
-- **Chore list lifecycle:** chores live on one ongoing `tasks` list that opens on first use and is never finished. The web app shows open chores plus chores done in the last 7 days; older done chores stay in the database.
+- Created by users with any name, for example "Weekend up north" or "Gym bag". A household can have several.
+- Items can be added, edited and removed at any time; the list stays.
+- **Check all** and **Uncheck all**, mainly to reset the list before the next use.
 
-### Logging in to the web app
+## AI chat
 
-"Send me a link" (or any reply that includes a link) returns a personal one-time link that logs the user in to the app.
+- Every list has a chat where the user writes what they need, and the AI updates the list.
+- Shopping: extracts name, quantity, unit and section per item, and handles items already on the list.
+- Chores: extracts the title and, when given, the date and time ("tomorrow at 5", "by Friday").
+- Other lists: adds the items written.
+- Manual adding and editing always remain available, for quick or precise changes.
+- Model: Claude (`claude-haiku-5-5`), with structured outputs. The parsing rules and sample-message tests from the bot carry over (`npm run eval:parser`).
 
-### Unknown sender and non-text messages
+## Sign-in
 
-- A number that isn't a member gets a short reply saying it isn't registered.
-- Non-text messages (voice, images) get a reply that only text is supported.
+- Sign-in with a mobile phone number and a one-time code sent by SMS. No password.
+- The session lasts a long time (a year), so users rarely need to sign in again.
+- **Invites:** a member invites someone to a household with a link they share however they like, for example in WhatsApp. The invited person signs in with their phone and joins the household.
+- The SMS provider is still open (see "Open questions").
 
-## Web app
+## Demo
 
-The web app is a mobile-first PWA in Hebrew with RTL, reached from a link the bot sends.
+- A "Try the demo" entry on the sign-in screen opens a sample household with ready-made lists of all three kinds, without signing in.
+- Demo visitors never see real households or real data.
 
-| Screen | What users do there |
-| --- | --- |
-| Shopping list | Items grouped by store section, check off, edit quantity, delete, "Finish list" button with confirmation |
-| Chores | Chores with the assignee's name, "Mine" filter, check off |
-| History | Finished lists, read-only |
-| Household settings | Members and phone numbers, add a member |
+## Design
 
-- **Login:** a one-time link from the bot that creates a cookie session. No password and no Google.
-  - The link opens a page with a "Log in" button; the token is consumed only when the button is pressed (POST), so WhatsApp link previews, which fetch the page, can't use it up.
-  - Links are valid for 24 hours and work once. The session cookie is signed with `SESSION_SECRET` and lasts a year.
-  - Until the bot exists (Stage 2), households are created and links generated with CLI scripts (`npm run household:create`, `npm run login-link`).
-- **Store sections:** a fixed list of categories in store walking order (`src/lib/categories.ts`). On the web the section is picked manually; from Stage 3 Claude picks it.
-- **No active list:** the shopping screen offers to open a new list and, if the last finished list has unbought items, to carry them over.
-- **Updates:** polling every few seconds while the screen is open. Move to real-time only if needed.
-- **Locked list:** once finished, it is read-only in both the web app and the bot.
+- Mobile-first, installable to the home screen (PWA), so it opens like a regular app.
+- Visual style influenced by CheckPlease (Tomer's earlier app): similar icon style and the feel of a polished, modern, high-end app. Not a copy, and with a different color palette.
+- The design is drafted and approved as a mockup before it is built.
+- Hebrew with RTL.
 
-## Data model
+## Domain and hosting
 
-Six tables in Postgres via Drizzle. The core rule: each household has at most one active list of each type, enforced by a partial unique index.
-
-| Table | Main fields |
-| --- | --- |
-| `households` | `id`, `name`, `created_at` |
-| `members` | `id`, `household_id`, `name`, `phone` (unique, E.164 format), `pending_action` (JSON), `created_at` |
-| `lists` | `id`, `household_id`, `type` (`shopping` / `tasks`), `status` (`active` / `completed`), `created_at`, `completed_at`, `completed_by` |
-| `items` | `id`, `list_id`, `name`, `quantity`, `unit`, `category`, `assignee_id`, `done`, `done_by`, `done_at`, `added_by`, `created_at` |
-| `processed_messages` | `wa_message_id` (key), `received_at`. Prevents double handling when Meta resends a message |
-| `login_tokens` | `token_hash`, `member_id`, `expires_at`, `used_at` |
-
-- Duplicate detection runs on a normalized name (no extra spaces or niqqud). Cases like singular vs. plural are left to Claude, which receives the names of existing items.
-- Carrying items over to a new list creates new rows; the locked list stays as it was.
+- Production address: `weneed.tomergolan.dev`.
+- `tomergolan.dev` is registered at Namecheap (already used for CheckPlease). The subdomain points to Vercel with a DNS record at Namecheap.
+- Hosting: Vercel. Database: Neon Postgres.
 
 ## Architecture and stack
 
-A single Next.js app on Vercel, on the same stack as CheckPlease, serves both the bot and the web app.
-
-```
-WhatsApp (users) <-> Meta Cloud API <-> Next.js webhook <-> Claude API
-                                              |
-Web app (PWA) <------------------------> Postgres (Neon)
-```
-
-The bot and the web app read and write the same database, so any change in one shows up immediately in the other.
-
-- **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel.
-- **Webhook:** at `/api/whatsapp/webhook`. GET handles Meta's verification; POST receives messages, checks the signature (`X-Hub-Signature-256`), returns 200 right away and continues processing via `after()`.
-- **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the sender's name, the household members' names and the unchecked items on the active list, to detect duplicates and assign chores.
-  - Model `claude-haiku-5-5` at `low` effort (switched from Opus after it passed the same sample messages; about 40x cheaper).
-  - Intents: `add_items` (shopping items and/or chores), `show_list`, `show_chores`, `login_link`, `other` (replies with a short help text).
-- **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.
-- **Meta setup notes:**
-  - The access token belongs to a System User (`weneed-bot`) in the business portfolio, with full control of the app and the WhatsApp account; it does not expire. Temporary tokens from API Setup expire within hours.
-  - The WhatsApp Business Account must be subscribed to the app (`POST /{waba-id}/subscribed_apps`), otherwise Meta doesn't deliver messages to the webhook even when it is verified.
-  - While on the test number, the bot can only message up to 5 pre-approved numbers.
+- **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel. Claude API for the AI chat.
+- **Data model (to be detailed in the build stage):**
+  - `users` with a unique phone number, and a many-to-many `household_members` table between users and households.
+  - `lists` with a kind (`shopping` / `chores` / `checklist`) and a name; shopping lists keep their `active` / `completed` status and history.
+  - `items` gain an optional due date and time for chores.
+- **Secrets:** only in environment variables; `.env.example` stays up to date.
 
 ## Development stages
 
-- [x] **Stage 0, setup:** private GitHub repo, Next.js project, Neon database, an app in Meta for Developers with a test number.
-- [x] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
-- [x] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
-- [x] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
-- [x] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
-- [x] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
-- [ ] **Stage 6, go live:** real phone number, deploy to Vercel, onboarding mom.
+- [ ] **Stage A, design:** mockup of the main screens (household selector, the three list kinds, AI chat), approved before building.
+- [ ] **Stage B, households and sign-in:** users, several households per user, household selector, phone sign-in with SMS code, invite links.
+- [ ] **Stage C, shopping list:** rebuilt in the new design, including finish and history.
+- [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
+- [ ] **Stage E, other lists:** create named checklists, check all / uncheck all.
+- [ ] **Stage F, AI chat:** chat in every list, reusing the bot's parsing.
+- [ ] **Stage G, demo and launch:** demo household, `weneed.tomergolan.dev`, real households for Tomer, Tamir and Nurit.
 
 ## Open questions
 
-- [ ] Phone number for the bot in stage 6: physical SIM or virtual number?
-- [ ] Cost: check Meta's official pricing for what bot replies cost since the pricing change on October 1, 2026.
-- [ ] Domain: buy one, or use the Vercel address at first?
-- [ ] Deleting an item through the bot ("remove the milk"): in the MVP, or web only?
+- [ ] SMS provider for sign-in codes, and its cost per message to Israel.
+- [ ] Who can sign up: anyone (portfolio), or only invited phone numbers (fewer SMS costs and less abuse)?
+- [ ] Demo: one shared demo household, or a private copy per visitor that is deleted after a day? And a limit on AI chat messages in the demo.
+- [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
+- [ ] "Due soon": how long before the due time does the yellow sign appear?
+- [ ] Chores: is there an assignee per chore?
+
+## Future
+
+- Calendar integration for chores.
+- Reconnecting the WhatsApp bot as an extra way to add items.
+
+## History
+
+Until 2026-11-16 the product was a WhatsApp bot backed by a small web app. That version was built and tested on a Meta test number (stages 0–5 in the git history): webhook with signature checks, Claude parsing, duplicate questions, list carry-over, chores and reply buttons. It was paused because a chat bot made switching between several households and lists awkward. Its code stays in the repository, disconnected from the new product, and its parsing rules carry over to the AI chat.

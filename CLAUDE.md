@@ -1,12 +1,12 @@
 # We Need
 
-Shared shopping and chore lists managed through a WhatsApp bot, with a web app for viewing and checking off items. The full spec is in `docs/spec.md` — read it before starting any task.
+A mobile-first web app for everything a household "needs": shared shopping lists, chores with due dates, and reusable checklists, with an AI chat in every list. Users can belong to several households. The full spec is in `docs/spec.md` — read it before starting any task.
 
 ## Language
 
 - Talk to me (Tomer) in Hebrew in chat.
 - Everything written into the repo is in English: code, comments, commit messages, docs, specs, README, PR descriptions.
-- Exception: user-facing UI strings and bot replies are in Hebrew, and they live in the next-intl message files, not hard-coded.
+- Exception: user-facing UI strings (and AI chat replies) are in Hebrew, and they live in the next-intl message files, not hard-coded.
 
 ## Stack
 
@@ -14,8 +14,8 @@ Shared shopping and chore lists managed through a WhatsApp bot, with a web app f
 - Tailwind + shadcn/ui
 - next-intl (Hebrew, RTL)
 - Drizzle ORM + Neon Postgres
-- WhatsApp Cloud API (Meta) for the bot
-- Claude API for parsing free-text messages
+- Claude API for the AI chat in each list
+- WhatsApp bot code (Meta Cloud API) is paused and disconnected; see "History" in the spec
 - Hosted on Vercel
 
 ## Rules
