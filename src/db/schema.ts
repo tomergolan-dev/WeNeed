@@ -25,8 +25,10 @@ export const placeRole = pgEnum("place_role", ["owner", "member"]);
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  // E.164, e.g. +972501234567
-  phone: text("phone").notNull().unique(),
+  // Lowercase. Set on first sign-in; users carried over from the bot era get it from npm run email:allow.
+  email: text("email").unique(),
+  // E.164, e.g. +972501234567. Only the paused WhatsApp bot uses it.
+  phone: text("phone").unique(),
   // Paused WhatsApp bot: a question it asked and is waiting for an answer to.
   pendingAction: jsonb("pending_action"),
   createdAt: createdAt(),
@@ -55,10 +57,12 @@ export const placeMembers = pgTable(
   (t) => [primaryKey({ columns: [t.placeId, t.userId] }), index("place_members_user_idx").on(t.userId)],
 );
 
-// Sign-in codes are sent only to these numbers (managed with npm run phone:allow).
-export const allowedPhones = pgTable("allowed_phones", {
-  phone: text("phone").primaryKey(),
-  note: text("note"),
+// Only these addresses can sign in (managed with npm run email:allow).
+export const allowedEmails = pgTable("allowed_emails", {
+  // Lowercase.
+  email: text("email").primaryKey(),
+  // The user's name on first sign-in.
+  name: text("name"),
   createdAt: createdAt(),
 });
 
@@ -66,15 +70,15 @@ export const signInCodes = pgTable(
   "sign_in_codes",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    phone: text("phone").notNull(),
-    // SHA-256 of the code; the code itself is only ever sent to the phone.
+    email: text("email").notNull(),
+    // HMAC of the code; the code itself is only ever sent by email.
     codeHash: text("code_hash").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     attempts: integer("attempts").notNull().default(0),
     usedAt: timestamp("used_at", { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (t) => [index("sign_in_codes_phone_idx").on(t.phone, t.createdAt)],
+  (t) => [index("sign_in_codes_email_idx").on(t.email, t.createdAt)],
 );
 
 export const lists = pgTable(

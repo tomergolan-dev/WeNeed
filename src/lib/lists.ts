@@ -75,7 +75,7 @@ export async function getPlace(placeId: string) {
     .from(places)
     .where(eq(places.id, placeId));
   const people = await db
-    .select({ id: users.id, name: users.name, phone: users.phone, role: placeMembers.role })
+    .select({ id: users.id, name: users.name, email: users.email, role: placeMembers.role })
     .from(placeMembers)
     .innerJoin(users, eq(users.id, placeMembers.userId))
     .where(eq(placeMembers.placeId, placeId))

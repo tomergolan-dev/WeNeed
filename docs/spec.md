@@ -12,7 +12,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Users and places
 
-- A **user** signs in with a mobile phone number.
+- A **user** signs in with an email address (Google, or a code sent by email).
 - A **place** is a shared space with members, for example "Parents' home", "My apartment", "Office", "Restaurant".
 - A user can belong to several places and switches between them from a selector at the top of the screen.
 - Any user can create a new place, with a name and an icon (home, apartment, office, restaurant, store, vacation), and invite others to it (see "Invites").
@@ -75,22 +75,23 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Sign-in
 
-- Sign-in with a mobile phone number and a one-time code. No password.
-- **Only allowed numbers can sign in.** Codes are sent only to phone numbers on an allowlist that Tomer manages. Any other number is refused without sending anything, so strangers can't run up messaging costs.
-- The code has 6 digits, is valid for 10 minutes, allows 5 attempts, and works once. At most 3 codes per number every 15 minutes.
-- On first sign-in a user is created, named after the allowlist entry.
+- Two ways in, both by email address. No password.
+  - **Sign in with Google:** one tap; Google confirms the address.
+  - **Code by email:** a 6-digit code sent through Resend. It is valid for 10 minutes, allows 5 attempts and works once; at most 3 codes per address every 15 minutes.
+- **Only allowed addresses can sign in.** Tomer manages an allowlist (`npm run email:allow`). Any other address is refused, and no email is sent to it.
+- On first sign-in a user is created, named after the allowlist entry (or the Google profile name).
+- Users from the bot era (Tomer, Nurit) are linked to their address with `npm run email:allow -- <email> --phone <number>`, keeping their places and history.
 - The session lasts a long time (a year), so users rarely need to sign in again.
-- The code is delivered by SMS, or by the WhatsApp bot (see "Open questions"). Until that is chosen, development prints the code to the server log and production refuses to send.
-- The allowlist is managed with `npm run phone:allow`.
+- Decided 2026-11-17, instead of SMS codes: free, no SMS provider, and Google makes it one tap.
 
 ## Invites
 
-- A member of a place invites someone by phone number (for example a partner or a colleague).
+- A member of a place invites someone by email address (for example a partner or a colleague).
 - The invited person gets an invitation saying who invited them and to which place, with two actions:
   - **"Accept in the app"**: a button with a hidden link (no raw URL shown) that opens the app.
   - **"Decline"**.
 - Delivery:
-  - In the app: pending invites appear for the invited phone number after sign-in, with Accept and Decline.
+  - In the app: pending invites appear for the invited address after sign-in, with Accept and Decline.
   - Optionally through the WhatsApp bot. A bot message to someone who hasn't written to it in the last 24 hours must use a template approved by Meta; templates support a link button and a quick-reply button together.
 - Declined or accepted invites can't be used again.
 
@@ -111,18 +112,19 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Domain and hosting
 
 - Production address: `weneed.tomergolan.dev`.
-- `tomergolan.dev` is registered at Namecheap (already used for CheckPlease). The subdomain points to Vercel with a DNS record at Namecheap.
+- `tomergolan.dev` is registered at Namecheap (already used for CheckPlease). The subdomain is attached to the Vercel project and points to Vercel with a CNAME record at Namecheap.
+- Sign-in emails are sent from the same subdomain, verified in Resend with DNS records at Namecheap.
 - Hosting: Vercel. Database: Neon Postgres.
 
 ## Architecture and stack
 
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel. Claude API for the AI chat.
 - **Data model:**
-  - `users` with a unique phone number. *(Stage B)*
+  - `users` with a unique email address (the phone number stays only for the paused bot). *(Stage B)*
   - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
-  - `allowed_phones`: the sign-in allowlist, with a note used as the user's name. *(Stage B)*
-  - `sign_in_codes`: hashed one-time codes with expiry and attempt count. *(Stage B)*
-  - `invites`: place, invited phone, invited by, status (`pending` / `accepted` / `declined`).
+  - `allowed_emails`: the sign-in allowlist, with the name used on first sign-in. *(Stage B)*
+  - `sign_in_codes`: hashed one-time email codes with expiry and attempt count. *(Stage B)*
+  - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
   - `lists`: place, kind (`shopping` / `chores` / `checklist`), name.
   - Shopping rounds: each round of a shopping list keeps its own items, status and finish time, for history.
   - `items` gain an optional due date and time for chores.
@@ -133,21 +135,20 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - [x] **Stage A, design:** mockup of the main screens (place selector, the three list kinds, AI chat, invites), approved on 2026-11-16.
   - Mockup: https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
-- [ ] **Stage B, places and sign-in:** users, several places per user, place selector, phone sign-in with a code for allowed numbers.
+- [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, for allowed addresses.
   - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners) and to the allowlist.
-  - Before release: choose the code delivery (see "Open questions"), then run the migrations on production and deploy.
+  - Before release: Google sign-in credentials, Resend with a verified sending domain, the `weneed` DNS record, and linking Tomer's and Nurit's addresses. Then run the migrations on production and deploy.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
 - [ ] **Stage E, checklists:** check all / uncheck all.
-- [ ] **Stage F, invites:** invite by phone, accept or decline in the app.
+- [ ] **Stage F, invites:** invite by email, accept or decline in the app.
 - [ ] **Stage G, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
 
 ## Open questions
 
-- [ ] Sign-in code delivery: SMS (which provider, cost per message to Israel), or the WhatsApp bot (needs a real bot number and Meta approval)?
 - [ ] Invites through the WhatsApp bot: in the first version, or later?
-- [ ] Does inviting a phone number add it to the sign-in allowlist automatically, or does Tomer approve each new number?
+- [ ] Does inviting an address add it to the sign-in allowlist automatically, or does Tomer approve each new address?
 - [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
 - [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
 - [ ] "Due soon": how long before the due time does the yellow sign appear?
@@ -156,6 +157,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Future
 
 - Calendar integration for chores.
+- Sign in with Facebook. Possible through the existing Meta app, but it needs a published privacy policy and a data deletion URL, and some Facebook accounts have no email address, so it waits for the launch stage.
 - The WhatsApp bot as an extra way to add items.
 
 ## History

@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { PlaceForm } from "@/components/places/place-form";
 import { requirePlace } from "@/lib/auth";
 import { getPlace } from "@/lib/lists";
-import { formatPhone } from "@/lib/phone";
 import { isPlaceIcon } from "@/lib/place-icons";
 
 export default async function SettingsPage() {
@@ -48,8 +47,8 @@ async function PlaceSettings() {
                   </span>
                 )}
               </span>
-              <span dir="ltr" className="text-sm text-muted-foreground">
-                {formatPhone(m.phone)}
+              <span dir="ltr" className="truncate text-sm text-muted-foreground">
+                {m.email}
               </span>
             </li>
           ))}

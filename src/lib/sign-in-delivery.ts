@@ -1,16 +1,23 @@
 import "server-only";
+import { Resend } from "resend";
 
 /**
- * Delivers a sign-in code to a phone.
- *
- * The delivery channel (SMS provider or the WhatsApp bot) is still an open
- * question in docs/spec.md. Until it is chosen, codes are printed to the
- * server log in development, and production refuses to send.
+ * Emails a sign-in code through Resend. Without RESEND_API_KEY in
+ * development, the code is printed to the server log instead.
  */
-export async function sendSignInCode(phone: string, code: string): Promise<void> {
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`[sign-in] code for ${phone}: ${code}`);
-    return;
+export async function sendSignInCode(email: string, code: string, subject: string, text: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[sign-in] code for ${email}: ${code}`);
+      return;
+    }
+    throw new Error("RESEND_API_KEY is not set");
   }
-  throw new Error("Sign-in code delivery is not configured");
+
+  const from = process.env.EMAIL_FROM;
+  if (!from) throw new Error("EMAIL_FROM is not set");
+
+  const { error } = await new Resend(apiKey).emails.send({ from, to: email, subject, text });
+  if (error) throw new Error(`Resend: ${error.message}`);
 }

@@ -10,7 +10,7 @@ import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from 
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { ensureActiveList, getActiveList, getLastCompletedList } from "@/lib/lists";
 import { isPlaceIcon } from "@/lib/place-icons";
-import { normalizePhone } from "@/lib/phone";
+import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
 
@@ -268,22 +268,22 @@ export async function switchPlace(placeId: string): Promise<ActionResult> {
   return ok;
 }
 
-// Sign-in: phone number, then a one-time code.
+// Sign-in: an email address, then a one-time code sent to it.
 
-export type SignInError = "invalidPhone" | "notAllowed" | "tooMany" | "deliveryFailed" | "wrongCode" | "expired";
+export type SignInError = "invalidEmail" | "notAllowed" | "tooMany" | "deliveryFailed" | "wrongCode" | "expired";
 
 export async function requestCode(
-  phoneInput: string,
-): Promise<{ ok: true; phone: string } | { ok: false; error: SignInError }> {
-  const phone = normalizePhone(phoneInput);
-  if (!phone) return { ok: false, error: "invalidPhone" };
+  emailInput: string,
+): Promise<{ ok: true; email: string } | { ok: false; error: SignInError }> {
+  const email = normalizeEmail(emailInput);
+  if (!email) return { ok: false, error: "invalidEmail" };
 
-  const result = await requestSignInCode(phone);
-  return result === "sent" ? { ok: true, phone } : { ok: false, error: result };
+  const result = await requestSignInCode(email);
+  return result === "sent" ? { ok: true, email } : { ok: false, error: result };
 }
 
-export async function verifyCode(phone: string, code: string): Promise<{ ok: false; error: SignInError }> {
-  const normalized = normalizePhone(phone);
+export async function verifyCode(email: string, code: string): Promise<{ ok: false; error: SignInError }> {
+  const normalized = normalizeEmail(email);
   if (!normalized || !/^\d{6}$/.test(code.trim())) return { ok: false, error: "wrongCode" };
 
   const result = await verifySignInCode(normalized, code);

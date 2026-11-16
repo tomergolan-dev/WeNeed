@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { placeMembers, places, users } from "@/db/schema";
 import { getSessionUserId } from "./session";
 
-export type CurrentUser = { id: string; name: string; phone: string };
+export type CurrentUser = { id: string; name: string; email: string | null };
 
 export type PlaceSummary = {
   id: string;
@@ -24,7 +24,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!userId) return null;
 
   const [user] = await db
-    .select({ id: users.id, name: users.name, phone: users.phone })
+    .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
     .where(eq(users.id, userId));
   return user ?? null;

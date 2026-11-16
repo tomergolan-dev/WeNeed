@@ -1,21 +1,21 @@
 {
-  "id": "2e4fc539-d818-458e-83dd-9b06cf6f866c",
-  "prevId": "56bd181c-e347-4740-a9f7-81b4ae0b220b",
+  "id": "fee45937-87e2-4146-a87b-d9ed4e364bc5",
+  "prevId": "a5b9ec30-344b-4eb9-aa57-0a11fa8239c2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.allowed_phones": {
-      "name": "allowed_phones",
+    "public.allowed_emails": {
+      "name": "allowed_emails",
       "schema": "",
       "columns": {
-        "phone": {
-          "name": "phone",
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "note": {
-          "name": "note",
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -691,8 +691,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "phone": {
-          "name": "phone",
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -731,11 +731,11 @@
         }
       },
       "indexes": {
-        "sign_in_codes_phone_idx": {
-          "name": "sign_in_codes_phone_idx",
+        "sign_in_codes_email_idx": {
+          "name": "sign_in_codes_email_idx",
           "columns": [
             {
-              "expression": "phone",
+              "expression": "email",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -777,11 +777,17 @@
           "primaryKey": false,
           "notNull": true
         },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "phone": {
           "name": "phone",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "pending_action": {
           "name": "pending_action",
@@ -801,6 +807,13 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "columns": [
+            "email"
+          ],
+          "nullsNotDistinct": false
+        },
         "users_phone_unique": {
           "name": "users_phone_unique",
           "columns": [

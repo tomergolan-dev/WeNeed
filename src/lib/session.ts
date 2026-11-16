@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 
 // A signed cookie holding the user id. No password, no third-party auth:
-// users sign in with a one-time code sent to their phone (see sign-in.ts).
+// users sign in with Google or a one-time code sent by email (see sign-in.ts).
 
 const COOKIE_NAME = "wn_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;

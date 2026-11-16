@@ -1,46 +1,57 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { createTranslator } from "next-intl";
 import { db } from "@/db";
-import { allowedPhones, signInCodes, users } from "@/db/schema";
+import { allowedEmails, signInCodes, users } from "@/db/schema";
+import { locale } from "@/i18n/request";
+import messages from "../../messages/he.json";
 import { sendSignInCode } from "./sign-in-delivery";
 
-// One-time sign-in codes. Codes are sent only to numbers on the allowlist, so
-// strangers can't trigger messages (and their cost).
+// Sign-in by email: a one-time code, or Google (see google.ts). Either way
+// only addresses on the allowlist get in, so strangers can't trigger emails.
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const MAX_CODES_PER_WINDOW = 3;
 
-function hashCode(phone: string, code: string): string {
+const t = createTranslator({ locale, messages, namespace: "SignInEmail" });
+
+function hashCode(email: string, code: string): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET is not set");
-  return createHmac("sha256", secret).update(`${phone}:${code}`).digest("hex");
+  return createHmac("sha256", secret).update(`${email}:${code}`).digest("hex");
+}
+
+async function isAllowed(email: string): Promise<boolean> {
+  const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  if (user) return true;
+  const [allowed] = await db.select().from(allowedEmails).where(eq(allowedEmails.email, email));
+  return Boolean(allowed);
 }
 
 export type RequestCodeResult = "sent" | "notAllowed" | "tooMany" | "deliveryFailed";
 
-export async function requestSignInCode(phone: string): Promise<RequestCodeResult> {
-  const [allowed] = await db.select().from(allowedPhones).where(eq(allowedPhones.phone, phone));
-  if (!allowed) return "notAllowed";
+export async function requestSignInCode(email: string): Promise<RequestCodeResult> {
+  if (!(await isAllowed(email))) return "notAllowed";
 
   const since = new Date(Date.now() - RATE_WINDOW_MS);
   const [{ recent }] = await db
     .select({ recent: sql<number>`count(*)::int` })
     .from(signInCodes)
-    .where(and(eq(signInCodes.phone, phone), gt(signInCodes.createdAt, since)));
+    .where(and(eq(signInCodes.email, email), gt(signInCodes.createdAt, since)));
   if (recent >= MAX_CODES_PER_WINDOW) return "tooMany";
 
   const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
   await db.insert(signInCodes).values({
-    phone,
-    codeHash: hashCode(phone, code),
+    email,
+    codeHash: hashCode(email, code),
     expiresAt: new Date(Date.now() + CODE_TTL_MS),
   });
 
   try {
-    await sendSignInCode(phone, code);
+    await sendSignInCode(email, code, t("subject", { code }), t("body", { code }));
     return "sent";
   } catch (error) {
     console.error("[sign-in] delivery failed", error);
@@ -48,16 +59,14 @@ export async function requestSignInCode(phone: string): Promise<RequestCodeResul
   }
 }
 
-export type VerifyCodeResult = { ok: true; userId: string } | { ok: false; error: "wrongCode" | "expired" };
+export type VerifyCodeResult = { ok: true; userId: string } | { ok: false; error: "wrongCode" | "expired" | "notAllowed" };
 
-/** Checks the latest code for the phone; on success returns the user, creating it on first sign-in. */
-export async function verifySignInCode(phone: string, code: string): Promise<VerifyCodeResult> {
+/** Checks the latest code for the address; on success returns the user. */
+export async function verifySignInCode(email: string, code: string): Promise<VerifyCodeResult> {
   const [latest] = await db
     .select()
     .from(signInCodes)
-    .where(
-      and(eq(signInCodes.phone, phone), isNull(signInCodes.usedAt), gt(signInCodes.expiresAt, new Date())),
-    )
+    .where(and(eq(signInCodes.email, email), isNull(signInCodes.usedAt), gt(signInCodes.expiresAt, new Date())))
     .orderBy(desc(signInCodes.createdAt))
     .limit(1);
   if (!latest || latest.attempts >= MAX_ATTEMPTS) return { ok: false, error: "expired" };
@@ -68,7 +77,7 @@ export async function verifySignInCode(phone: string, code: string): Promise<Ver
     .where(eq(signInCodes.id, latest.id));
 
   const expected = Buffer.from(latest.codeHash, "hex");
-  const actual = Buffer.from(hashCode(phone, code.trim()), "hex");
+  const actual = Buffer.from(hashCode(email, code.trim()), "hex");
   if (!timingSafeEqual(expected, actual)) return { ok: false, error: "wrongCode" };
 
   // Mark as used atomically, so a code works only once.
@@ -79,17 +88,29 @@ export async function verifySignInCode(phone: string, code: string): Promise<Ver
     .returning({ id: signInCodes.id });
   if (!used) return { ok: false, error: "expired" };
 
-  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.phone, phone));
-  if (existing) return { ok: true, userId: existing.id };
+  const userId = await findOrCreateUser(email);
+  return userId ? { ok: true, userId } : { ok: false, error: "notAllowed" };
+}
 
-  // First sign-in: the name comes from the allowlist note.
-  const [allowed] = await db.select().from(allowedPhones).where(eq(allowedPhones.phone, phone));
+/**
+ * The user with this verified address. On first sign-in, an allowlisted
+ * address gets a new user named after the allowlist entry (or fallbackName).
+ * Returns null for addresses that are not allowed.
+ */
+export async function findOrCreateUser(email: string, fallbackName?: string): Promise<string | null> {
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  if (existing) return existing.id;
+
+  const [allowed] = await db.select().from(allowedEmails).where(eq(allowedEmails.email, email));
+  if (!allowed) return null;
+
+  const name = allowed.name?.trim() || fallbackName?.trim() || email.split("@")[0];
   const [created] = await db
     .insert(users)
-    .values({ phone, name: allowed?.note?.trim() || phone })
+    .values({ email, name })
     .onConflictDoNothing()
     .returning({ id: users.id });
-  if (created) return { ok: true, userId: created.id };
-  const [raced] = await db.select({ id: users.id }).from(users).where(eq(users.phone, phone));
-  return { ok: true, userId: raced.id };
+  if (created) return created.id;
+  const [raced] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+  return raced?.id ?? null;
 }

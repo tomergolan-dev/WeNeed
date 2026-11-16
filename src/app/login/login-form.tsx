@@ -3,26 +3,27 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { requestCode, verifyCode, type SignInError } from "@/app/actions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatPhone } from "@/lib/phone";
 
-/** Two steps: the phone number, then the 6-digit code sent to it. */
-export function LoginForm() {
+type LoginError = SignInError | "googleFailed";
+
+/** Google, or an email address and then the 6-digit code sent to it. */
+export function LoginForm({ google, initialError }: { google: boolean; initialError: LoginError | null }) {
   const t = useTranslations("Login");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [phone, setPhone] = useState<string | null>(null);
+  const [emailInput, setEmailInput] = useState("");
+  const [email, setEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [error, setError] = useState<SignInError | null>(null);
+  const [error, setError] = useState<LoginError | null>(initialError);
   const [pending, startTransition] = useTransition();
 
   function sendCode() {
     setError(null);
     startTransition(async () => {
-      const result = await requestCode(phone ?? phoneInput);
+      const result = await requestCode(email ?? emailInput);
       if (result.ok) {
-        setPhone(result.phone);
+        setEmail(result.email);
         setCode("");
       } else {
         setError(result.error);
@@ -30,36 +31,53 @@ export function LoginForm() {
     });
   }
 
-  if (!phone) {
+  const errorText = error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>;
+
+  if (!email) {
     return (
-      <form
-        className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-elevated"
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendCode();
-        }}
-      >
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="phone">{t("phoneLabel")}</Label>
-          <Input
-            id="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            dir="ltr"
-            value={phoneInput}
-            onChange={(e) => setPhoneInput(e.target.value)}
-            placeholder={t("phonePlaceholder")}
-            autoFocus
-            className="h-12 rounded-2xl px-4 text-end text-lg tracking-wide"
-            aria-invalid={error ? true : undefined}
-          />
-        </div>
-        {error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>}
-        <Button type="submit" size="xl" disabled={pending || !phoneInput.trim()}>
-          {t("sendCode")}
-        </Button>
-      </form>
+      <div className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-elevated">
+        {google && (
+          <>
+            {/* A plain link: the route handler redirects to Google. */}
+            <a href="/api/auth/google" className={buttonVariants({ variant: "outline", size: "xl" })}>
+              <GoogleLogo />
+              {t("google")}
+            </a>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              {t("or")}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        )}
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendCode();
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="email">{t("emailLabel")}</Label>
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              dir="ltr"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              placeholder={t("emailPlaceholder")}
+              className="h-12 rounded-2xl px-4 text-base"
+              aria-invalid={error ? true : undefined}
+            />
+          </div>
+          {errorText}
+          <Button type="submit" size="xl" disabled={pending || !emailInput.trim()}>
+            {t("sendCode")}
+          </Button>
+        </form>
+      </div>
     );
   }
 
@@ -71,7 +89,7 @@ export function LoginForm() {
         setError(null);
         startTransition(async () => {
           // On success the action redirects, so only failures come back.
-          const result = await verifyCode(phone, code);
+          const result = await verifyCode(email, code);
           setError(result.error);
         });
       }}
@@ -79,7 +97,10 @@ export function LoginForm() {
       <div className="flex flex-col gap-2">
         <Label htmlFor="code">{t("codeLabel")}</Label>
         <p className="text-sm text-muted-foreground">
-          {t("codeSentTo", { phone: `\u2066${formatPhone(phone)}\u2069` })}
+          {/* U+2066/U+2069 keep the address left-to-right inside the Hebrew sentence. */}
+          {t("codeSentTo", { email: `⁦${email}⁩` })}
+          <br />
+          {t("checkSpam")}
         </p>
         <Input
           id="code"
@@ -94,7 +115,7 @@ export function LoginForm() {
           aria-invalid={error ? true : undefined}
         />
       </div>
-      {error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>}
+      {errorText}
       <Button type="submit" size="xl" disabled={pending || code.length !== 6}>
         {t("verify")}
       </Button>
@@ -103,16 +124,28 @@ export function LoginForm() {
           type="button"
           className="h-10"
           onClick={() => {
-            setPhone(null);
+            setEmail(null);
             setError(null);
           }}
         >
-          {t("changePhone")}
+          {t("changeEmail")}
         </button>
         <button type="button" className="h-10 disabled:opacity-50" disabled={pending} onClick={sendCode}>
           {t("resend")}
         </button>
       </div>
     </form>
+  );
+}
+
+/** Google's "G" mark, as Google's sign-in branding asks. */
+function GoogleLogo() {
+  return (
+    <svg viewBox="0 0 48 48" className="size-5" aria-hidden>
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z" />
+    </svg>
   );
 }
