@@ -125,6 +125,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Development stages
 
 - [ ] **Stage A, design:** mockup of the main screens (place selector, the three list kinds, AI chat, invites), approved before building.
+  - Draft (in review): https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, phone sign-in with a code for allowed numbers.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.

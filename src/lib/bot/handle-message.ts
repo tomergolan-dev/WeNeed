@@ -1,3 +1,8 @@
+// PAUSED (2026-11-16): part of the WhatsApp bot, which is no longer the main
+// product (see "History" in docs/spec.md).
+// Kept because the bot may return as an extra way to add items.
+// Not used by the web app.
+
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";

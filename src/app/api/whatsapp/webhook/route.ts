@@ -1,3 +1,9 @@
+// PAUSED (2026-11-16): part of the WhatsApp bot, which is no longer the main
+// product (see "History" in docs/spec.md).
+// Kept because the bot may return; still connected to the Meta
+// test number.
+// Not used by the web app.
+
 import { after, type NextRequest } from "next/server";
 import { handleMessage } from "@/lib/bot/handle-message";
 import { isValidVerifyToken, parseMessages, verifySignature } from "@/lib/whatsapp";

@@ -1,3 +1,9 @@
+// PAUSED (2026-11-16): part of the WhatsApp bot, which is no longer the main
+// product (see "History" in docs/spec.md).
+// Kept because its prompt and rules are the starting point for
+// the AI chat (Stage G), tested by `npm run eval:parser`.
+// Not used by the web app.
+
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
