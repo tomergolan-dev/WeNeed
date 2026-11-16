@@ -1,6 +1,6 @@
 # We Need — Product Spec
 
-Last updated: 2026-11-16. This version replaces the WhatsApp-bot spec (see "History" at the end).
+Last updated: 2026-11-17. This version replaces the WhatsApp-bot spec (see "History" at the end).
 
 ## Vision
 
@@ -35,13 +35,18 @@ We Need is also a portfolio project, so it includes a public demo.
 | ✅ Chores | Things to do, optionally by a date and time | Ongoing; done chores fade out |
 | 📋 Checklist | A reusable list, e.g. "Weekend up north" | Permanent; items are checked and unchecked again and again |
 
-- Lists can be renamed and deleted by members.
+- Lists can be renamed and deleted by members (deleting removes the list's history too, after a confirmation).
+- The home screen shows the place's lists as cards, with item counts and progress, and a "New list" button.
+- Until Stages F and G, a place has one chores list and no checklists; Stage C builds shopping lists only.
 
 ### Shopping lists
 
 - Items have a name, quantity, unit and store section (category), and are grouped by section in store walking order.
-- Check-off while shopping; checked items move to an "in the cart" section.
-- **Finish:** locks the current round and moves it to the list's history. The next round can carry over unbought items.
+- Each item shows the initial of the member who added it.
+- Check-off while shopping; checked items move to an "in the cart" section, and a progress bar shows how much is in the cart.
+- Adding by hand: a bar at the bottom of the list; type a name and press Enter, or press + with nothing typed to fill in quantity, unit and section. Stage D turns this bar into the AI chat.
+- **Finish shopping:** locks the current round and moves it to the list's history, and the list starts a new round. Unbought items stay on the list by default (the user can choose to drop them).
+- **History:** per list, from the list's menu; each finished round shows what was bought and what wasn't, read-only.
 - Item rules (from the bot era, kept for the AI chat):
   - Product names are kept exactly as written: no spelling fixes, no expanding slang ("גבנצ" stays "גבנצ").
   - A number with x or × ("x18", "18x") is a count of units.
@@ -124,8 +129,8 @@ We Need is also a portfolio project, so it includes a public demo.
   - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
   - `sign_in_codes`: hashed one-time email codes with expiry and attempt count. *(Stage B)*
   - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
-  - `lists`: place, kind (`shopping` / `chores` / `checklist`), name.
-  - Shopping rounds: each round of a shopping list keeps its own items, status and finish time, for history.
+  - `lists`: place, kind (`shopping` / `tasks`, later `checklist`), name. *(Stage C)*
+  - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` gain an optional due date and time for chores.
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
@@ -137,11 +142,13 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, open to everyone.
   - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners).
   - Released to production on 2026-11-17: migrations run, Tomer's and Nurit's addresses linked to their bot-era users.
-- [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
-- [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
-- [ ] **Stage E, checklists:** check all / uncheck all.
-- [ ] **Stage F, invites:** invite by email, accept or decline in the app.
-- [ ] **Stage G, AI chat:** chat in every list, reusing the bot's parsing.
+- [ ] **Stage C, lists:** several named shopping lists per place, in the new design, with finish shopping and per-list history.
+  - Built and tested on the `dev` database. The existing list became "קניות", with its finished rounds as its history.
+- [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
+- [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
+- [ ] **Stage F, chores:** several chores lists, due date and time, due-soon and overdue signs.
+- [ ] **Stage G, checklists:** check all / uncheck all.
+- Order changed on 2026-11-17: the AI chat and invites come before chores and checklists, at Tomer's request.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
@@ -152,6 +159,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
 - [ ] "Due soon": how long before the due time does the yellow sign appear?
 - [ ] Chores: is there an assignee per chore?
+- [ ] Permissions (Stage E): what can an owner do that a member can't (invite, remove members, delete lists, delete the place)?
 
 ## Future
 

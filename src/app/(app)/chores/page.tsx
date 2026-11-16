@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ChoreList } from "@/components/chores/chore-list";
+import { PageHeader } from "@/components/page-header";
 import { requirePlace } from "@/lib/auth";
 import { getChores, getPlace } from "@/lib/lists";
 
@@ -10,10 +11,12 @@ export default async function ChoresPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
-      <Suspense fallback={<ListSkeleton />}>
-        <Chores />
-      </Suspense>
+      <PageHeader title={t("title")} />
+      <main className="flex flex-col gap-4 px-5 pt-3.5 pb-8">
+        <Suspense fallback={<ListSkeleton />}>
+          <Chores />
+        </Suspense>
+      </main>
     </>
   );
 }

@@ -29,6 +29,27 @@
       "when": 1794869993194,
       "tag": "0003_drop_households",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794873140294,
+      "tag": "0004_lists_and_rounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794873140691,
+      "tag": "0005_lists_to_rounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794873141176,
+      "tag": "0006_drop_list_status",
+      "breakpoints": true
     }
   ]
 }

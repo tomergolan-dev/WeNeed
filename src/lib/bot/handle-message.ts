@@ -7,18 +7,11 @@ import "server-only";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import { db } from "@/db";
-import { items, lists, placeMembers, processedMessages, users, type Item, type List } from "@/db/schema";
+import { items, lists, placeMembers, processedMessages, rounds, users, type Item, type Round } from "@/db/schema";
 import { locale } from "@/i18n/request";
 import { isCategory } from "@/lib/categories";
 import { formatQuantity, groupByCategory } from "@/lib/items";
-import {
-  ensureActiveList,
-  getActiveList,
-  getChores,
-  getPlace,
-  getLastCompletedList,
-  getListItems,
-} from "@/lib/lists";
+import { ensureActiveRound, ensureFirstList, getChores, getPlace, getRoundItems } from "@/lib/lists";
 import { sendButtons, sendText, type Button, type IncomingMessage } from "@/lib/whatsapp";
 import messages from "../../../messages/he.json";
 import { normalizeName } from "./normalize";
@@ -35,6 +28,12 @@ type Member = { id: string; name: string; placeId: string; pendingAction: unknow
 type RequestedItem = NewItem & { existing?: string | null };
 
 const numberFormat = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 });
+
+/** The bot adds to the active round of the place's first shopping list. */
+async function shoppingRound(placeId: string): Promise<Round> {
+  const list = await ensureFirstList(placeId, "shopping", "קניות");
+  return ensureActiveRound(list.id);
+}
 
 function appUrl(): string {
   return (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -131,8 +130,8 @@ async function reply(member: Member, rawText: string, buttonId: string | null): 
 
   const { target, text } = readTarget(rawText);
 
-  const list = await getActiveList(member.placeId, "shopping");
-  const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
+  const list = await shoppingRound(member.placeId);
+  const open = (await getRoundItems(list.id)).filter((item) => !item.done);
 
   const household = await getPlace(member.placeId);
   const people = household?.members ?? [];
@@ -182,18 +181,18 @@ async function addParsed(
   member: Member,
   chores: ParsedChore[],
   requested: RequestedItem[],
-  loaded?: { list: List | null; open: Item[]; people: Person[] },
+  loaded?: { list: Round; open: Item[]; people: Person[] },
 ): Promise<string> {
   let context = loaded;
   if (!context) {
-    const list = await getActiveList(member.placeId, "shopping");
-    const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
+    const list = await shoppingRound(member.placeId);
+    const open = (await getRoundItems(list.id)).filter((item) => !item.done);
     const people = (await getPlace(member.placeId))?.members ?? [];
     context = { list, open, people };
   }
   const choresReply = chores.length > 0 ? await addChores(member, chores, context.people) : "";
   const shoppingReply =
-    requested.length > 0 ? await addShopping(member, context.list, requested, context.open) : "";
+    requested.length > 0 ? await addItems(member, context.list, requested, context.open) : "";
   // One link per reply: the shopping part brings its own when it added items.
   if (choresReply && !shoppingReply.includes(appUrl())) {
     return [`${choresReply}\n${appUrl()}/chores`, shoppingReply].filter(Boolean).join("\n\n");
@@ -206,11 +205,12 @@ async function addChores(
   chores: ParsedChore[],
   people: Person[],
 ): Promise<string> {
-  const list = await ensureActiveList(member.placeId, "tasks");
+  const list = await ensureFirstList(member.placeId, "tasks", "מטלות");
+  const round = await ensureActiveRound(list.id);
   const rows = chores
     .filter((chore) => chore.title.trim())
     .map((chore) => ({
-      listId: list.id,
+      roundId: round.id,
       name: chore.title.trim(),
       assigneeId: people.find((p) => p.name === chore.assignee)?.id ?? null,
       addedBy: member.id,
@@ -221,37 +221,13 @@ async function addChores(
   return t("choresAdded", { chores: names });
 }
 
-/** Adds shopping items, asking first whether to open a new list when there is none. */
-async function addShopping(
-  member: Member,
-  list: List | null,
-  requested: RequestedItem[],
-  open: Item[],
-): Promise<string> {
-  if (list) return addItems(member, list, requested, open);
-
-  const previous = await getLastCompletedList(member.placeId, "shopping");
-  if (previous && previous.leftovers.length > 0) {
-    await setPending(member.id, {
-      type: "open_list",
-      previousListId: previous.list.id,
-      leftovers: previous.leftovers,
-      items: requested.map(({ name, quantity, unit, category }) => ({ name, quantity, unit, category })),
-    });
-    const names = previous.leftovers.map((item) => item.name);
-    return t("noActiveList", { count: names.length, names: names.join(", "), example: names[0] });
-  }
-  const created = await ensureActiveList(member.placeId, "shopping");
-  return addItems(member, created, requested, []);
-}
-
 /**
  * Adds new items right away; items already on the list (unchecked) wait for
  * a confirmation question about increasing the quantity.
  */
 async function addItems(
   member: Member,
-  list: List,
+  list: Round,
   requested: RequestedItem[],
   open: Item[],
 ): Promise<string> {
@@ -277,7 +253,7 @@ async function addItems(
   if (fresh.length > 0) {
     await db.insert(items).values(
       fresh.map((item) => ({
-        listId: list.id,
+        roundId: list.id,
         name: item.name.trim(),
         quantity: item.quantity && item.quantity > 0 ? item.quantity : null,
         unit: item.unit?.trim() || null,
@@ -353,7 +329,12 @@ async function answerPending(
   if (pending.type === "duplicates") {
     if (chosen.size === 0) return t("duplicateSkipped");
 
-    const [list] = await db.select().from(lists).where(eq(lists.id, pending.listId));
+    // pending.listId holds the round id (rounds replaced per-round lists in Stage C).
+    const [list] = await db
+      .select({ id: rounds.id, status: rounds.status, placeId: lists.placeId })
+      .from(rounds)
+      .innerJoin(lists, eq(lists.id, rounds.listId))
+      .where(eq(rounds.id, pending.listId));
     if (!list || list.status !== "active" || list.placeId !== member.placeId) {
       return t("listLocked");
     }
@@ -363,7 +344,7 @@ async function answerPending(
       const [row] = await db
         .update(items)
         .set({ quantity: entry.newQuantity })
-        .where(and(eq(items.id, entry.itemId), eq(items.listId, list.id), eq(items.done, false)))
+        .where(and(eq(items.id, entry.itemId), eq(items.roundId, list.id), eq(items.done, false)))
         .returning();
       if (row) updated.push(describe(row));
     }
@@ -374,21 +355,21 @@ async function answerPending(
 
   // open_list: open a new list, carry over the chosen leftovers, then add the
   // items from the message that started the conversation.
-  const list = await ensureActiveList(member.placeId, "shopping");
+  const list = await shoppingRound(member.placeId);
   const carryIds = pending.leftovers.filter((item) => chosen.has(item.name)).map((item) => item.id);
   if (carryIds.length > 0) {
     await db.execute(sql`
-      insert into ${items} (list_id, name, quantity, unit, category, assignee_id, added_by)
+      insert into ${items} (round_id, name, quantity, unit, category, assignee_id, added_by)
       select ${list.id}, name, quantity, unit, category, assignee_id, added_by
       from ${items}
-      where ${inArray(items.id, carryIds)} and list_id = ${pending.previousListId} and done = false
+      where ${inArray(items.id, carryIds)} and round_id = ${pending.previousListId} and done = false
       order by created_at
     `);
   }
 
   const carried = pending.leftovers.filter((item) => chosen.has(item.name)).map((item) => item.name);
   const opened = carried.length > 0 ? t("listOpenedCarried", { names: carried.join(", ") }) : t("listOpened");
-  const open = (await getListItems(list.id)).filter((item) => !item.done);
+  const open = (await getRoundItems(list.id)).filter((item) => !item.done);
   // An item that was just carried over already covers the same request.
   const carriedNames = new Set(carried.map(normalizeName));
   const requested = pending.items.filter((item) => !carriedNames.has(normalizeName(item.name)));

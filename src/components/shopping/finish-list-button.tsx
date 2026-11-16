@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { finishList } from "@/app/actions";
+import { finishRound } from "@/app/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,25 +14,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
+/** "Finish shopping": locks the round into the list's history and starts a new one. */
 export function FinishListButton({ listId, remaining }: { listId: string; remaining: number }) {
   const t = useTranslations("Shopping");
   const tErrors = useTranslations("Errors");
   const [open, setOpen] = useState(false);
+  const [carryOver, setCarryOver] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const finish = () =>
     startTransition(async () => {
-      const result = await finishList(listId);
+      const result = await finishRound(listId, remaining > 0 && carryOver);
       if (result.ok) setOpen(false);
       else setError(tErrors(result.error));
     });
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger render={<Button variant="outline" size="lg" className="mt-4" />}>
+      <AlertDialogTrigger className="h-10 shrink-0 rounded-xl border bg-card px-3.5 text-sm font-semibold transition-colors active:bg-muted">
         {t("finish")}
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -40,6 +43,16 @@ export function FinishListButton({ listId, remaining }: { listId: string; remain
           <AlertDialogTitle>{t("finishTitle")}</AlertDialogTitle>
           <AlertDialogDescription>{t("finishDescription", { remaining })}</AlertDialogDescription>
         </AlertDialogHeader>
+        {remaining > 0 && (
+          <Label className="items-start gap-2 font-normal leading-relaxed">
+            <Checkbox
+              checked={carryOver}
+              onCheckedChange={(checked) => setCarryOver(checked === true)}
+              className="mt-1"
+            />
+            {t("carryOver", { count: remaining })}
+          </Label>
+        )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>

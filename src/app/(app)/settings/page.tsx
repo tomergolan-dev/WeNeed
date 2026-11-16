@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { PageHeader } from "@/components/page-header";
 import { PlaceForm } from "@/components/places/place-form";
 import { requirePlace } from "@/lib/auth";
 import { getPlace } from "@/lib/lists";
@@ -11,10 +12,12 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-extrabold tracking-tight">{t("title")}</h1>
-      <Suspense fallback={<div className="h-80 animate-pulse rounded-3xl bg-muted" />}>
-        <PlaceSettings />
-      </Suspense>
+      <PageHeader title={t("title")} />
+      <main className="px-5 pt-3.5 pb-8">
+        <Suspense fallback={<div className="h-80 animate-pulse rounded-3xl bg-muted" />}>
+          <PlaceSettings />
+        </Suspense>
+      </main>
     </>
   );
 }

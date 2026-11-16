@@ -4,32 +4,54 @@
     "description": "רשימות משותפות לכל מקום: קניות, מטלות וצ׳קליסטים"
   },
   "Nav": {
-    "shopping": "קניות",
-    "chores": "מטלות",
-    "history": "היסטוריה",
+    "back": "חזרה",
     "settings": "הגדרות",
     "logOut": "יציאה",
     "switchPlace": "החלפת מקום",
     "yourPlace": "המקום שלך"
   },
+  "Home": {
+    "title": "מה צריך היום?",
+    "count": "{count, plural, =0 {עוד אין רשימות} one {רשימה אחת} other {# רשימות}}",
+    "lists": "הרשימות",
+    "empty": "עוד אין רשימות קניות. אפשר ליצור כמה שרוצים, למשל ״סופר״ ו״שוק״.",
+    "listEmpty": "הרשימה ריקה",
+    "items": "{count, plural, one {פריט אחד} other {# פריטים}}",
+    "itemsInCart": "{count, plural, one {פריט אחד} other {# פריטים}} · {done} בעגלה",
+    "chores": "מטלות",
+    "choresOpen": "{count, plural, =0 {אין מטלות פתוחות} one {מטלה פתוחה אחת} other {# פתוחות}}"
+  },
+  "Lists": {
+    "new": "רשימה חדשה",
+    "newTitle": "רשימת קניות חדשה",
+    "nameLabel": "שם הרשימה",
+    "namePlaceholder": "למשל: קניות סופר",
+    "create": "יצירת רשימה",
+    "menu": "אפשרויות הרשימה",
+    "history": "היסטוריה",
+    "rename": "שינוי שם",
+    "renameTitle": "שינוי שם",
+    "save": "שמירה",
+    "delete": "מחיקת הרשימה",
+    "deleteTitle": "למחוק את הרשימה?",
+    "deleteDescription": "״{name}״ תימחק לגמרי, כולל ההיסטוריה שלה. אי אפשר לבטל.",
+    "deleteConfirm": "כן, למחוק",
+    "cancel": "ביטול"
+  },
   "Shopping": {
-    "title": "רשימת קניות",
     "empty": "הרשימה ריקה. מה צריך?",
-    "inCart": "נקנו ({count})",
-    "finish": "סיום רשימה",
-    "finishTitle": "לסיים את הרשימה?",
-    "finishDescription": "{remaining, plural, =0 {הכל נקנה.} one {פריט אחד לא נקנה.} other {# פריטים לא נקנו.}} אחרי הסיום הרשימה ננעלת ועוברת להיסטוריה.",
+    "inCart": "בעגלה ({count})",
+    "finish": "סיום קנייה",
+    "finishTitle": "לסיים את הקנייה?",
+    "finishDescription": "{remaining, plural, =0 {הכל בעגלה.} one {פריט אחד לא נקנה.} other {# פריטים לא נקנו.}} הקנייה תישמר בהיסטוריה של הרשימה, והרשימה תתחיל מחדש.",
     "finishConfirm": "כן, לסיים",
     "cancel": "ביטול",
-    "noActiveTitle": "אין רשימה פעילה",
-    "noActiveDescription": "פותחים רשימה חדשה ומתחילים להוסיף פריטים.",
-    "carryOver": "{count, plural, one {להעביר את הפריט שלא נקנה} other {להעביר את # הפריטים שלא נקנו}}: {names}",
-    "openList": "פתיחת רשימה חדשה"
+    "carryOver": "{count, plural, one {להשאיר ברשימה את הפריט שלא נקנה} other {להשאיר ברשימה את # הפריטים שלא נקנו}}",
+    "progress": "{done} מתוך {total} בעגלה"
   },
   "ItemForm": {
     "addPlaceholder": "מה צריך?",
     "add": "הוספה",
-    "more": "פרטים",
     "name": "שם",
     "quantity": "כמות",
     "unit": "יחידה",
@@ -38,17 +60,17 @@
     "editTitle": "עריכת פריט",
     "save": "שמירה",
     "delete": "מחיקה",
-    "units": "יח׳"
+    "units": "יח׳",
+    "addWithDetails": "הוספה עם פרטים",
+    "newTitle": "פריט חדש"
   },
   "History": {
     "title": "היסטוריה",
-    "empty": "עוד אין רשימות שהסתיימו.",
+    "empty": "עוד אין קניות שהסתיימו ברשימה הזאת.",
     "summary": "{bought} מתוך {total} נקנו",
     "finishedBy": "הסתיימה ע״י {name}",
-    "finishedOn": "הסתיימה ב-{date}",
-    "locked": "הרשימה נעולה לקריאה בלבד.",
-    "notBought": "לא נקנו",
-    "back": "חזרה להיסטוריה"
+    "locked": "לקריאה בלבד.",
+    "notBought": "לא נקנו"
   },
   "Login": {
     "title": "כניסה",
@@ -76,9 +98,8 @@
   "Errors": {
     "unauthorized": "צריך להיכנס מחדש.",
     "invalid": "משהו בפרטים לא תקין.",
-    "notFound": "הפריט כבר לא קיים.",
+    "notFound": "זה כבר לא קיים.",
     "listLocked": "הרשימה כבר הסתיימה.",
-    "noActiveList": "אין רשימה פעילה.",
     "generic": "משהו השתבש. נסו שוב.",
     "noPlace": "עוד אין לך מקום. צרו מקום חדש."
   },
@@ -123,7 +144,6 @@
     "duplicateUpdated": "עדכנתי ✅ {items}\n{url}",
     "duplicateSkipped": "בסדר, השארתי כמו שהיה 👍",
     "listLocked": "הרשימה כבר הסתיימה, אז לא שיניתי כלום.",
-    "noActiveList": "אין כרגע רשימה פעילה, הקודמת הסתיימה.\n{count, plural, one {פריט אחד לא נקנה} other {# פריטים לא נקנו}}: {names}.\nלפתוח רשימה חדשה ולהעביר {count, plural, one {אותו} other {אותם}}? אפשר לענות ״כן״, ״לא״ או לפרט, למשל ״רק {example}״.",
     "listOpened": "פתחתי רשימה חדשה 📝",
     "listOpenedCarried": "פתחתי רשימה חדשה 📝 והעברתי אליה: {names}",
     "answerUnclear": "לא הבנתי את התשובה 🙂 אפשר לענות ״כן״, ״לא״ או לפרט אילו.",

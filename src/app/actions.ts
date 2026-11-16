@@ -5,17 +5,17 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { items, lists, placeMembers, places } from "@/db/schema";
+import { items, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
-import { ensureActiveList, getActiveList, getLastCompletedList } from "@/lib/lists";
+import { ensureActiveRound, ensureFirstList } from "@/lib/lists";
 import { isPlaceIcon } from "@/lib/place-icons";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
 
 // Error codes map to messages under "Errors" in messages/he.json.
-export type ActionError = "unauthorized" | "invalid" | "notFound" | "listLocked" | "noActiveList" | "noPlace";
+export type ActionError = "unauthorized" | "invalid" | "notFound" | "listLocked" | "noPlace";
 export type ActionResult = { ok: true } | { ok: false; error: ActionError };
 
 const ok: ActionResult = { ok: true };
@@ -43,26 +43,38 @@ async function getContext() {
 async function findEditableItem(itemId: string, userId: string) {
   if (!uuid.safeParse(itemId).success) return null;
   const [row] = await db
-    .select({ id: items.id, status: lists.status, placeId: lists.placeId })
+    .select({ id: items.id, status: rounds.status, placeId: lists.placeId })
     .from(items)
-    .innerJoin(lists, eq(lists.id, items.listId))
+    .innerJoin(rounds, eq(rounds.id, items.roundId))
+    .innerJoin(lists, eq(lists.id, rounds.listId))
     .innerJoin(placeMembers, and(eq(placeMembers.placeId, lists.placeId), eq(placeMembers.userId, userId)))
     .where(eq(items.id, itemId));
   return row ?? null;
 }
 
-export async function addItem(input: ItemInput): Promise<ActionResult> {
-  const context = await getContext();
-  if (!context) return fail("unauthorized");
-  if (!context.place) return fail("noPlace");
+/** Loads a list only if it is in a place the user belongs to. */
+async function findList(listId: string, userId: string) {
+  if (!uuid.safeParse(listId).success) return null;
+  const [row] = await db
+    .select({ id: lists.id, placeId: lists.placeId, type: lists.type })
+    .from(lists)
+    .innerJoin(placeMembers, and(eq(placeMembers.placeId, lists.placeId), eq(placeMembers.userId, userId)))
+    .where(eq(lists.id, listId));
+  return row ?? null;
+}
+
+export async function addItem(listId: string, input: ItemInput): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
 
   const parsed = itemInput.safeParse(input);
   if (!parsed.success) return fail("invalid");
 
-  const list = await getActiveList(context.place.id, "shopping");
-  if (!list) return fail("noActiveList");
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
 
-  await db.insert(items).values({ ...parsed.data, listId: list.id, addedBy: context.user.id });
+  const round = await ensureActiveRound(list.id);
+  await db.insert(items).values({ ...parsed.data, roundId: round.id, addedBy: user.id });
   refresh();
   return ok;
 }
@@ -116,58 +128,84 @@ export async function deleteItem(itemId: string): Promise<ActionResult> {
   return ok;
 }
 
-export async function finishList(listId: string): Promise<ActionResult> {
+/**
+ * Finishes the list's current round: it is locked into the list's history and
+ * a new round opens. With carryOver, unbought items move on as new rows; the
+ * finished round keeps its copy.
+ */
+export async function finishRound(listId: string, carryOver: boolean): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return fail("unauthorized");
-  if (!uuid.safeParse(listId).success) return fail("notFound");
 
-  const [list] = await db.select({ placeId: lists.placeId }).from(lists).where(eq(lists.id, listId));
-  if (!list || !(await isPlaceMember(user.id, list.placeId))) return fail("notFound");
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
 
   const [finished] = await db
-    .update(lists)
+    .update(rounds)
     .set({ status: "completed", completedAt: new Date(), completedBy: user.id })
-    .where(and(eq(lists.id, listId), eq(lists.status, "active")))
-    .returning({ id: lists.id });
+    .where(and(eq(rounds.listId, list.id), eq(rounds.status, "active")))
+    .returning({ id: rounds.id });
   if (!finished) return fail("listLocked");
 
-  refresh();
-  return ok;
-}
-
-/**
- * Opens a new shopping list in the current place. With carryOver, unbought
- * items from the last finished list are copied as new rows; the finished list
- * stays untouched.
- */
-export async function openList(carryOver: boolean): Promise<ActionResult> {
-  const context = await getContext();
-  if (!context) return fail("unauthorized");
-  if (!context.place) return fail("noPlace");
-  const placeId = context.place.id;
-
-  const previous = carryOver ? await getLastCompletedList(placeId, "shopping") : null;
-
-  // The partial unique index guarantees a single active list, so a
-  // concurrent second open simply does nothing.
-  const [list] = await db
-    .insert(lists)
-    .values({ placeId, type: "shopping" })
-    .onConflictDoNothing()
-    .returning({ id: lists.id });
-
-  if (list && previous && previous.leftovers.length > 0) {
+  const next = await ensureActiveRound(list.id);
+  if (carryOver) {
     await db.execute(sql`
-      insert into ${items} (list_id, name, quantity, unit, category, assignee_id, added_by)
-      select ${list.id}, name, quantity, unit, category, assignee_id, added_by
+      insert into ${items} (round_id, name, quantity, unit, category, assignee_id, added_by)
+      select ${next.id}, name, quantity, unit, category, assignee_id, added_by
       from ${items}
-      where list_id = ${previous.list.id} and done = false
+      where round_id = ${finished.id} and done = false
       order by created_at
     `);
   }
 
   refresh();
   return ok;
+}
+
+const listName = z.string().trim().min(1).max(40);
+
+/** Creates a shopping list in the current place and opens it. */
+export async function createList(name: string): Promise<ActionResult> {
+  const context = await getContext();
+  if (!context) return fail("unauthorized");
+  if (!context.place) return fail("noPlace");
+
+  const parsed = listName.safeParse(name);
+  if (!parsed.success) return fail("invalid");
+
+  const [list] = await db
+    .insert(lists)
+    .values({ placeId: context.place.id, type: "shopping", name: parsed.data })
+    .returning({ id: lists.id });
+  await ensureActiveRound(list.id);
+  redirect(`/lists/${list.id}`);
+}
+
+export async function renameList(listId: string, name: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const parsed = listName.safeParse(name);
+  if (!parsed.success) return fail("invalid");
+
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  await db.update(lists).set({ name: parsed.data }).where(eq(lists.id, list.id));
+  refresh();
+  return ok;
+}
+
+/** Deletes a list with all its rounds and items. */
+export async function deleteList(listId: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  await db.delete(lists).where(eq(lists.id, list.id));
+  redirect("/");
 }
 
 const choreInput = z.object({
@@ -181,7 +219,10 @@ async function isValidAssignee(assigneeId: string | null, placeId: string) {
   return assigneeId === null || isPlaceMember(assigneeId, placeId);
 }
 
-/** Chores live on one ongoing "tasks" list per place, opened on first use. */
+// Chores live on one ongoing "tasks" list per place, made on first use (until Stage D).
+const CHORES_LIST_NAME = "מטלות";
+
+/** Adds a chore to the place's chores list. */
 export async function addChore(input: ChoreInput): Promise<ActionResult> {
   const context = await getContext();
   if (!context) return fail("unauthorized");
@@ -191,9 +232,10 @@ export async function addChore(input: ChoreInput): Promise<ActionResult> {
   if (!parsed.success) return fail("invalid");
   if (!(await isValidAssignee(parsed.data.assigneeId, context.place.id))) return fail("invalid");
 
-  const list = await ensureActiveList(context.place.id, "tasks");
+  const list = await ensureFirstList(context.place.id, "tasks", CHORES_LIST_NAME);
+  const round = await ensureActiveRound(list.id);
   await db.insert(items).values({
-    listId: list.id,
+    roundId: round.id,
     name: parsed.data.title,
     assigneeId: parsed.data.assigneeId,
     addedBy: context.user.id,

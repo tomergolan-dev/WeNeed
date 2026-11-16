@@ -82,7 +82,7 @@ export function ChoreList({
   const handleAdd = (input: ChoreInput) => {
     const draft: Item = {
       id: `draft-${crypto.randomUUID()}`,
-      listId: "",
+      roundId: "",
       name: input.title,
       quantity: null,
       unit: null,

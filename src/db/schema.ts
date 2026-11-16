@@ -80,6 +80,21 @@ export const lists = pgTable(
       .notNull()
       .references(() => places.id, { onDelete: "cascade" }),
     type: listType("type").notNull(),
+    name: text("name").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("lists_place_idx").on(t.placeId, t.type, t.createdAt)],
+);
+
+// A shopping list is used in rounds: finishing a round locks it into the
+// list's history and opens a new one. Chores lists keep one ongoing round.
+export const rounds = pgTable(
+  "rounds",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
     status: listStatus("status").notNull().default("active"),
     createdAt: createdAt(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
@@ -88,11 +103,11 @@ export const lists = pgTable(
     }),
   },
   (t) => [
-    // Core rule: at most one active list of each type per place.
-    uniqueIndex("lists_one_active_per_type")
-      .on(t.placeId, t.type)
+    // Core rule: at most one active round per list.
+    uniqueIndex("rounds_one_active_per_list")
+      .on(t.listId)
       .where(sql`${t.status} = 'active'`),
-    index("lists_place_idx").on(t.placeId, t.type, t.createdAt),
+    index("rounds_list_idx").on(t.listId, t.createdAt),
   ],
 );
 
@@ -100,9 +115,9 @@ export const items = pgTable(
   "items",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    listId: uuid("list_id")
+    roundId: uuid("round_id")
       .notNull()
-      .references(() => lists.id, { onDelete: "cascade" }),
+      .references(() => rounds.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     quantity: numeric("quantity", { mode: "number" }),
     unit: text("unit"),
@@ -121,7 +136,7 @@ export const items = pgTable(
     }),
     createdAt: createdAt(),
   },
-  (t) => [index("items_list_idx").on(t.listId)],
+  (t) => [index("items_round_idx").on(t.roundId)],
 );
 
 // Paused WhatsApp bot: Meta may deliver a message more than once.
@@ -135,4 +150,5 @@ export const processedMessages = pgTable("processed_messages", {
 export type User = typeof users.$inferSelect;
 export type Place = typeof places.$inferSelect;
 export type List = typeof lists.$inferSelect;
+export type Round = typeof rounds.$inferSelect;
 export type Item = typeof items.$inferSelect;
