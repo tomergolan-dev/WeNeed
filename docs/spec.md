@@ -136,7 +136,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - Mockup: https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, open to everyone.
   - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners).
-  - Released to production on 2026-11-17 (migrations run, Tomer's address linked). Left: link Nurit's address.
+  - Released to production on 2026-11-17: migrations run, Tomer's and Nurit's addresses linked to their bot-era users.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
 - [ ] **Stage E, checklists:** check all / uncheck all.
