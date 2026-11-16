@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { requestCode, verifyCode, type SignInError } from "@/app/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { CodeInput } from "@/components/ui/code-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -28,6 +29,17 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
       } else {
         setError(result.error);
       }
+    });
+  }
+
+  function verify(value: string) {
+    if (!email || pending) return;
+    setError(null);
+    startTransition(async () => {
+      // On success the action redirects, so only failures come back.
+      const result = await verifyCode(email, value);
+      setError(result.error);
+      if (result.error === "wrongCode") setCode("");
     });
   }
 
@@ -86,12 +98,7 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
       className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-elevated"
       onSubmit={(e) => {
         e.preventDefault();
-        setError(null);
-        startTransition(async () => {
-          // On success the action redirects, so only failures come back.
-          const result = await verifyCode(email, code);
-          setError(result.error);
-        });
+        verify(code);
       }}
     >
       <div className="flex flex-col gap-2">
@@ -102,17 +109,17 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
           <br />
           {t("checkSpam")}
         </p>
-        <Input
+        {/* Six digits is the whole code, so it signs in by itself; no extra tap. */}
+        <CodeInput
           id="code"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          dir="ltr"
-          maxLength={6}
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-          autoFocus
-          className="h-14 rounded-2xl text-center text-2xl font-semibold tracking-[0.5em]"
-          aria-invalid={error ? true : undefined}
+          onChange={(value) => {
+            setCode(value);
+            if (value.length < 6) setError(null);
+          }}
+          onComplete={verify}
+          disabled={pending}
+          invalid={Boolean(error)}
         />
       </div>
       {errorText}
