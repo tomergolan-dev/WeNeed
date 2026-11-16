@@ -144,6 +144,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage F, invites:** invite by email, accept or decline in the app.
 - [ ] **Stage G, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
+  - A privacy policy page, then complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
 ## Open questions
 
