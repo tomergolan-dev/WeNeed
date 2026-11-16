@@ -143,12 +143,16 @@ The bot and the web app read and write the same database, so any change in one s
 - **Webhook:** at `/api/whatsapp/webhook`. GET handles Meta's verification; POST receives messages, checks the signature (`X-Hub-Signature-256`), returns 200 right away and continues processing via `after()`.
 - **Claude:** tool use with a fixed schema that returns an intent and items. It receives the active list and the members' names, to detect duplicates and assign chores.
 - **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.
+- **Meta setup notes:**
+  - The access token belongs to a System User (`weneed-bot`) in the business portfolio, with full control of the app and the WhatsApp account; it does not expire. Temporary tokens from API Setup expire within hours.
+  - The WhatsApp Business Account must be subscribed to the app (`POST /{waba-id}/subscribed_apps`), otherwise Meta doesn't deliver messages to the webhook even when it is verified.
+  - While on the test number, the bot can only message up to 5 pre-approved numbers.
 
 ## Development stages
 
-- [ ] **Stage 0, setup:** private GitHub repo, Next.js project, Neon database, an app in Meta for Developers with a test number.
+- [x] **Stage 0, setup:** private GitHub repo, Next.js project, Neon database, an app in Meta for Developers with a test number.
 - [x] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
-- [ ] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
+- [x] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
 - [ ] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
 - [ ] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
 - [ ] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
