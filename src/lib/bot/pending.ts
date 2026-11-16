@@ -7,7 +7,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { members } from "@/db/schema";
+import { users } from "@/db/schema";
 import { CATEGORIES } from "@/lib/categories";
 
 // A question the bot asked and is waiting for an answer to, stored on the
@@ -64,11 +64,11 @@ export async function setPending(
   action: DistributiveOmit<PendingAction, "createdAt">,
 ): Promise<void> {
   await db
-    .update(members)
+    .update(users)
     .set({ pendingAction: { ...action, createdAt: new Date().toISOString() } })
-    .where(eq(members.id, memberId));
+    .where(eq(users.id, memberId));
 }
 
 export async function clearPending(memberId: string): Promise<void> {
-  await db.update(members).set({ pendingAction: null }).where(eq(members.id, memberId));
+  await db.update(users).set({ pendingAction: null }).where(eq(users.id, memberId));
 }

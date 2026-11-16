@@ -2,10 +2,12 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   jsonb,
   numeric,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -18,50 +20,84 @@ const createdAt = () =>
 export const listType = pgEnum("list_type", ["shopping", "tasks"]);
 export const listStatus = pgEnum("list_status", ["active", "completed"]);
 
-export const households = pgTable("households", {
+export const placeRole = pgEnum("place_role", ["owner", "member"]);
+
+export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  // E.164, e.g. +972501234567
+  phone: text("phone").notNull().unique(),
+  // Paused WhatsApp bot: a question it asked and is waiting for an answer to.
+  pendingAction: jsonb("pending_action"),
   createdAt: createdAt(),
 });
 
-export const members = pgTable(
-  "members",
+export const places = pgTable("places", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  // Icon key, see src/lib/place-icons.ts
+  icon: text("icon").notNull().default("home"),
+  createdAt: createdAt(),
+});
+
+export const placeMembers = pgTable(
+  "place_members",
+  {
+    placeId: uuid("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: placeRole("role").notNull().default("member"),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.placeId, t.userId] }), index("place_members_user_idx").on(t.userId)],
+);
+
+// Sign-in codes are sent only to these numbers (managed with npm run phone:allow).
+export const allowedPhones = pgTable("allowed_phones", {
+  phone: text("phone").primaryKey(),
+  note: text("note"),
+  createdAt: createdAt(),
+});
+
+export const signInCodes = pgTable(
+  "sign_in_codes",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    householdId: uuid("household_id")
-      .notNull()
-      .references(() => households.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    // E.164, e.g. +972501234567
-    phone: text("phone").notNull().unique(),
-    // A question the bot asked and is waiting for an answer to (Stage 4).
-    pendingAction: jsonb("pending_action"),
+    phone: text("phone").notNull(),
+    // SHA-256 of the code; the code itself is only ever sent to the phone.
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    usedAt: timestamp("used_at", { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (t) => [index("members_household_idx").on(t.householdId)],
+  (t) => [index("sign_in_codes_phone_idx").on(t.phone, t.createdAt)],
 );
 
 export const lists = pgTable(
   "lists",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    householdId: uuid("household_id")
+    placeId: uuid("place_id")
       .notNull()
-      .references(() => households.id, { onDelete: "cascade" }),
+      .references(() => places.id, { onDelete: "cascade" }),
     type: listType("type").notNull(),
     status: listStatus("status").notNull().default("active"),
     createdAt: createdAt(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
-    completedBy: uuid("completed_by").references(() => members.id, {
+    completedBy: uuid("completed_by").references(() => users.id, {
       onDelete: "set null",
     }),
   },
   (t) => [
-    // Core rule: at most one active list of each type per household.
+    // Core rule: at most one active list of each type per place.
     uniqueIndex("lists_one_active_per_type")
-      .on(t.householdId, t.type)
+      .on(t.placeId, t.type)
       .where(sql`${t.status} = 'active'`),
-    index("lists_household_idx").on(t.householdId, t.type, t.createdAt),
+    index("lists_place_idx").on(t.placeId, t.type, t.createdAt),
   ],
 );
 
@@ -77,15 +113,15 @@ export const items = pgTable(
     unit: text("unit"),
     // Store section key, see src/lib/categories.ts
     category: text("category").notNull().default("other"),
-    assigneeId: uuid("assignee_id").references(() => members.id, {
+    assigneeId: uuid("assignee_id").references(() => users.id, {
       onDelete: "set null",
     }),
     done: boolean("done").notNull().default(false),
-    doneBy: uuid("done_by").references(() => members.id, {
+    doneBy: uuid("done_by").references(() => users.id, {
       onDelete: "set null",
     }),
     doneAt: timestamp("done_at", { withTimezone: true }),
-    addedBy: uuid("added_by").references(() => members.id, {
+    addedBy: uuid("added_by").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: createdAt(),
@@ -93,6 +129,7 @@ export const items = pgTable(
   (t) => [index("items_list_idx").on(t.listId)],
 );
 
+// Paused WhatsApp bot: Meta may deliver a message more than once.
 export const processedMessages = pgTable("processed_messages", {
   waMessageId: text("wa_message_id").primaryKey(),
   receivedAt: timestamp("received_at", { withTimezone: true })
@@ -100,17 +137,7 @@ export const processedMessages = pgTable("processed_messages", {
     .defaultNow(),
 });
 
-export const loginTokens = pgTable("login_tokens", {
-  // SHA-256 of the token; the raw token only ever exists in the link.
-  tokenHash: text("token_hash").primaryKey(),
-  memberId: uuid("member_id")
-    .notNull()
-    .references(() => members.id, { onDelete: "cascade" }),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  usedAt: timestamp("used_at", { withTimezone: true }),
-});
-
-export type Household = typeof households.$inferSelect;
-export type Member = typeof members.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type Place = typeof places.$inferSelect;
 export type List = typeof lists.$inferSelect;
 export type Item = typeof items.$inferSelect;

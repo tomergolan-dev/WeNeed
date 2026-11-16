@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ChoreList } from "@/components/chores/chore-list";
-import { requireMember } from "@/lib/auth";
-import { getChores, getHousehold } from "@/lib/lists";
+import { requirePlace } from "@/lib/auth";
+import { getChores, getPlace } from "@/lib/lists";
 
 export default async function ChoresPage() {
   const t = await getTranslations("Chores");
@@ -19,17 +19,17 @@ export default async function ChoresPage() {
 }
 
 async function Chores() {
-  const member = await requireMember();
-  const [chores, household] = await Promise.all([
-    getChores(member.householdId),
-    getHousehold(member.householdId),
+  const { user, place } = await requirePlace();
+  const [chores, details] = await Promise.all([
+    getChores(place.id),
+    getPlace(place.id),
   ]);
-  const people = household?.members.map(({ id, name }) => ({ id, name })) ?? [];
+  const people = details?.members.map(({ id, name }) => ({ id, name })) ?? [];
 
   return (
     <>
       <AutoRefresh />
-      <ChoreList chores={chores} members={people} currentMemberId={member.id} />
+      <ChoreList chores={chores} members={people} currentMemberId={user.id} />
     </>
   );
 }

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Hebrew } from "next/font/google";
+import { Heebo } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { DirectionProvider } from "@/components/ui/direction";
 import { locale } from "@/i18n/request";
 import "./globals.css";
 
-const fontSans = Noto_Sans_Hebrew({
+const fontSans = Heebo({
   subsets: ["hebrew", "latin"],
   variable: "--font-sans",
 });

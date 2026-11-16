@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { requireMember } from "@/lib/auth";
+import { requirePlace } from "@/lib/auth";
 import { getCompletedLists } from "@/lib/lists";
 
 export default async function HistoryPage() {
@@ -18,11 +18,11 @@ export default async function HistoryPage() {
 }
 
 async function CompletedLists() {
-  const member = await requireMember();
+  const { place } = await requirePlace();
   const [t, format, lists] = await Promise.all([
     getTranslations("History"),
     getFormatter(),
-    getCompletedLists(member.householdId, "shopping"),
+    getCompletedLists(place.id, "shopping"),
   ]);
 
   if (lists.length === 0) {

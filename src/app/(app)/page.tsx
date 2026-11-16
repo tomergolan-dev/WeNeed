@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { OpenListForm } from "@/components/shopping/open-list-form";
 import { ShoppingList } from "@/components/shopping/shopping-list";
-import { requireMember } from "@/lib/auth";
+import { requirePlace } from "@/lib/auth";
 import { getActiveList, getLastCompletedList, getListItems } from "@/lib/lists";
 
 export default async function ShoppingPage() {
@@ -20,11 +20,11 @@ export default async function ShoppingPage() {
 }
 
 async function ActiveShoppingList() {
-  const member = await requireMember();
-  const list = await getActiveList(member.householdId, "shopping");
+  const { place } = await requirePlace();
+  const list = await getActiveList(place.id, "shopping");
 
   if (!list) {
-    const previous = await getLastCompletedList(member.householdId, "shopping");
+    const previous = await getLastCompletedList(place.id, "shopping");
     return (
       <>
         <AutoRefresh />

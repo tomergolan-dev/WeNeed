@@ -8,6 +8,27 @@
       "when": 1794756824376,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794865891772,
+      "tag": "0001_places_and_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794865900932,
+      "tag": "0002_copy_households_to_places",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794865909163,
+      "tag": "0003_drop_households",
+      "breakpoints": true
     }
   ]
 }

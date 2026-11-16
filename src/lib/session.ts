@@ -3,13 +3,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 
-// A signed cookie holding the member id. No password, no third-party auth:
-// the only way in is a one-time login link (see login-tokens.ts).
+// A signed cookie holding the user id. No password, no third-party auth:
+// users sign in with a one-time code sent to their phone (see sign-in.ts).
 
 const COOKIE_NAME = "wn_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-type Payload = { memberId: string; exp: number };
+type Payload = { userId: string; exp: number };
 
 function secret(): string {
   const value = process.env.SESSION_SECRET;
@@ -40,7 +40,7 @@ function decode(value: string): Payload | null {
 
   try {
     const payload = JSON.parse(Buffer.from(data, "base64url").toString()) as Payload;
-    if (typeof payload.memberId !== "string" || payload.exp < Date.now() / 1000) {
+    if (typeof payload.userId !== "string" || payload.exp < Date.now() / 1000) {
       return null;
     }
     return payload;
@@ -49,16 +49,16 @@ function decode(value: string): Payload | null {
   }
 }
 
-export async function getSessionMemberId(): Promise<string | null> {
+export async function getSessionUserId(): Promise<string | null> {
   // Expiry checks read the clock, so this must run at request time.
   await connection();
   const value = (await cookies()).get(COOKIE_NAME)?.value;
-  return value ? (decode(value)?.memberId ?? null) : null;
+  return value ? (decode(value)?.userId ?? null) : null;
 }
 
-export async function startSession(memberId: string): Promise<void> {
+export async function startSession(userId: string): Promise<void> {
   const exp = Math.floor(Date.now() / 1000) + MAX_AGE_SECONDS;
-  (await cookies()).set(COOKIE_NAME, encode({ memberId, exp }), {
+  (await cookies()).set(COOKIE_NAME, encode({ userId, exp }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

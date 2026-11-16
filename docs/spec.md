@@ -15,7 +15,9 @@ We Need is also a portfolio project, so it includes a public demo.
 - A **user** signs in with a mobile phone number.
 - A **place** is a shared space with members, for example "Parents' home", "My apartment", "Office", "Restaurant".
 - A user can belong to several places and switches between them from a selector at the top of the screen.
-- Any user can create a new place and invite others to it (see "Invites").
+- Any user can create a new place, with a name and an icon (home, apartment, office, restaurant, store, vacation), and invite others to it (see "Invites").
+- The creator of a place is its owner. In the first version owners and members have the same rights; the role is kept for later.
+- The chosen place is remembered on the device. A user with no places is taken to "create your first place".
 - Every member of a place can view and edit all of its lists.
 - First real places:
   - "הדירה של תומר ותמיר": Tomer, Tamir and Nurit (Tomer's mom).
@@ -75,8 +77,11 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - Sign-in with a mobile phone number and a one-time code. No password.
 - **Only allowed numbers can sign in.** Codes are sent only to phone numbers on an allowlist that Tomer manages. Any other number is refused without sending anything, so strangers can't run up messaging costs.
+- The code has 6 digits, is valid for 10 minutes, allows 5 attempts, and works once. At most 3 codes per number every 15 minutes.
+- On first sign-in a user is created, named after the allowlist entry.
 - The session lasts a long time (a year), so users rarely need to sign in again.
-- The code is delivered by SMS, or by the WhatsApp bot (see "Open questions").
+- The code is delivered by SMS, or by the WhatsApp bot (see "Open questions"). Until that is chosen, development prints the code to the server log and production refuses to send.
+- The allowlist is managed with `npm run phone:allow`.
 
 ## Invites
 
@@ -112,21 +117,25 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Architecture and stack
 
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel. Claude API for the AI chat.
-- **Data model (to be detailed in the build stage):**
-  - `users` with a unique phone number.
-  - `places`, and a many-to-many `place_members` table between users and places.
-  - `allowed_phones`: the sign-in allowlist.
+- **Data model:**
+  - `users` with a unique phone number. *(Stage B)*
+  - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
+  - `allowed_phones`: the sign-in allowlist, with a note used as the user's name. *(Stage B)*
+  - `sign_in_codes`: hashed one-time codes with expiry and attempt count. *(Stage B)*
   - `invites`: place, invited phone, invited by, status (`pending` / `accepted` / `declined`).
   - `lists`: place, kind (`shopping` / `chores` / `checklist`), name.
   - Shopping rounds: each round of a shopping list keeps its own items, status and finish time, for history.
   - `items` gain an optional due date and time for chores.
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
+- **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
 
 ## Development stages
 
-- [ ] **Stage A, design:** mockup of the main screens (place selector, the three list kinds, AI chat, invites), approved before building.
-  - Draft (in review): https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
+- [x] **Stage A, design:** mockup of the main screens (place selector, the three list kinds, AI chat, invites), approved on 2026-11-16.
+  - Mockup: https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, phone sign-in with a code for allowed numbers.
+  - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners) and to the allowlist.
+  - Before release: choose the code delivery (see "Open questions"), then run the migrations on production and deploy.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
 - [ ] **Stage E, checklists:** check all / uncheck all.

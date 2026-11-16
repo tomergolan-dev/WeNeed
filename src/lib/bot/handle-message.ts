@@ -4,10 +4,10 @@
 // Not used by the web app.
 
 import "server-only";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import { db } from "@/db";
-import { items, lists, members, processedMessages, type Item, type List } from "@/db/schema";
+import { items, lists, placeMembers, processedMessages, users, type Item, type List } from "@/db/schema";
 import { locale } from "@/i18n/request";
 import { isCategory } from "@/lib/categories";
 import { formatQuantity, groupByCategory } from "@/lib/items";
@@ -15,11 +15,10 @@ import {
   ensureActiveList,
   getActiveList,
   getChores,
-  getHousehold,
+  getPlace,
   getLastCompletedList,
   getListItems,
 } from "@/lib/lists";
-import { createLoginToken, loginUrl } from "@/lib/login-tokens";
 import { sendButtons, sendText, type Button, type IncomingMessage } from "@/lib/whatsapp";
 import messages from "../../../messages/he.json";
 import { normalizeName } from "./normalize";
@@ -31,7 +30,8 @@ const t = createTranslator({ locale, messages, namespace: "Bot" });
 const tCategories = createTranslator({ locale, messages, namespace: "Categories" });
 const units = createTranslator({ locale, messages, namespace: "ItemForm" })("units");
 
-type Member = { id: string; name: string; householdId: string; pendingAction: unknown };
+// The sender as the bot sees them: a user acting in their first place.
+type Member = { id: string; name: string; placeId: string; pendingAction: unknown };
 type RequestedItem = NewItem & { existing?: string | null };
 
 const numberFormat = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 });
@@ -51,13 +51,16 @@ export async function handleMessage(message: IncomingMessage): Promise<void> {
 
   const [member] = await db
     .select({
-      id: members.id,
-      name: members.name,
-      householdId: members.householdId,
-      pendingAction: members.pendingAction,
+      id: users.id,
+      name: users.name,
+      placeId: placeMembers.placeId,
+      pendingAction: users.pendingAction,
     })
-    .from(members)
-    .where(eq(members.phone, message.from));
+    .from(users)
+    .innerJoin(placeMembers, eq(placeMembers.userId, users.id))
+    .where(eq(users.phone, message.from))
+    .orderBy(asc(placeMembers.joinedAt))
+    .limit(1);
 
   if (!member) {
     await sendText(message.from, t("unknownSender"));
@@ -128,10 +131,10 @@ async function reply(member: Member, rawText: string, buttonId: string | null): 
 
   const { target, text } = readTarget(rawText);
 
-  const list = await getActiveList(member.householdId, "shopping");
+  const list = await getActiveList(member.placeId, "shopping");
   const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
 
-  const household = await getHousehold(member.householdId);
+  const household = await getPlace(member.placeId);
   const people = household?.members ?? [];
 
   const parsed = await parseMessage(
@@ -164,11 +167,9 @@ async function reply(member: Member, rawText: string, buttonId: string | null): 
     case "show_list":
       return formatList(open);
     case "show_chores":
-      return formatChores(member, await getChores(member.householdId), people);
-    case "login_link": {
-      const token = await createLoginToken(member.id);
-      return t("loginLink", { url: loginUrl(token) });
-    }
+      return formatChores(member, await getChores(member.placeId), people);
+    case "login_link":
+      return t("loginLink", { url: `${appUrl()}/login` });
     case "other":
       return t("help", { name: member.name });
   }
@@ -185,9 +186,9 @@ async function addParsed(
 ): Promise<string> {
   let context = loaded;
   if (!context) {
-    const list = await getActiveList(member.householdId, "shopping");
+    const list = await getActiveList(member.placeId, "shopping");
     const open = list ? (await getListItems(list.id)).filter((item) => !item.done) : [];
-    const people = (await getHousehold(member.householdId))?.members ?? [];
+    const people = (await getPlace(member.placeId))?.members ?? [];
     context = { list, open, people };
   }
   const choresReply = chores.length > 0 ? await addChores(member, chores, context.people) : "";
@@ -205,7 +206,7 @@ async function addChores(
   chores: ParsedChore[],
   people: Person[],
 ): Promise<string> {
-  const list = await ensureActiveList(member.householdId, "tasks");
+  const list = await ensureActiveList(member.placeId, "tasks");
   const rows = chores
     .filter((chore) => chore.title.trim())
     .map((chore) => ({
@@ -229,7 +230,7 @@ async function addShopping(
 ): Promise<string> {
   if (list) return addItems(member, list, requested, open);
 
-  const previous = await getLastCompletedList(member.householdId, "shopping");
+  const previous = await getLastCompletedList(member.placeId, "shopping");
   if (previous && previous.leftovers.length > 0) {
     await setPending(member.id, {
       type: "open_list",
@@ -240,7 +241,7 @@ async function addShopping(
     const names = previous.leftovers.map((item) => item.name);
     return t("noActiveList", { count: names.length, names: names.join(", "), example: names[0] });
   }
-  const created = await ensureActiveList(member.householdId, "shopping");
+  const created = await ensureActiveList(member.placeId, "shopping");
   return addItems(member, created, requested, []);
 }
 
@@ -353,7 +354,7 @@ async function answerPending(
     if (chosen.size === 0) return t("duplicateSkipped");
 
     const [list] = await db.select().from(lists).where(eq(lists.id, pending.listId));
-    if (!list || list.status !== "active" || list.householdId !== member.householdId) {
+    if (!list || list.status !== "active" || list.placeId !== member.placeId) {
       return t("listLocked");
     }
 
@@ -373,7 +374,7 @@ async function answerPending(
 
   // open_list: open a new list, carry over the chosen leftovers, then add the
   // items from the message that started the conversation.
-  const list = await ensureActiveList(member.householdId, "shopping");
+  const list = await ensureActiveList(member.placeId, "shopping");
   const carryIds = pending.leftovers.filter((item) => chosen.has(item.name)).map((item) => item.id);
   if (carryIds.length > 0) {
     await db.execute(sql`

@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { CheckIcon } from "lucide-react";
 import { z } from "zod";
-import { requireMember } from "@/lib/auth";
+import { requirePlace } from "@/lib/auth";
 import { formatQuantity, groupByCategory } from "@/lib/items";
-import { getHouseholdList, getListItems } from "@/lib/lists";
+import { getPlaceList, getListItems } from "@/lib/lists";
 import { cn } from "@/lib/utils";
 
 export default function HistoryListPage({ params }: PageProps<"/history/[id]">) {
@@ -21,8 +21,8 @@ async function CompletedList({ params }: Pick<PageProps<"/history/[id]">, "param
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const member = await requireMember();
-  const row = await getHouseholdList(member.householdId, id);
+  const { place } = await requirePlace();
+  const row = await getPlaceList(place.id, id);
   if (!row || row.list.status !== "completed") notFound();
 
   const [t, tCategories, tItem, format, items] = await Promise.all([
