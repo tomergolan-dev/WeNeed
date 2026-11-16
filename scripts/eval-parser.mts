@@ -1,9 +1,11 @@
 // Runs sample messages through the Claude parser and checks the result.
 // Calls the real API (a fraction of a cent per run).
 // Usage: npm run eval:parser
-// Expected items: [name substring, quantity, category or "a|b" for either].
+// Expected items: [name substring, quantity, category or "a|b" for either,
+// optional existing list item it should match (null = must not match)].
+// The current list is ["לחם"] unless a case gives its own.
 import { parseMessage } from "@/lib/bot/parse-message";
-type Exp = { intent: string; items?: [string, number | null, string][] };
+type Exp = { intent: string; list?: string[]; items?: [string, number | null, string, (string | null)?][] };
 const cases: [string, Exp][] = [
   ["צריך 2 קרטוני חלב וביצים", { intent: "add_items", items: [["חלב", 2, "dairy"], ["ביצ", null, "dairy"]] }],
   ["נגמר השמן זית", { intent: "add_items", items: [["שמן זית", null, "pantry"]] }],
@@ -21,22 +23,28 @@ const cases: [string, Exp][] = [
   ["במבה", { intent: "add_items", items: [["במבה", null, "snacks"]] }],
   ["קולה x6", { intent: "add_items", items: [["קולה", null, "drinks"]] }],
   ["2 שישיות מים", { intent: "add_items", items: [["מים", 2, "drinks"]] }],
+  ["צריך חלב", { intent: "add_items", list: ["חלב", "לחם"], items: [["חלב", null, "dairy", "חלב"]] }],
+  ["עוד 2 עגבניות ומלפפון", { intent: "add_items", list: ["עגבנייה", "גבינה"], items: [["עגבני", 2, "produce", "עגבנייה"], ["מלפפון", null, "produce", null]] }],
+  ["צריך לחמניות", { intent: "add_items", list: ["לחם"], items: [["לחמני", null, "bakery", null]] }],
+  ["need milk", { intent: "add_items", list: ["חלב"], items: [["milk", null, "dairy", "חלב"]] }],
+  ["חלב סויה", { intent: "add_items", list: ["חלב"], items: [["חלב סויה", null, "dairy", null]] }],
   ["פסטה ורוטב עגבניות", { intent: "add_items", items: [["פסטה", null, "pantry"], ["רוטב עגבניות", null, "spices|canned"]] }],
 ];
 let pass = 0;
 for (const [msg, exp] of cases) {
-  const r = await parseMessage(msg, ["לחם"]);
+  const r = await parseMessage(msg, exp.list ?? ["לחם"]);
   const errs: string[] = [];
   if (!r) errs.push("null");
   else {
     if (r.intent !== exp.intent) errs.push(`intent ${r.intent}`);
     const want = exp.items ?? [];
     if (r.items.length !== want.length) errs.push(`count ${r.items.length}`);
-    want.forEach(([n, q, c], i) => {
+    want.forEach(([n, q, c, ex], i) => {
       const it = r.items[i]; if (!it) return;
       if (!it.name.includes(n)) errs.push(`name ${it.name}`);
       if (it.quantity !== q) errs.push(`qty ${it.name}=${it.quantity}`);
       if (!c.split("|").includes(it.category)) errs.push(`cat ${it.name}=${it.category}`);
+      if (ex !== undefined && it.existing !== ex) errs.push(`existing ${it.name}=${it.existing}`);
     });
   }
   if (!errs.length) pass++;

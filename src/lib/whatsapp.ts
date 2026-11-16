@@ -64,6 +64,11 @@ export function parseMessages(payload: unknown): IncomingMessage[] {
 
 /** Sends a plain text reply. Allowed within 24h of the user's last message. */
 export async function sendText(to: string, body: string): Promise<void> {
+  // Local testing: log replies instead of sending real WhatsApp messages.
+  if (process.env.WHATSAPP_DRY_RUN === "1") {
+    console.log(`[whatsapp:dry-run] to ${to}:\n${body}\n---`);
+    return;
+  }
   const res = await fetch(
     `https://graph.facebook.com/${GRAPH_VERSION}/${env("WHATSAPP_PHONE_NUMBER_ID")}/messages`,
     {

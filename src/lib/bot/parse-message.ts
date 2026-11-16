@@ -18,6 +18,8 @@ const ParsedMessage = z.object({
       quantity: z.number().nullable(),
       unit: z.string().nullable(),
       category: z.enum(CATEGORIES),
+      // Name of the current-list item that is the same product, or null.
+      existing: z.string().nullable(),
     }),
   ),
 });
@@ -40,7 +42,8 @@ For add_items, extract every product as a separate item:
 - unit: the unit as the sender wrote it, in Hebrew if the message is in Hebrew ("קרטונים", "ק״ג", "בקבוקים"), otherwise null. Never put a unit when the sender gave none.
 - category: the supermarket section the product is found in. Sections: produce (fruit, vegetables, fresh herbs), bakery (bread, pita, cakes), dairy (milk, cheese, yogurt, eggs, butter), meat_fish (fresh and packaged meat, chicken, fish), deli (cold cuts, salads, hummus), pantry (rice, pasta, flour, sugar, cooking oil and olive oil, coffee, tea, cereal), canned (canned and jarred food), spices (spices, sauces, condiments, vinegar; not oils), snacks (snacks, sweets, chocolate), drinks (water, juice, soda, wine, beer), frozen, cleaning (cleaning supplies, dish soap, laundry, trash bags), personal_care (shampoo, soap, toothpaste, toilet paper, tissues), baby (diapers, wipes, formula), home (light bulbs, batteries, kitchen tools), other (only when nothing else fits).
 
-If the sender names something already on the current list, still return it; duplicates are handled elsewhere.
+- existing: if the current list already has the same product, its name copied exactly as it appears in the current list; otherwise null. Treat singular/plural, spelling variants and the same product in another language as the same ("עגבנייה" = "עגבניות", "milk" = "חלב"). Different products are not the same, even if related ("לחם" vs "לחמניות", "חלב" vs "חלב סויה").
+Always return every requested item, including ones already on the list.
 For any intent other than add_items, return an empty items array.`;
 
 export async function parseMessage(text: string, currentItems: string[]): Promise<ParsedMessage | null> {

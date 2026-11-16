@@ -63,6 +63,10 @@ The bot doesn't merge silently; it asks first:
 
 If the same message also has new items, they are added right away, and only the duplicates wait for confirmation.
 
+- Only unchecked items on the active list count as duplicates. Claude names the matching list item (singular/plural, spelling, other language); a normalized-name match is the fallback.
+- An item without a quantity counts as 1, so "milk" on top of "milk" asks about making it 2.
+- Several duplicates in one message get one question; the reply can be "yes", "no" or a subset ("just the eggs").
+
 ### What's on the list?
 
 The bot returns the unchecked items grouped by store section, plus a link to the web app.
@@ -74,6 +78,14 @@ After a list is finished, the next message starts this flow:
 - Bot: "There's no active list. Open a new one? 3 items weren't bought (cheese, oil, toilet paper). Carry them over?"
 - Possible replies: "yes", "no", "just the cheese".
 - After the reply a new list opens, and the items from the original message are added to it.
+- If the finished list has no unbought items, the bot opens a new list without asking.
+- A requested item that was just carried over is not added again (and not asked about).
+
+### Pending questions
+
+- Any question the bot asks is stored as `pending_action` on the member and expires after 24 hours.
+- Short replies ("כן", "לא", 👍) are understood without calling Claude; other replies go to Claude, which classifies them as yes, no, some (with the chosen items) or unrelated.
+- An unrelated reply (a new request) drops the question and is handled as a new message.
 
 ### Chores
 
@@ -144,7 +156,6 @@ The bot and the web app read and write the same database, so any change in one s
 - **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the names of the unchecked items on the active list (and, from Stage 5, the members' names) to detect duplicates and assign chores.
   - Model `claude-haiku-5-5` at `low` effort (switched from Opus after it passed the same sample messages; about 40x cheaper).
   - Intents so far: `add_items`, `show_list`, `login_link`, `other` (replies with a short help text).
-  - Until Stage 4, a message when there is no active list opens a new one without asking about carry-over.
 - **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.
 - **Meta setup notes:**
   - The access token belongs to a System User (`weneed-bot`) in the business portfolio, with full control of the app and the WhatsApp account; it does not expire. Temporary tokens from API Setup expire within hours.
@@ -157,7 +168,7 @@ The bot and the web app read and write the same database, so any change in one s
 - [x] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
 - [x] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
 - [x] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
-- [ ] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
+- [x] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
 - [ ] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
 - [ ] **Stage 6, go live:** real phone number, deploy to Vercel, onboarding mom.
 

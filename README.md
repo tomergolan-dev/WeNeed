@@ -9,7 +9,7 @@ Send the bot a message like "need 2 cartons of milk and eggs" and the shared lis
 
 ## Status
 
-Stage 3 — the bot understands free text with Claude. Next: Stage 4, duplicates and list lifecycle.
+Stage 4 — duplicate confirmation and new-list carry-over in the bot. Next: Stage 5, chores.
 
 Production: https://we-need-two.vercel.app
 
