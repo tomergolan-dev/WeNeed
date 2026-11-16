@@ -17,6 +17,7 @@ import { clearPending, readPending, setPending, type NewItem, type PendingAction
 
 const t = createTranslator({ locale, messages, namespace: "Bot" });
 const tCategories = createTranslator({ locale, messages, namespace: "Categories" });
+const units = createTranslator({ locale, messages, namespace: "ItemForm" })("units");
 
 type Member = { id: string; name: string; householdId: string; pendingAction: unknown };
 type RequestedItem = NewItem & { existing?: string | null };
@@ -163,7 +164,7 @@ async function addItems(
 
     if (questions.length === 1) {
       const [{ item, add, total, unit }] = questions;
-      const current = formatQuantity(item);
+      const current = formatQuantity(item, units);
       parts.push(
         t("duplicateOne", {
           name: item.name,
@@ -256,11 +257,11 @@ async function answerPending(member: Member, pending: PendingAction, text: strin
 
 function amount(quantity: number, unit: string | null): string {
   const n = numberFormat.format(quantity);
-  return unit ? `${n} ${unit}` : n;
+  return `${n} ${unit ?? units}`;
 }
 
 function describe(item: { name: string; quantity: number | null; unit: string | null }): string {
-  const quantity = formatQuantity(item);
+  const quantity = formatQuantity(item, units);
   return quantity ? `${item.name} ${quantity}` : item.name;
 }
 

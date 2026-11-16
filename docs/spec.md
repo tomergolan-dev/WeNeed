@@ -81,6 +81,12 @@ After a list is finished, the next message starts this flow:
 - If the finished list has no unbought items, the bot opens a new list without asking.
 - A requested item that was just carried over is not added again (and not asked about).
 
+### Item parsing rules
+
+- Product names are copied exactly as written: no spelling fixes, no expanding slang ("גבנצ" stays "גבנצ").
+- A number with x or × ("x18", "18x") is a count of units, like "18 ביצים".
+- A count without a unit is shown as "18 יח׳" in the app and the bot.
+
 ### Pending questions
 
 - Any question the bot asks is stored as `pending_action` on the member and expires after 24 hours.

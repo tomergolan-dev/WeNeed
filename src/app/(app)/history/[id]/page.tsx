@@ -25,9 +25,10 @@ async function CompletedList({ params }: Pick<PageProps<"/history/[id]">, "param
   const row = await getHouseholdList(member.householdId, id);
   if (!row || row.list.status !== "completed") notFound();
 
-  const [t, tCategories, format, items] = await Promise.all([
+  const [t, tCategories, tItem, format, items] = await Promise.all([
     getTranslations("History"),
     getTranslations("Categories"),
+    getTranslations("ItemForm"),
     getFormatter(),
     getListItems(id),
   ]);
@@ -58,28 +59,34 @@ async function CompletedList({ params }: Pick<PageProps<"/history/[id]">, "param
       {notBought.length > 0 && (
         <section className="flex flex-col gap-1">
           <h2 className="text-sm font-medium text-muted-foreground">{t("notBought")}</h2>
-          <ItemList items={notBought} />
+          <ItemList items={notBought} units={tItem("units")} />
         </section>
       )}
 
       {groupByCategory(bought).map(({ category, items }) => (
         <section key={category} className="flex flex-col gap-1">
           <h2 className="text-sm font-medium text-muted-foreground">{tCategories(category)}</h2>
-          <ItemList items={items} />
+          <ItemList items={items} units={tItem("units")} />
         </section>
       ))}
     </div>
   );
 }
 
-function ItemList({ items }: { items: Awaited<ReturnType<typeof getListItems>> }) {
+function ItemList({
+  items,
+  units,
+}: {
+  items: Awaited<ReturnType<typeof getListItems>>;
+  units: string;
+}) {
   return (
     <ul className="flex flex-col">
       {items.map((item) => (
         <li key={item.id} className="flex min-h-10 items-center gap-3 border-b last:border-b-0">
           <CheckIcon className={cn("size-4", item.done ? "text-primary" : "invisible")} />
           <span className={cn(!item.done && "text-muted-foreground")}>{item.name}</span>
-          <span className="text-sm text-muted-foreground">{formatQuantity(item)}</span>
+          <span className="text-sm text-muted-foreground">{formatQuantity(item, units)}</span>
         </li>
       ))}
     </ul>

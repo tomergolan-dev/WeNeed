@@ -28,7 +28,8 @@ export function ItemRow({ item, onToggle, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   // Items added a moment ago only exist on this screen until the server confirms.
   const isDraft = item.id.startsWith("draft-");
-  const quantity = formatQuantity(item);
+  const tItem = useTranslations("ItemForm");
+  const quantity = formatQuantity(item, tItem("units"));
 
   return (
     <li className="flex min-h-11 items-center gap-3 border-b last:border-b-0">

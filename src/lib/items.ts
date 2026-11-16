@@ -4,11 +4,13 @@ type Quantified = { quantity: number | null; unit: string | null };
 
 const numberFormat = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 2 });
 
-/** "2 קרטונים", "×3" or "" */
-export function formatQuantity({ quantity, unit }: Quantified): string {
+/**
+ * "2 קרטונים", "3 יח׳" or "". `unitsLabel` is the word used for a bare
+ * count (ItemForm.units in the messages file).
+ */
+export function formatQuantity({ quantity, unit }: Quantified, unitsLabel: string): string {
   if (quantity == null) return unit ?? "";
-  const n = numberFormat.format(quantity);
-  return unit ? `${n} ${unit}` : `×${n}`;
+  return `${numberFormat.format(quantity)} ${unit ?? unitsLabel}`;
 }
 
 /** Groups items by store section, in store walking order. */
