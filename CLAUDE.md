@@ -1,6 +1,6 @@
 # We Need
 
-A mobile-first web app for everything a household "needs": shared shopping lists, chores with due dates, and reusable checklists, with an AI chat in every list. Users can belong to several households. The full spec is in `docs/spec.md` — read it before starting any task.
+A mobile-first web app for everything a place (apartment, home, office) "needs": shared shopping lists, chores with due dates, and reusable checklists, with an AI chat in every list. Users can belong to several places. The full spec is in `docs/spec.md` — read it before starting any task.
 
 ## Language
 

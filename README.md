@@ -1,15 +1,15 @@
 # We Need
 
-Everything a household needs, in one app: shared shopping lists, chores with due dates, and reusable checklists.
+Everything a place needs, in one app: shared shopping lists, chores with due dates, and reusable checklists.
 
-Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates for everyone in the household. A user can belong to several households and switch between them.
+Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates for everyone in the place. A user can belong to several places (an apartment, a home, an office) and switch between them.
 
 - Spec: [docs/spec.md](docs/spec.md)
 - Stack: Next.js, TypeScript, Tailwind, shadcn/ui, Drizzle, Neon Postgres, Vercel, Claude API
 
 ## Status
 
-New direction (2026-11-16): a multi-household web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused. Next: Stage A, design mockup. See `docs/spec.md`.
+New direction (2026-11-16): a multi-place web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused. Next: Stage A, design mockup. See `docs/spec.md`.
 
 Production: https://we-need-two.vercel.app
 
