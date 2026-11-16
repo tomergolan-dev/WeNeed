@@ -86,6 +86,11 @@ A chore with no name stays unassigned.
 
 "Send me a link" (or any reply that includes a link) returns a personal one-time link that logs the user in to the app.
 
+### Unknown sender and non-text messages
+
+- A number that isn't a member gets a short reply saying it isn't registered.
+- Non-text messages (voice, images) get a reply that only text is supported.
+
 ## Web app
 
 The web app is a mobile-first PWA in Hebrew with RTL, reached from a link the bot sends.
