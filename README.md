@@ -9,7 +9,7 @@ Send the bot a message like "need 2 cartons of milk and eggs" and the shared lis
 
 ## Status
 
-Stage 2 — WhatsApp webhook live on the test number. Next: Stage 3, natural language with Claude.
+Stage 3 — the bot understands free text with Claude. Next: Stage 4, duplicates and list lifecycle.
 
 Production: https://we-need-two.vercel.app
 

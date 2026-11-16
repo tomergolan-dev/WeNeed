@@ -80,3 +80,14 @@ export async function getHousehold(householdId: string) {
     .orderBy(asc(members.createdAt));
   return household ? { ...household, members: people } : null;
 }
+
+/** Returns the active list, opening a new empty one if there is none. */
+export async function ensureActiveList(householdId: string, type: ListType) {
+  const existing = await getActiveList(householdId, type);
+  if (existing) return existing;
+  // The partial unique index makes a concurrent open a no-op.
+  await db.insert(lists).values({ householdId, type }).onConflictDoNothing();
+  const created = await getActiveList(householdId, type);
+  if (!created) throw new Error("Failed to open an active list");
+  return created;
+}

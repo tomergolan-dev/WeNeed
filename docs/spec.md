@@ -141,7 +141,10 @@ The bot and the web app read and write the same database, so any change in one s
 
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel.
 - **Webhook:** at `/api/whatsapp/webhook`. GET handles Meta's verification; POST receives messages, checks the signature (`X-Hub-Signature-256`), returns 200 right away and continues processing via `after()`.
-- **Claude:** tool use with a fixed schema that returns an intent and items. It receives the active list and the members' names, to detect duplicates and assign chores.
+- **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the names of the unchecked items on the active list (and, from Stage 5, the members' names) to detect duplicates and assign chores.
+  - Model `claude-opus-5-5` at `low` effort, with the API's server-side refusal fallback enabled.
+  - Intents so far: `add_items`, `show_list`, `login_link`, `other` (replies with a short help text).
+  - Until Stage 4, a message when there is no active list opens a new one without asking about carry-over.
 - **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.
 - **Meta setup notes:**
   - The access token belongs to a System User (`weneed-bot`) in the business portfolio, with full control of the app and the WhatsApp account; it does not expire. Temporary tokens from API Setup expire within hours.
@@ -153,7 +156,7 @@ The bot and the web app read and write the same database, so any change in one s
 - [x] **Stage 0, setup:** private GitHub repo, Next.js project, Neon database, an app in Meta for Developers with a test number.
 - [x] **Stage 1, web without the bot:** schema, shared list with manual adding, check-off and finishing a list.
 - [x] **Stage 2, WhatsApp connection:** webhook with signature verification, duplicate prevention and a "got it" reply.
-- [ ] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
+- [x] **Stage 3, natural language:** Claude parses messages, adding with categories, "what's on the list?".
 - [ ] **Stage 4, duplicates and lifecycle:** confirmation question for existing items, opening a new list and carrying items over.
 - [ ] **Stage 5, chores:** chore list with assignees, in the bot and the web app.
 - [ ] **Stage 6, go live:** real phone number, deploy to Vercel, onboarding mom.
