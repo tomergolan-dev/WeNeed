@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Brand } from "@/components/brand";
 import { isGoogleConfigured } from "@/lib/google";
@@ -19,6 +20,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <Suspense fallback={<div className="h-72 animate-pulse rounded-3xl bg-muted" />}>
           <Form searchParams={searchParams} />
         </Suspense>
+        <Link href="/privacy" className="mt-6 text-center text-xs text-muted-foreground underline-offset-4 hover:underline">
+          {t("privacy")}
+        </Link>
       </div>
     </main>
   );

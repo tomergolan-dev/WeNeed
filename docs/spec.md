@@ -136,15 +136,14 @@ We Need is also a portfolio project, so it includes a public demo.
   - Mockup: https://claude.ai/artifact/GmZihD6hb1TcGkQeeksQxj
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, open to everyone.
   - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners).
-  - Done: Resend key and sender, the `weneed` DNS record.
-  - Before release: Google sign-in credentials and linking Nurit's address. Then run the migrations on production and deploy.
+  - Released to production on 2026-11-17 (migrations run, Tomer's address linked). Left: link Nurit's address.
 - [ ] **Stage C, lists:** creating named lists of any kind; shopping lists in the new design, with finish and history.
 - [ ] **Stage D, chores:** due date and time, due-soon and overdue signs.
 - [ ] **Stage E, checklists:** check all / uncheck all.
 - [ ] **Stage F, invites:** invite by email, accept or decline in the app.
 - [ ] **Stage G, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
-  - A privacy policy page, then complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
+  - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
 ## Open questions
 
