@@ -142,7 +142,7 @@ The bot and the web app read and write the same database, so any change in one s
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel.
 - **Webhook:** at `/api/whatsapp/webhook`. GET handles Meta's verification; POST receives messages, checks the signature (`X-Hub-Signature-256`), returns 200 right away and continues processing via `after()`.
 - **Claude:** structured outputs (a fixed JSON schema) that return an intent and items. It receives the names of the unchecked items on the active list (and, from Stage 5, the members' names) to detect duplicates and assign chores.
-  - Model `claude-opus-5-5` at `low` effort, with the API's server-side refusal fallback enabled.
+  - Model `claude-haiku-5-5` at `low` effort (switched from Opus after it passed the same sample messages; about 40x cheaper).
   - Intents so far: `add_items`, `show_list`, `login_link`, `other` (replies with a short help text).
   - Until Stage 4, a message when there is no active list opens a new one without asking about carry-over.
 - **Secrets:** Meta and Anthropic keys live only in environment variables and never go into Git.

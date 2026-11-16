@@ -1,10 +1,12 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { CATEGORIES } from "@/lib/categories";
 
-const MODEL = "claude-opus-5-5";
+// Haiku handles this extraction as well as Opus at a fraction of the cost
+// (checked against sample messages when switching).
+const MODEL = "claude-haiku-5-5";
 
 const client = new Anthropic();
 
@@ -34,7 +36,7 @@ For add_items, extract every product as a separate item:
 - name: the product only, in the sender's language, in its natural base form, without quantity or unit words ("2 קרטוני חלב" -> name "חלב"). Keep a brand or variety when given ("חלב 3%", "קוטג' תנובה").
 - quantity: a number only when the sender states one, otherwise null. Hebrew number words count ("שני", "שלושה", "חצי").
 - unit: the unit as the sender wrote it, in Hebrew if the message is in Hebrew ("קרטונים", "ק״ג", "בקבוקים"), otherwise null. Never put a unit when the sender gave none.
-- category: the supermarket section the product is found in. Sections: produce (fruit, vegetables, fresh herbs), bakery (bread, pita, cakes), dairy (milk, cheese, yogurt, eggs, butter), meat_fish (fresh and packaged meat, chicken, fish), deli (cold cuts, salads, hummus), pantry (rice, pasta, flour, sugar, oil, coffee, tea, cereal), canned (canned and jarred food), spices (spices, sauces, condiments), snacks (snacks, sweets, chocolate), drinks (water, juice, soda, wine, beer), frozen, cleaning (cleaning supplies, dish soap, laundry, trash bags), personal_care (shampoo, soap, toothpaste, toilet paper, tissues), baby (diapers, wipes, formula), home (light bulbs, batteries, kitchen tools), other (only when nothing else fits).
+- category: the supermarket section the product is found in. Sections: produce (fruit, vegetables, fresh herbs), bakery (bread, pita, cakes), dairy (milk, cheese, yogurt, eggs, butter), meat_fish (fresh and packaged meat, chicken, fish), deli (cold cuts, salads, hummus), pantry (rice, pasta, flour, sugar, cooking oil and olive oil, coffee, tea, cereal), canned (canned and jarred food), spices (spices, sauces, condiments, vinegar; not oils), snacks (snacks, sweets, chocolate), drinks (water, juice, soda, wine, beer), frozen, cleaning (cleaning supplies, dish soap, laundry, trash bags), personal_care (shampoo, soap, toothpaste, toilet paper, tissues), baby (diapers, wipes, formula), home (light bulbs, batteries, kitchen tools), other (only when nothing else fits).
 
 If the sender names something already on the current list, still return it; duplicates are handled elsewhere.
 For any intent other than add_items, return an empty items array.`;
@@ -44,14 +46,11 @@ export async function parseMessage(text: string, currentItems: string[]): Promis
     ? `Current list: ${currentItems.join(", ")}`
     : "The current list is empty.";
 
-  const response = await client.beta.messages.parse({
+  const response = await client.messages.parse({
     model: MODEL,
     max_tokens: 4000,
     // Simple extraction: low effort keeps it fast and cheap.
-    output_config: { effort: "low", format: betaZodOutputFormat(ParsedMessage) },
-    // On a safety decline, retry on a fallback model chosen by the API.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+    output_config: { effort: "low", format: zodOutputFormat(ParsedMessage) },
     system: SYSTEM_PROMPT,
     messages: [
       {
