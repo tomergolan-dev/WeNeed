@@ -51,7 +51,9 @@ We Need is also a portfolio project, so it includes a public demo.
   - Product names are kept exactly as written: no spelling fixes, no expanding slang ("גבנצ" stays "גבנצ").
   - A number with x or × ("x18", "18x") is a count of units.
   - A count without a unit is shown as "18 יח׳".
-  - Adding an item that is already on the list asks whether to increase its quantity instead of adding a duplicate.
+  - An item that is already on the list (open, same name ignoring spelling marks and spacing) is not added twice:
+    - In the AI chat, the chat asks whether to update its quantity.
+    - When adding by hand, the quantities are added up at once ("תפוח עץ" 5 + 3 → 8), with a short note under the field. With no quantity, nothing changes ("already on the list"). With a different unit, it is added as its own row.
 
 ### Chores
 

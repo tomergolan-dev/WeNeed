@@ -11,6 +11,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { normalizeName } from "@/lib/normalize";
 import { DEFAULT_CATEGORY } from "@/lib/categories";
 import { TIME_ZONE } from "@/lib/due";
+import { combineQuantities } from "@/lib/items";
 import { findEditableItem, findList } from "@/lib/list-access";
 import { ensureActiveRound } from "@/lib/lists";
 
@@ -77,8 +78,6 @@ function israelNow() {
   };
 }
 
-const sameUnit = (a: string | null, b: string | null) => normalizeName(a ?? "") === normalizeName(b ?? "");
-
 /** Reads a message written in a list's AI chat and adds what it asks for. */
 export async function askAssistant(listId: string, text: string): Promise<AssistantResult> {
   const user = await getCurrentUser();
@@ -127,18 +126,14 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
         const existing =
           item.existing && open.find((row) => normalizeName(row.name) === normalizeName(item.existing!));
         if (existing) {
-          const combine =
-            quantity !== null && existing.quantity !== null && sameUnit(unit, existing.unit)
-              ? { newQuantity: existing.quantity + quantity, newUnit: existing.unit }
-              : quantity !== null && existing.quantity === null
-                ? { newQuantity: quantity, newUnit: unit }
-                : { newQuantity: null, newUnit: null };
+          const total = combineQuantities(existing, { quantity, unit });
           reply.duplicates.push({
             itemId: existing.id,
             name: existing.name,
             quantity: existing.quantity,
             unit: existing.unit,
-            ...combine,
+            newQuantity: total?.quantity ?? null,
+            newUnit: total?.unit ?? null,
           });
           continue;
         }

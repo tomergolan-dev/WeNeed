@@ -16,6 +16,7 @@ export function QuickAdd({
   onSubmit,
   canSubmit = value.trim().length > 0,
   options,
+  notice,
 }: {
   placeholder: string;
   value: string;
@@ -23,6 +24,8 @@ export function QuickAdd({
   onSubmit: () => void;
   canSubmit?: boolean;
   options?: React.ReactNode;
+  // A short note on the last add, such as "updated the quantity".
+  notice?: string | null;
 }) {
   const t = useTranslations("QuickAdd");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +61,11 @@ export function QuickAdd({
           {t("add")}
         </button>
       </div>
+      {notice && !open && (
+        <p role="status" className="mt-1.5 px-1 text-[13px] text-accent-foreground">
+          {notice}
+        </p>
+      )}
       {open && (
         <div className="-mx-5 mt-2 flex items-center gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none]">
           {options}

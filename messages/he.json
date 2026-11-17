@@ -73,7 +73,9 @@
     "progress": "{done} מתוך {total} בעגלה",
     "quickAddPlaceholder": "הוספה ידנית, למשל ״תפוחים״",
     "autoCategory": "מחלקה אוטומטית",
-    "aiPlaceholder": "מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"
+    "aiPlaceholder": "מה צריך? למשל: 8 מעדני שוקולד, 4 בננות",
+    "merged": "{name} כבר ברשימה, עדכנתי ל-{quantity}.",
+    "alreadyListed": "{name} כבר ברשימה."
   },
   "Chores": {
     "empty": "אין מטלות. מה צריך לעשות?",

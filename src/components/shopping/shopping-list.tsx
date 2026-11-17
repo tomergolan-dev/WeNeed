@@ -11,7 +11,7 @@ import { chipClass, QuantityStepper, QuickAdd } from "@/components/lists/quick-a
 import { draftItem, useListItems } from "@/components/lists/use-list-items";
 import { CATEGORIES, DEFAULT_CATEGORY, isCategory } from "@/lib/categories";
 import { CATEGORY_ICONS, TONES } from "@/lib/category-icons";
-import { groupByCategory } from "@/lib/items";
+import { combineQuantities, findOpenItem, formatQuantity, groupByCategory } from "@/lib/items";
 import { cn } from "@/lib/utils";
 import { toItemInput, type ItemDraft } from "./item-fields";
 import { ItemRow } from "./item-row";
@@ -40,17 +40,36 @@ export function ShoppingList({
   const set = (patch: Partial<ItemDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const input = toItemInput(draft);
 
+  const [notice, setNotice] = useState<string | null>(null);
+
   const handleAdd = () => {
     if (!input) return;
+    setDraft(emptyDraft);
     const auto = !draft.category;
     const added: ItemInput = { ...input, category: auto ? undefined : input.category };
+    const call = () => addItem(listId, added);
+
+    // Same rules as the server: a product already on the list gets the added quantity.
+    const existing = findOpenItem(optimisticItems, input.name);
+    if (existing) {
+      const total = combineQuantities(existing, input);
+      if (total) {
+        setNotice(t("merged", { name: existing.name, quantity: formatQuantity(total, tItem("units")) }));
+        run({ type: "patch", id: existing.id, patch: total }, call);
+        return;
+      }
+      if (input.quantity === null) {
+        setNotice(t("alreadyListed", { name: existing.name }));
+        return;
+      }
+    }
+    setNotice(null);
     // Until the server finds the section, show it where the same product already is.
     const known = optimisticItems.find((item) => item.name.trim() === input.name)?.category;
     run(
       { type: "add", item: draftItem({ ...input, category: auto ? (known ?? DEFAULT_CATEGORY) : input.category }) },
-      () => addItem(listId, added),
+      call,
     );
-    setDraft(emptyDraft);
   };
 
   const handlers = {
@@ -80,9 +99,13 @@ export function ShoppingList({
         <QuickAdd
           placeholder={t("quickAddPlaceholder")}
           value={draft.name}
-          onChange={(name) => set({ name })}
+          onChange={(name) => {
+            set({ name });
+            setNotice(null);
+          }}
           canSubmit={input !== null}
           onSubmit={handleAdd}
+          notice={notice}
           options={
             <>
               <QuantityStepper value={draft.quantity} onChange={(quantity) => set({ quantity })} />

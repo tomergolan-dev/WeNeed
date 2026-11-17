@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { items, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
+import { combineQuantities, findOpenItem } from "@/lib/items";
 import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
 import { findEditableItem, findList, guessCategory, nextPosition } from "@/lib/list-access";
@@ -57,10 +58,30 @@ export async function addItem(listId: string, input: ItemInput): Promise<ActionR
   const list = await findList(listId, user.id);
   if (!list) return fail("notFound");
 
+  const round = await ensureActiveRound(list.id);
+
+  // A product already on a shopping list gets the added quantity instead of a
+  // second row. With no quantity it stays as it is; with another unit it is
+  // added as its own row.
+  if (list.type === "shopping") {
+    const open = await db
+      .select({ id: items.id, name: items.name, done: items.done, quantity: items.quantity, unit: items.unit })
+      .from(items)
+      .where(and(eq(items.roundId, round.id), eq(items.done, false)));
+    const existing = findOpenItem(open, parsed.data.name);
+    if (existing) {
+      const total = combineQuantities(existing, parsed.data);
+      if (total) await db.update(items).set(total).where(eq(items.id, existing.id));
+      if (total || parsed.data.quantity === null) {
+        refresh();
+        return ok;
+      }
+    }
+  }
+
   const category =
     parsed.data.category ??
     (list.type === "shopping" ? await guessCategory(list.placeId, parsed.data.name) : DEFAULT_CATEGORY);
-  const round = await ensureActiveRound(list.id);
   await db.insert(items).values({
     ...parsed.data,
     category,
