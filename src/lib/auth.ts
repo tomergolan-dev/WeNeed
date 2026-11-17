@@ -122,6 +122,11 @@ export async function requirePlace() {
   return { user, place, places: userPlaces };
 }
 
+/** Right after signing in, the home screen opens on the personal area. */
+export async function openPersonalArea(userId: string): Promise<void> {
+  await setCurrentPlace(await ensurePersonalPlace(userId));
+}
+
 export async function setCurrentPlace(placeId: string): Promise<void> {
   (await cookies()).set(PLACE_COOKIE, placeId, {
     httpOnly: true,

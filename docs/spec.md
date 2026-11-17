@@ -15,7 +15,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - A **user** signs in with an email address (Google, or a code sent by email).
 - A **place** is a shared space with members, for example "Parents' home", "My apartment", "Office", "Restaurant".
 - A user can belong to several places and switches between them from a selector at the top of the screen.
-- Every user has a **personal area, "שלי"**, created automatically. Its lists belong to no place ("ציוד לצפון"): private by default, and each can be shared with specific people by email. Lists others shared with the user appear there under "משותפות איתי".
+- Every user has a **personal area, "שלי"**, created automatically. Signing in (Google or email code) opens the home screen on it; after that the app remembers the place last chosen (decided 2026-11-17). Its lists belong to no place ("ציוד לצפון"): private by default, and each can be shared with specific people by email. Lists others shared with the user appear there under "משותפות איתי".
 - Any user can create a **shared place**, with a name and an icon (home, apartment, office, restaurant, store, vacation), and invite others to it (see "Invites").
 - The place selector ("לאן להיכנס?") shows "שלי" first, then shared places with the user's role, then pending invites.
 - The chosen place is remembered on the device. A new user starts in "שלי"; the first shared place is the default for users who have one.
@@ -145,7 +145,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Demo
 
-- At `/demo` (and `/en/demo`), open to everyone with no sign-up; linked from the sign-in screen.
+- At `/demo` (and `/en/demo`), open to everyone with no sign-up; a "צפייה בדמו" button sits in the sign-in screen's header, next to the language switch.
 - Shows a sample place ("הבית לדוגמה" / "Sample home") with a shopping list, a tasks list (one overdue, one due soon, one with a note and a link) and a checklist, in the page's language.
 - Visitors can do everything they can in the app on those lists: add, check, edit, delete, reorder, finish a shopping trip, create, rename and delete lists, and add notes, links and files (decided 2026-11-17).
   - Everything stays in the visitor's browser (localStorage, one copy per language). Files stay only until the page reloads. "Start over" brings back the sample place.
@@ -162,7 +162,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - The design is drafted and approved as a mockup before it is built.
 - Hebrew (right to left) and English (left to right), decided 2026-11-17:
   - Hebrew lives at the plain addresses, English under `/en` (for example `/en/lists/…`).
-  - A switch (a languages icon, like on a keyboard) on the home, demo, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
+  - A switch (a globe, like the Mac keyboard key) on the home, demo, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
   - Sign-in and invite emails go out in the language of the page they were sent from.
   - What people type (list and item names) is shown as written, in any language.
   - The paused WhatsApp bot stays Hebrew only.

@@ -1,5 +1,6 @@
 import { decodeIdToken } from "arctic";
 import { cookies } from "next/headers";
+import { openPersonalArea } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/email";
 import { GOOGLE_STATE_COOKIE, GOOGLE_VERIFIER_COOKIE, googleClient, type GoogleClaims } from "@/lib/google";
 import { startSession } from "@/lib/session";
@@ -31,6 +32,8 @@ export async function GET(request: Request) {
   const email = claims.email && claims.email_verified ? normalizeEmail(claims.email) : null;
   if (!email) return fail();
 
-  await startSession(await findOrCreateUser(email, claims.name));
+  const userId = await findOrCreateUser(email, claims.name);
+  await startSession(userId);
+  await openPersonalArea(userId);
   return Response.redirect(new URL("/", url.origin));
 }

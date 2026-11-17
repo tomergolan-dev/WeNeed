@@ -6,7 +6,7 @@ import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { attachments, items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
-import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
+import { getCurrentPlace, getCurrentUser, isPlaceMember, openPersonalArea, setCurrentPlace } from "@/lib/auth";
 import { deleteStoredFiles } from "@/lib/attachments";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { combineQuantities, findOpenItem } from "@/lib/items";
@@ -430,6 +430,7 @@ export async function verifyCode(email: string, code: string): Promise<{ ok: fal
   if (!result.ok) return result;
 
   await startSession(result.userId);
+  await openPersonalArea(result.userId);
   return redirectTo("/");
 }
 

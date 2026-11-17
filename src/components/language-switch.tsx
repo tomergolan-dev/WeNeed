@@ -2,11 +2,11 @@
 
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Languages } from "lucide-react";
+import { Globe } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-/** Switches between Hebrew and English on the same page: a languages icon, like on a keyboard. */
+/** Switches between Hebrew and English on the same page: a globe, like the Mac keyboard key. */
 export function LanguageSwitch({ className }: { className?: string }) {
   const t = useTranslations("Nav");
   const locale = useLocale();
@@ -27,7 +27,7 @@ export function LanguageSwitch({ className }: { className?: string }) {
         className,
       )}
     >
-      <Languages className="size-5" aria-hidden />
+      <Globe className="size-5" aria-hidden />
     </button>
   );
 }
