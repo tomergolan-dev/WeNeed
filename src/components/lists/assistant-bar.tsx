@@ -27,6 +27,8 @@ type Exchange = {
 
 // How long a short reply stays above the bar.
 const NOTE_MS = 3000;
+// The message box grows up to about four lines, then scrolls.
+const MAX_INPUT_PX = 120;
 const ERROR_MS = 5000;
 
 /** A duplicate the user still has to answer ("add 2 more?"). */
@@ -54,7 +56,8 @@ export function AssistantBar({
   const [text, setText] = useState("");
   const [exchange, setExchange] = useState<Exchange | null>(null);
   const [pending, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Short replies close on their own; a reply with a question waits for the answer.
   useEffect(() => {
@@ -81,6 +84,7 @@ export function AssistantBar({
     const message = text.trim();
     if (!message || pending) return;
     setText("");
+    if (inputRef.current) inputRef.current.style.height = "";
     setExchange({ message, at: Date.now(), state: "pending", answered: {} });
     startTransition(async () => {
       try {
@@ -143,21 +147,35 @@ export function AssistantBar({
         )}
 
         <form
+          ref={formRef}
           onSubmit={send}
-          className="flex h-14 items-center gap-2 rounded-full border bg-card ps-2 pe-2 shadow-[0_6px_24px_-10px_rgba(0,0,0,0.22)] transition-colors focus-within:border-primary"
+          className="flex min-h-14 items-end gap-2 rounded-[28px] border bg-card p-2 shadow-[0_6px_24px_-10px_rgba(0,0,0,0.22)] transition-colors focus-within:border-primary"
         >
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
             <Sparkles className="size-[18px]" aria-hidden />
           </span>
-          <input
+          {/* Grows with the text, up to a few lines. Enter adds a line on phones
+              (the arrow sends) and sends on a computer (Shift+Enter adds a line). */}
+          <textarea
             ref={inputRef}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            rows={1}
+            onChange={(e) => {
+              setText(e.target.value);
+              const el = e.target;
+              el.style.height = "";
+              el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_PX)}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+              if (window.matchMedia("(pointer: coarse)").matches) return;
+              e.preventDefault();
+              formRef.current?.requestSubmit();
+            }}
             placeholder={placeholder}
             aria-label={t("label")}
             maxLength={500}
-            enterKeyHint="send"
-            className="h-full min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
+            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
           />
           <button
             type="submit"

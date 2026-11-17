@@ -2,10 +2,11 @@
 
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Languages } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-/** Switches between Hebrew and English on the same page. */
+/** Switches between Hebrew and English on the same page: a languages icon, like on a keyboard. */
 export function LanguageSwitch({ className }: { className?: string }) {
   const t = useTranslations("Nav");
   const locale = useLocale();
@@ -17,16 +18,16 @@ export function LanguageSwitch({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      lang={other}
       aria-label={t("languageLabel")}
+      title={t("languageLabel")}
       disabled={pending}
       onClick={() => startTransition(() => router.replace(pathname, { locale: other }))}
       className={cn(
-        "flex h-11 items-center rounded-[14px] border bg-card px-3.5 text-sm font-semibold text-muted-foreground transition-colors active:bg-muted disabled:opacity-60",
+        "flex size-11 items-center justify-center rounded-[14px] border bg-card text-muted-foreground transition-colors active:bg-muted disabled:opacity-60",
         className,
       )}
     >
-      {t("language")}
+      <Languages className="size-5" aria-hidden />
     </button>
   );
 }

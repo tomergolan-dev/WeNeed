@@ -105,6 +105,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## AI chat
 
 - The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply shows above the bar, so the list stays in view. A plain reply is one short line ("הוספתי: ביצים, עגבניות" with "undo") that disappears after 3 seconds (errors after 5). A question about an item already on the list ("להוסיף עוד 2?") opens a card that stays until answered. Decided 2026-11-17, at Tomer's request.
+- The message box takes several lines and grows up to about four, then scrolls. On a phone Enter adds a line and the arrow sends; on a computer Enter sends and Shift+Enter adds a line (decided 2026-11-17).
 - Each message is read once; there is no chat history yet.
 - Limits against abuse: at most 100 messages per user and 2,000 in total in 24 hours.
 
@@ -159,7 +160,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - The design is drafted and approved as a mockup before it is built.
 - Hebrew (right to left) and English (left to right), decided 2026-11-17:
   - Hebrew lives at the plain addresses, English under `/en` (for example `/en/lists/…`).
-  - A switch on the home, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
+  - A switch (a languages icon, like on a keyboard) on the home, demo, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
   - Sign-in and invite emails go out in the language of the page they were sent from.
   - What people type (list and item names) is shown as written, in any language.
   - The paused WhatsApp bot stays Hebrew only.
