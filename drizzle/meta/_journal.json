@@ -78,6 +78,13 @@
       "when": 1794921351612,
       "tag": "0010_personal_areas_and_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794930175671,
+      "tag": "0011_attachments",
+      "breakpoints": true
     }
   ]
 }

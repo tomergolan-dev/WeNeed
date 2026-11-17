@@ -28,6 +28,7 @@ export const placeRole = pgEnum("place_role", ["owner", "member"]);
 // Who sees a list in a shared place: every member, or only the members added to it.
 export const listVisibility = pgEnum("list_visibility", ["place", "selected"]);
 export const inviteStatus = pgEnum("invite_status", ["pending", "accepted", "declined", "canceled"]);
+export const attachmentKind = pgEnum("attachment_kind", ["link", "file"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -192,9 +193,35 @@ export const items = pgTable(
     }),
     // Order within the round; members can reorder a checklist. New items go last.
     position: integer("position").notNull().default(0),
+    // A free-text note, shown in the item's details.
+    note: text("note"),
     createdAt: createdAt(),
   },
   (t) => [index("items_round_idx").on(t.roundId)],
+);
+
+// Links, photos and files on an item. Files live in a private Vercel Blob
+// store under items/<itemId>/ and are served only to people who see the list.
+export const attachments = pgTable(
+  "attachments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    kind: attachmentKind("kind").notNull(),
+    // A link's address; null for files.
+    url: text("url"),
+    // A file's Blob pathname; null for links.
+    pathname: text("pathname"),
+    // The link's title or the file's original name.
+    name: text("name").notNull(),
+    contentType: text("content_type"),
+    size: integer("size"),
+    addedBy: uuid("added_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("attachments_item_idx").on(t.itemId, t.createdAt)],
 );
 
 // One row per message to a list's AI chat, for the daily limits.
@@ -224,3 +251,4 @@ export type List = typeof lists.$inferSelect;
 export type Round = typeof rounds.$inferSelect;
 export type Item = typeof items.$inferSelect;
 export type Invite = typeof invites.$inferSelect;
+export type Attachment = typeof attachments.$inferSelect;

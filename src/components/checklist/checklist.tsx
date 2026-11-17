@@ -6,6 +6,7 @@ import { ArrowUpDown, Check, CheckCheck, ListChecks, RotateCcw } from "lucide-re
 import { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListTop } from "@/components/lists/list-top";
 import { QuickAdd } from "@/components/lists/quick-add";
@@ -145,6 +146,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
                     >
                       {item.name}
                     </button>
+                    {!isDraft(item) && <ClipChip item={item} onEdit={() => setEditing(item)} />}
                   </li>
                 ))}
               </ul>
@@ -157,7 +159,9 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
 
       <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={tItem("editTitle")}>
         {editing && (
-          <RenameItemForm
+          <div className="flex flex-col gap-4">
+            <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />
+            <RenameItemForm
             item={editing}
             onSave={(name) => {
               const { id, quantity, unit } = editing;
@@ -172,6 +176,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
               setEditing(null);
             }}
           />
+          </div>
         )}
       </BottomSheet>
     </>

@@ -93,6 +93,14 @@ We Need is also a portfolio project, so it includes a public demo.
   - Checklists: the name only.
 - Decided 2026-11-17, at Tomer's request: adding by hand moved to the top so quantities and details are set while adding, not by editing afterwards, and the bottom is kept for the AI chat.
 
+## Attachments
+
+- Any item can have a note, links, and photos or documents. On the row, a paperclip with the number of attachments (or a note mark) opens the item's details; items without any reach them from their edit sheet ("פרטים וצירופים").
+- The details sheet: the note (saved when leaving the field), links (opened in a new tab), and thumbnails of photos and documents, with buttons to add a link, take a photo, or pick a file.
+- Files: photos (JPEG, PNG, WebP, GIF, HEIC), PDF, Word, Excel and plain text, up to 15MB each and 20 attachments per item.
+- Storage: a private Vercel Blob store (`weneed-attachments`, Frankfurt). The browser uploads straight to it with a one-time token that only someone who can edit the item gets, under `items/<itemId>/`. Files are served only through `/api/attachments/[id]`, to people who see the list; they never get a public address. Deleting an attachment, an item or a list deletes its files.
+- Items in a finished shopping round keep their attachments in the history, read-only; items carried over to the new round start without them.
+
 ## AI chat
 
 - The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply shows above the bar, so the list stays in view. A plain reply is one short line ("הוספתי: ביצים, עגבניות" with "undo") that disappears after 3 seconds (errors after 5). A question about an item already on the list ("להוסיף עוד 2?") opens a card that stays until answered. Decided 2026-11-17, at Tomer's request.
@@ -165,6 +173,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
   - `ai_requests`: one row per AI chat message, for the daily limits. *(Stage D)*
+  - `items.note`, and `attachments`: item, kind (`link` / `file`), the link's address or the file's Blob pathname, name, content type and size, added by. *(Stage F)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
 
@@ -186,7 +195,9 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage E, personal area, invites and permissions:** "שלי", invite by email to a place or to lists, accept or decline in the app, members and roles, who sees each list.
   - Mockup approved on 2026-11-17 (rows "שלי, הרשאות וצירופים" in the mockup).
   - Built and tested on the `dev` database (migration 0010).
+  - Released to production on 2026-11-17: the database was backed up, then migration 0010 was run.
 - [ ] **Stage F, attachments:** a paperclip on an item opens its details: a note, links, and photos or files (private Vercel Blob storage).
+  - Built and tested on the `dev` database (migration 0011). The Blob store was created on 2026-11-17 and connected to all environments.
 - [ ] **Stage G, branding:** logo (three dots, the last one a check mark), slogan, and the share cover ("צריך לקנות… / צריך לעשות… / צריך לארוז…").
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.

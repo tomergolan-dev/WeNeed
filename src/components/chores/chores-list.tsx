@@ -6,6 +6,7 @@ import { CalendarDays, Check, Clock, ListTodo } from "lucide-react";
 import { addChore, deleteItem, setItemDone, updateChore, type ChoreInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListTop } from "@/components/lists/list-top";
 import { chipClass, OptionChip, PickerChip, QuickAdd } from "@/components/lists/quick-add";
@@ -250,7 +251,9 @@ export function ChoresList({
 
       <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={t("editTitle")}>
         {editing && (
-          <ChoreForm
+          <div className="flex flex-col gap-4">
+            <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />
+            <ChoreForm
             initial={{
               title: editing.name,
               dueDate: editing.dueDate ?? "",
@@ -270,6 +273,7 @@ export function ChoresList({
               setEditing(null);
             }}
           />
+          </div>
         )}
       </BottomSheet>
     </>
@@ -361,6 +365,11 @@ function ChoreRow({
           </span>
         )}
       </button>
+      {!draft && (
+        <span className="mt-0.5">
+          <ClipChip item={chore} onEdit={() => onEdit(chore)} />
+        </span>
+      )}
     </li>
   );
 }

@@ -9,6 +9,8 @@ import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ListMenu } from "@/components/lists/list-menu";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { PageHeader } from "@/components/page-header";
+import { ItemDetailsProvider } from "@/components/lists/item-details";
+import { countAttachments } from "@/lib/attachments";
 import { requireUser } from "@/lib/auth";
 import { getListAccess, getListPeople, isPlaceAdmin } from "@/lib/list-access";
 import { ensureActiveRound, getChores, getListFor, getRoundItems } from "@/lib/lists";
@@ -39,7 +41,10 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
     isPlaceAdmin(user.id, list.placeId),
   ]);
   // Only admins change who sees a list.
-  const access = admin ? await getListAccess(list.id) : null;
+  const [access, counts] = await Promise.all([
+    admin ? getListAccess(list.id) : null,
+    countAttachments(items.map((item) => item.id)),
+  ]);
   // Where the list lives: a shared place, my personal area, or someone else's.
   const where =
     found.personalOwnerId === null
@@ -63,12 +68,12 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
   );
 
   return (
-    <>
+    <ItemDetailsProvider counts={counts}>
       <AutoRefresh />
       {list.type === "shopping" && <ShoppingList listId={list.id} header={header} items={items} people={people} />}
       {list.type === "tasks" && <ChoresList listId={list.id} header={header} items={items} people={people} />}
       {list.type === "checklist" && <Checklist listId={list.id} header={header} items={items} />}
-    </>
+    </ItemDetailsProvider>
   );
 }
 

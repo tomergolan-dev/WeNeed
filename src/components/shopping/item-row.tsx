@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import type { ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { isDraft } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
 import { formatQuantity } from "@/lib/items";
@@ -70,10 +71,12 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
           </span>
         )}
       </button>
+      <ClipChip item={item} onEdit={() => setEditing(true)} />
       {editing && (
         <EditItemSheet
           item={item}
           onClose={() => setEditing(false)}
+          onReopen={() => setEditing(true)}
           onSave={(input) => onUpdate(item.id, input)}
           onDelete={() => onDelete(item.id)}
         />
@@ -85,11 +88,13 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
 function EditItemSheet({
   item,
   onClose,
+  onReopen,
   onSave,
   onDelete,
 }: {
   item: Item;
   onClose: () => void;
+  onReopen: () => void;
   onSave: (input: ItemInput) => void;
   onDelete: () => void;
 }) {
@@ -114,6 +119,7 @@ function EditItemSheet({
         }}
       >
         <ItemFields draft={draft} onChange={setDraft} />
+        <DetailsButton item={item} onOpen={onClose} onEdit={onReopen} />
         <div className="flex gap-2">
           <Button
             type="button"

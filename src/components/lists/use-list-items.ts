@@ -35,6 +35,7 @@ export function draftItem(fields: Partial<Item> & { name: string }): Item {
   return {
     id: `draft-${crypto.randomUUID()}`,
     roundId: "",
+    note: null,
     quantity: null,
     unit: null,
     category: "other",

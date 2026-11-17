@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
+import { deleteStoredFiles } from "@/lib/attachments";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { combineQuantities, findOpenItem } from "@/lib/items";
 import { isListType, type ListType } from "@/lib/list-kinds";
@@ -161,6 +162,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult> {
   if (!item) return fail("notFound");
   if (item.status !== "active") return fail("listLocked");
 
+  await deleteStoredFiles({ itemIds: [item.id] });
   await db.delete(items).where(eq(items.id, itemId));
   refresh();
   return ok;
@@ -282,6 +284,7 @@ export async function deleteList(listId: string): Promise<ActionResult> {
   if (!list) return fail("notFound");
   if (!(await isPlaceAdmin(user.id, list.placeId))) return fail("unauthorized");
 
+  await deleteStoredFiles({ listId: list.id });
   await db.delete(lists).where(eq(lists.id, list.id));
   redirect("/");
 }
