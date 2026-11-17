@@ -96,7 +96,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Attachments
 
-- Any item can have a note, links, and photos or documents. On the row, a paperclip with the number of attachments (or a note mark) opens the item's details; items without any reach them from their edit sheet ("פרטים וצירופים").
+- Any item can have a note, links, and photos or documents. On the row, a paperclip with the number of attachments (or a note mark), right after the item's name, opens the item's details; items without any reach them from their edit sheet ("פרטים וצירופים").
 - The details sheet: the note (saved when leaving the field), links (opened in a new tab), and thumbnails of photos and documents, with buttons to add a link, take a photo, or pick a file.
 - Files: photos (JPEG, PNG, WebP, GIF, HEIC), PDF, Word, Excel and plain text, up to 15MB each and 20 attachments per item.
 - Storage: a private Vercel Blob store (`weneed-attachments`, Frankfurt). The browser uploads straight to it with a one-time token that only someone who can edit the item gets, under `items/<itemId>/`. Files are served only through `/api/attachments/[id]`, to people who see the list; they never get a public address. Deleting an attachment, an item or a list deletes its files.
@@ -153,6 +153,11 @@ We Need is also a portfolio project, so it includes a public demo.
 - Visual style influenced by CheckPlease (Tomer's earlier app): similar icon style and the feel of a polished, modern, high-end app. Not a copy, and with a different color palette.
 - The design is drafted and approved as a mockup before it is built.
 - Hebrew with RTL.
+- Branding (decided 2026-11-17):
+  - Name: **WeNeed**, in English only, everywhere (browser tab, home screen, emails).
+  - Slogan: "כל מה שצריך. ביחד."
+  - Icon: a green tile with three list rows, the first two checked (`src/app/icon.svg`; PNGs for phones in `public/` and `src/app/apple-icon.png`).
+  - Share cover (`public/og.png`, 1200×630): "צריך לקנות… / צריך לעשות… / צריך לארוז…", the slogan, the icon and the name.
 
 ## Domain and hosting
 
@@ -197,9 +202,11 @@ We Need is also a portfolio project, so it includes a public demo.
   - Mockup approved on 2026-11-17 (rows "שלי, הרשאות וצירופים" in the mockup).
   - Built and tested on the `dev` database (migration 0010).
   - Released to production on 2026-11-17: the database was backed up, then migration 0010 was run.
-- [ ] **Stage F, attachments:** a paperclip on an item opens its details: a note, links, and photos or files (private Vercel Blob storage).
+- [x] **Stage F, attachments:** a paperclip on an item opens its details: a note, links, and photos or files (private Vercel Blob storage).
   - Built and tested on the `dev` database (migration 0011). The Blob store was created on 2026-11-17 and connected to all environments.
-- [ ] **Stage G, branding:** logo (three dots, the last one a check mark), slogan, and the share cover ("צריך לקנות… / צריך לעשות… / צריך לארוז…").
+  - Released to production on 2026-11-17: the database was backed up, then migration 0011 was run.
+- [ ] **Stage G, branding:** icon, name, slogan, share cover and home-screen install (see "Design").
+  - Built on 2026-11-17, together with the wording change from "מטלות" to "משימות".
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 

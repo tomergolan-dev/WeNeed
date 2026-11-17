@@ -134,19 +134,27 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
                     >
                       {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
                     </button>
-                    <button
-                      type="button"
-                      disabled={isDraft(item)}
-                      onClick={() => setEditing(item)}
-                      className={cn(
-                        "min-w-0 flex-1 truncate py-3 text-start text-base font-medium",
-                        item.done && "text-muted-foreground",
-                        isDraft(item) && "opacity-60",
-                      )}
+                    <div
+                      onClick={() => !isDraft(item) && setEditing(item)}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 self-stretch"
                     >
-                      {item.name}
-                    </button>
-                    {!isDraft(item) && <ClipChip item={item} onEdit={() => setEditing(item)} />}
+                      <button
+                        type="button"
+                        disabled={isDraft(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditing(item);
+                        }}
+                        className={cn(
+                          "min-w-0 truncate py-3 text-start text-base font-medium",
+                          item.done && "text-muted-foreground",
+                          isDraft(item) && "opacity-60",
+                        )}
+                      >
+                        {item.name}
+                      </button>
+                      {!isDraft(item) && <ClipChip item={item} onEdit={() => setEditing(item)} />}
+                    </div>
                   </li>
                 ))}
               </ul>

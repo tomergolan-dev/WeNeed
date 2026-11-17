@@ -44,23 +44,28 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
       >
         {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
       </button>
-      <button
-        type="button"
-        disabled={draft}
-        onClick={() => setEditing(true)}
-        className={cn(
-          "flex min-w-0 flex-1 items-center gap-3 py-3 text-start",
-          draft && "opacity-60",
-        )}
+      {/* The whole row opens the edit sheet; the name is the keyboard target,
+          and the paperclip sits right after it. */}
+      <div
+        onClick={() => !draft && setEditing(true)}
+        className={cn("flex min-w-0 flex-1 cursor-pointer items-center gap-2 self-stretch", draft && "opacity-60")}
       >
-        <span
+        <button
+          type="button"
+          disabled={draft}
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditing(true);
+          }}
           className={cn(
-            "min-w-0 flex-1 truncate text-base font-medium",
+            "min-w-0 truncate py-3 text-start text-base font-medium",
             item.done && "text-muted-foreground line-through",
           )}
         >
           {item.name}
-        </span>
+        </button>
+        {!draft && <ClipChip item={item} onEdit={() => setEditing(true)} />}
+        <span className="flex-1" />
         {quantity && <span className="shrink-0 text-sm text-muted-foreground">{quantity}</span>}
         {who && (
           <span
@@ -70,8 +75,7 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
             {who.initial}
           </span>
         )}
-      </button>
-      <ClipChip item={item} onEdit={() => setEditing(true)} />
+      </div>
       {editing && (
         <EditItemSheet
           item={item}

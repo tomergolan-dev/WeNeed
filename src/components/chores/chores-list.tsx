@@ -348,14 +348,23 @@ function ChoreRow({
       >
         {chore.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
       </button>
-      <button
-        type="button"
-        disabled={draft}
-        onClick={() => onEdit(chore)}
-        className={cn("flex min-w-0 flex-1 flex-col items-start text-start", draft && "opacity-60")}
+      <div
+        onClick={() => !draft && onEdit(chore)}
+        className={cn("flex min-w-0 flex-1 cursor-pointer flex-col items-start text-start", draft && "opacity-60")}
       >
-        <span className={cn("text-base font-medium", chore.done && "text-muted-foreground line-through")}>
-          {chore.name}
+        <span className="flex max-w-full items-center gap-2">
+          <button
+            type="button"
+            disabled={draft}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(chore);
+            }}
+            className={cn("min-w-0 text-start text-base font-medium", chore.done && "text-muted-foreground line-through")}
+          >
+            {chore.name}
+          </button>
+          {!draft && <ClipChip item={chore} onEdit={() => onEdit(chore)} />}
         </span>
         {!chore.done && (
           <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
@@ -364,12 +373,7 @@ function ChoreRow({
             {assignee && <span>· {assignee}</span>}
           </span>
         )}
-      </button>
-      {!draft && (
-        <span className="mt-0.5">
-          <ClipChip item={chore} onEdit={() => onEdit(chore)} />
-        </span>
-      )}
+      </div>
     </li>
   );
 }

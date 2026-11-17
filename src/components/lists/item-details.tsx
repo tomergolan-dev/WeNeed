@@ -100,7 +100,10 @@ export function ClipChip({
   return (
     <button
       type="button"
-      onClick={() => open(item, onEdit)}
+      onClick={(e) => {
+        e.stopPropagation();
+        open(item, onEdit);
+      }}
       aria-label={t("openFor", { name: item.name, count: n })}
       className="flex h-6 shrink-0 items-center gap-0.5 rounded-full bg-[#eceff0] px-2 text-xs font-semibold text-[#4c5853] active:bg-[#dfe3e1]"
     >

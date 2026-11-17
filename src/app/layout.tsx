@@ -13,7 +13,22 @@ const fontSans = Heebo({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
-  return { title: t("title"), description: t("description") };
+  // The cover shown when a link to the app is shared (WhatsApp, iMessage, etc.).
+  const cover = { url: "/og.png", width: 1200, height: 630, alt: t("ogAlt") };
+  return {
+    metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
+    title: t("title"),
+    description: t("description"),
+    openGraph: {
+      type: "website",
+      siteName: "WeNeed",
+      locale: "he_IL",
+      title: t("title"),
+      description: t("description"),
+      images: [cover],
+    },
+    twitter: { card: "summary_large_image", title: t("title"), description: t("description"), images: [cover] },
+  };
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
