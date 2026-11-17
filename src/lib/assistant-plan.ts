@@ -43,6 +43,32 @@ type Existing = { id: string; name: string; quantity: number | null; unit: strin
 const isoDate = z.iso.date();
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
+const HEBREW = /[\u0590-\u05ff]/;
+const LATIN = /[a-z]/i;
+
+/** Words of a name, without numbers and signs ("גבנצ 15%" -> ["גבנצ"]). */
+const words = (name: string) =>
+  normalizeName(name)
+    .split(/[^\p{L}]+/u)
+    .filter((word) => word.length >= 2);
+
+/**
+ * A check on the AI's "already on the list": the two names must share a
+ * word, allowing singular/plural ("עגבנייה" ~ "עגבניות"). It keeps related
+ * products apart ("גבינה לבנה" vs "גבנצ 15%"). Names in different
+ * languages ("milk" / "חלב") are left to the AI.
+ */
+export function plausiblySame(a: string, b: string) {
+  const mixed = (HEBREW.test(a) && LATIN.test(b) && !HEBREW.test(b)) || (LATIN.test(a) && !HEBREW.test(a) && HEBREW.test(b));
+  if (mixed) return true;
+  const shared = (x: string, y: string) => {
+    let n = 0;
+    while (n < x.length && n < y.length && x[n] === y[n]) n++;
+    return n >= Math.min(4, x.length, y.length);
+  };
+  return words(a).some((x) => words(b).some((y) => shared(x, y)));
+}
+
 const blank = { quantity: null, unit: null, dueDate: null, dueTime: null, assignee: null, assigneeId: null };
 
 /** Shopping: new products are added; ones still open on the list become "add more?" questions. */
@@ -53,9 +79,17 @@ export function planShopping(result: ShoppingParse, open: Existing[]): Plan {
     if (!name) continue;
     const quantity = item.quantity && item.quantity > 0 && item.quantity <= 100_000 ? item.quantity : null;
     const unit = item.unit?.trim().slice(0, 30) || null;
-    const existing = item.existing && open.find((row) => normalizeName(row.name) === normalizeName(item.existing!));
+    const existing =
+      item.existing &&
+      open.find((row) => normalizeName(row.name) === normalizeName(item.existing!) && plausiblySame(name, row.name));
     if (existing) {
-      const total = combineQuantities(existing, { quantity, unit });
+      // Asking again for a product on the list: with no amount, one more of
+      // what is there; with a bare number, in the unit already on the list.
+      const added =
+        quantity === null
+          ? { quantity: existing.quantity === null ? null : 1, unit: existing.unit }
+          : { quantity, unit: unit ?? existing.unit };
+      const total = combineQuantities(existing, added);
       plan.duplicates.push({
         itemId: existing.id,
         name: existing.name,
@@ -77,7 +111,9 @@ export function planChecklist(result: ChecklistParse, current: { name: string }[
   for (const item of result.items) {
     const name = item.name.trim().slice(0, 100);
     if (!name) continue;
-    const existing = item.existing && current.find((row) => normalizeName(row.name) === normalizeName(item.existing!));
+    const existing =
+      item.existing &&
+      current.find((row) => normalizeName(row.name) === normalizeName(item.existing!) && plausiblySame(name, row.name));
     if (existing) {
       plan.skipped.push(existing.name);
       continue;
