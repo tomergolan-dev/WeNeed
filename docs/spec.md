@@ -63,6 +63,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ### Chores
 
+- Shown in the app as **"משימות"** (tasks), the more general word; "מטלות הבית" is just an example (decided 2026-11-17).
 - A place can have several chores lists.
 - A chore has a title, an optional **due date** and **due time** (Israel time), and an optional assignee.
 - Status signs, like traffic signs:
@@ -78,7 +79,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ### Checklists
 
-- For example "Weekend up north" or "Gym bag".
+- A list to check off, without dates: not necessarily fixed, it changes as needed and can be kept for next time. For example "Weekend up north" or "Gym bag".
 - Items can be added, edited and removed at any time; the list itself stays.
 - **Check all** and **Uncheck all**, mainly to reset the list before the next use.
 - Unchecked items are shown first, with a progress bar; each group keeps the list's order.
