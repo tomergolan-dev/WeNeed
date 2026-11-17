@@ -11,7 +11,7 @@ Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates
 
 New direction (2026-11-16): a multi-place web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused.
 
-- Stage A (design) is approved. Stage B (places, and sign-in with Google or an email code) is live. Stage C (lists of all three kinds: shopping, chores, checklists) is in progress. Next: the AI chat, then invites. See "Development stages" in `docs/spec.md`.
+- Stage A (design) is approved. Stages B (places, and sign-in with Google or an email code) and C (lists of all three kinds: shopping, chores, checklists) are live. Next: the AI chat, then invites. See "Development stages" in `docs/spec.md`.
 - Production: https://weneed.tomergolan.dev
 
 ## Code map

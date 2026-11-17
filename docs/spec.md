@@ -153,6 +153,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - Shopping: finish shopping and per-list history. Chores: due date and time, due-soon and overdue signs. Checklists: check all / uncheck all.
   - Built and tested on the `dev` database. The existing lists became "קניות" (with its finished rounds as history) and "מטלות".
   - Chores and checklists were moved into this stage on 2026-11-17, before the AI chat, at Tomer's request. Reordering checklists and the two chores sorts were added the same day, also at his request.
+  - Released to production on 2026-11-17: the database was backed up, then migrations 0004–0008 were run.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
