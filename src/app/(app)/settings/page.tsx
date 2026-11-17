@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { ChevronLeft, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { PlaceForm } from "@/components/places/place-form";
@@ -23,40 +25,36 @@ export default async function SettingsPage() {
 }
 
 async function PlaceSettings() {
-  const { user, place: current } = await requirePlace();
+  const { place: current } = await requirePlace();
+  // The personal area has no settings of its own.
+  if (current.personal) redirect("/");
   const [t, place] = await Promise.all([getTranslations("Settings"), getPlace(current.id)]);
   if (!place) notFound();
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Keyed by place, so switching places resets the form. */}
-      <PlaceForm
-        key={place.id}
-        mode="edit"
-        name={place.name}
-        icon={isPlaceIcon(place.icon) ? place.icon : "home"}
-      />
-      <section className="flex flex-col gap-2">
-        <h2 className="text-[13px] font-semibold text-muted-foreground">{t("members")}</h2>
-        <ul className="flex flex-col rounded-[18px] border bg-card px-4 shadow-soft">
-          {place.members.map((m) => (
-            <li key={m.id} className="flex min-h-13 items-center justify-between gap-3 border-b last:border-b-0">
-              <span className="font-medium">
-                {m.name}
-                {m.id === user.id && <span className="ms-1.5 text-sm font-normal text-muted-foreground">{t("you")}</span>}
-                {m.role === "owner" && (
-                  <span className="ms-2 rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
-                    {t("owner")}
-                  </span>
-                )}
-              </span>
-              <span dir="ltr" className="truncate text-sm text-muted-foreground">
-                {m.email}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {current.role === "owner" && (
+        // Keyed by place, so switching places resets the form.
+        <PlaceForm
+          key={place.id}
+          mode="edit"
+          name={place.name}
+          icon={isPlaceIcon(place.icon) ? place.icon : "home"}
+        />
+      )}
+      <Link
+        href="/members"
+        className="flex min-h-15 items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 shadow-soft transition-colors active:bg-muted"
+      >
+        <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
+          <Users className="size-5" aria-hidden />
+        </span>
+        <span className="flex flex-1 flex-col">
+          <span className="font-semibold">{t("membersLink")}</span>
+          <span className="text-[13px] text-muted-foreground">{t("membersCount", { count: place.members.length })}</span>
+        </span>
+        <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
+      </Link>
     </div>
   );
 }

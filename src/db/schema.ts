@@ -23,7 +23,11 @@ const createdAt = () =>
 export const listType = pgEnum("list_type", ["shopping", "tasks", "checklist"]);
 export const listStatus = pgEnum("list_status", ["active", "completed"]);
 
+// "owner" is shown as "מנהל/ת" (admin); a place can have several.
 export const placeRole = pgEnum("place_role", ["owner", "member"]);
+// Who sees a list in a shared place: every member, or only the members added to it.
+export const listVisibility = pgEnum("list_visibility", ["place", "selected"]);
+export const inviteStatus = pgEnum("invite_status", ["pending", "accepted", "declined", "canceled"]);
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -42,6 +46,11 @@ export const places = pgTable("places", {
   name: text("name").notNull(),
   // Icon key, see src/lib/place-icons.ts
   icon: text("icon").notNull().default("home"),
+  // Set for a user's personal area ("שלי"): one per user, with them as its only
+  // member. Its lists are private unless shared with people (list_members).
+  personalOwnerId: uuid("personal_owner_id")
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
   createdAt: createdAt(),
 });
 
@@ -55,6 +64,9 @@ export const placeMembers = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: placeRole("role").notNull().default("member"),
+    // False for someone invited to some lists only: they see just the lists
+    // they were added to (list_members), not the lists open to the whole place.
+    allLists: boolean("all_lists").notNull().default(true),
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.placeId, t.userId] }), index("place_members_user_idx").on(t.userId)],
@@ -84,9 +96,46 @@ export const lists = pgTable(
       .references(() => places.id, { onDelete: "cascade" }),
     type: listType("type").notNull(),
     name: text("name").notNull(),
+    visibility: listVisibility("visibility").notNull().default("place"),
     createdAt: createdAt(),
   },
   (t) => [index("lists_place_idx").on(t.placeId, t.type, t.createdAt)],
+);
+
+// People added to a list: in a shared place, members who see a "selected" list
+// or who were invited to some lists only; in a personal area, the people it is
+// shared with. Admins of a place always see all of its lists.
+export const listMembers = pgTable(
+  "list_members",
+  {
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    addedAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.listId, t.userId] }), index("list_members_user_idx").on(t.userId)],
+);
+
+// An invitation by email, to a whole place (listIds null) or to some of its lists.
+export const invites = pgTable(
+  "invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    placeId: uuid("place_id")
+      .notNull()
+      .references(() => places.id, { onDelete: "cascade" }),
+    // Lowercase.
+    email: text("email").notNull(),
+    invitedBy: uuid("invited_by").references(() => users.id, { onDelete: "set null" }),
+    listIds: uuid("list_ids").array(),
+    status: inviteStatus("status").notNull().default("pending"),
+    respondedAt: timestamp("responded_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("invites_email_idx").on(t.email, t.status), index("invites_place_idx").on(t.placeId, t.status)],
 );
 
 // A shopping list is used in rounds: finishing a round locks it into the
@@ -174,3 +223,4 @@ export type Place = typeof places.$inferSelect;
 export type List = typeof lists.$inferSelect;
 export type Round = typeof rounds.$inferSelect;
 export type Item = typeof items.$inferSelect;
+export type Invite = typeof invites.$inferSelect;

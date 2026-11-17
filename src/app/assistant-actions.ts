@@ -4,7 +4,7 @@ import { and, count, eq, gt, inArray, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
-import { aiRequests, items, placeMembers, users } from "@/db/schema";
+import { aiRequests, items } from "@/db/schema";
 import type { ActionError, ActionResult } from "@/app/actions";
 import { parseChecklist, parseChores, parseShopping } from "@/lib/ai/list-assistant";
 import { getCurrentUser } from "@/lib/auth";
@@ -12,7 +12,7 @@ import { normalizeName } from "@/lib/normalize";
 import { DEFAULT_CATEGORY } from "@/lib/categories";
 import { TIME_ZONE } from "@/lib/due";
 import { combineQuantities } from "@/lib/items";
-import { findEditableItem, findList } from "@/lib/list-access";
+import { findEditableItem, findList, getListPeople } from "@/lib/list-access";
 import { ensureActiveRound } from "@/lib/lists";
 
 // Limits on AI chat messages, so open sign-up can't run up the API bill.
@@ -157,11 +157,7 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
         reply.added.push({ id, name, quantity: null, unit: null, dueDate: null, dueTime: null, assignee: null });
       }
     } else {
-      const members = await db
-        .select({ id: users.id, name: users.name })
-        .from(placeMembers)
-        .innerJoin(users, eq(users.id, placeMembers.userId))
-        .where(eq(placeMembers.placeId, list.placeId));
+      const members = await getListPeople(list.id);
       const result = await parseChores(
         parsedText.data,
         { sender: user.name, members: members.map((m) => m.name) },

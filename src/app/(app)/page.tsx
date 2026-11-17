@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { LogOut, Settings } from "lucide-react";
+import { Lock, LogOut, Settings } from "lucide-react";
 import { logOut } from "@/app/actions";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Brand } from "@/components/brand";
@@ -9,7 +9,10 @@ import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceSwitcher } from "@/components/places/place-switcher";
 import { requirePlace } from "@/lib/auth";
 import { LIST_KINDS } from "@/lib/list-kinds";
-import { getPlaceLists, type ListSummary } from "@/lib/lists";
+import { getInvitesFor } from "@/lib/invites";
+import { getPlaceLists, getSharedWithMe, type ListSummary } from "@/lib/lists";
+import { MiniInitials } from "@/components/people";
+import { InviteBanner } from "@/components/places/invite-banner";
 import { cn } from "@/lib/utils";
 
 const iconButton =
@@ -23,9 +26,9 @@ export default async function HomePage() {
       <header className="flex items-center justify-between px-5 pt-[18px]">
         <Brand />
         <div className="flex items-center gap-2">
-          <Link href="/settings" aria-label={t("settings")} className={iconButton}>
-            <Settings className="size-5" aria-hidden />
-          </Link>
+          <Suspense>
+            <SettingsLink label={t("settings")} />
+          </Suspense>
           <form action={logOut}>
             <button type="submit" aria-label={t("logOut")} className={iconButton}>
               <LogOut className="size-5 rtl:-scale-x-100" aria-hidden />
@@ -42,24 +45,48 @@ export default async function HomePage() {
   );
 }
 
+/** Settings belong to a shared place; the personal area has none. */
+async function SettingsLink({ label }: { label: string }) {
+  const { place } = await requirePlace();
+  if (place.personal) return null;
+  return (
+    <Link href="/settings" aria-label={label} className={iconButton}>
+      <Settings className="size-5" aria-hidden />
+    </Link>
+  );
+}
+
 async function Home() {
-  const { place, places } = await requirePlace();
-  const [t, lists] = await Promise.all([getTranslations("Home"), getPlaceLists(place.id)]);
-  const attention = lists.reduce((sum, list) => sum + list.overdue + list.soon, 0);
+  const { user, place, places } = await requirePlace();
+  const [t, lists, shared, invites] = await Promise.all([
+    getTranslations("Home"),
+    getPlaceLists(place.id, user.id),
+    place.personal ? getSharedWithMe(user.id) : Promise.resolve([]),
+    user.email ? getInvitesFor(user.email) : Promise.resolve([]),
+  ]);
+  const sharedCount = place.personal ? shared.length : (await getSharedWithMe(user.id)).length;
+  const attention = [...lists, ...shared].reduce((sum, list) => sum + list.overdue + list.soon, 0);
+  const banners = invites.map((invite) => <InviteBanner key={invite.id} invite={invite} />);
 
   return (
     <>
       <AutoRefresh />
-      <PlaceSwitcher current={place} places={places} />
+      <PlaceSwitcher
+        current={place}
+        places={places}
+        sharedWithMe={sharedCount}
+        invites={banners.length > 0 ? banners : undefined}
+      />
+      {banners.length > 0 && <div className="mt-3 flex flex-col gap-2.5">{banners}</div>}
       <div className="pt-6 pb-1">
         <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t("count", { count: lists.length })}
+          {place.personal ? t("personalSubtitle") : t("count", { count: lists.length })}
           {attention > 0 && ` · ${t("attention", { count: attention })}`}
         </p>
       </div>
       <div className="flex items-center justify-between px-1 pt-4 pb-2.5">
-        <h2 className="text-[13px] font-semibold text-muted-foreground">{t("lists")}</h2>
+        <h2 className="text-[13px] font-semibold text-muted-foreground">{place.personal ? t("myLists") : t("lists")}</h2>
         <NewListButton />
       </div>
       {lists.length === 0 ? (
@@ -70,16 +97,28 @@ async function Home() {
         <ul className="flex flex-col gap-2.5">
           {lists.map((list) => (
             <li key={list.id}>
-              <ListCard list={list} />
+              <ListCard list={list} personal={place.personal} />
             </li>
           ))}
         </ul>
+      )}
+      {shared.length > 0 && (
+        <>
+          <h2 className="px-1 pt-6 pb-2.5 text-[13px] font-semibold text-muted-foreground">{t("sharedWithMe")}</h2>
+          <ul className="flex flex-col gap-2.5">
+            {shared.map((list) => (
+              <li key={list.id}>
+                <ListCard list={list} personal={false} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </>
   );
 }
 
-async function ListCard({ list }: { list: ListSummary }) {
+async function ListCard({ list, personal }: { list: ListSummary; personal: boolean }) {
   const t = await getTranslations("Home");
   const { icon: Icon, tone } = LIST_KINDS[list.type];
   const open = list.total - list.done;
@@ -104,6 +143,28 @@ async function ListCard({ list }: { list: ListSummary }) {
     bar = "bg-primary";
   }
 
+  // Who sees it: in my personal area, "only me" or who it is shared with;
+  // someone else's list, whose it is; in a shared place, a lock when not open to all.
+  let access: React.ReactNode = null;
+  if (personal) {
+    access =
+      list.sharedWith.length === 0 ? (
+        <>
+          <Lock className="size-3.5" aria-hidden />
+          {t("onlyMe")} ·
+        </>
+      ) : (
+        <>
+          <MiniInitials names={list.sharedWith} />
+          {t("sharedWith", { names: list.sharedWith.join(", ") })} ·
+        </>
+      );
+  } else if (list.ownerName) {
+    access = <>{t("from", { name: list.ownerName })} ·</>;
+  } else if (list.visibility === "selected") {
+    access = <Lock className="size-3.5" aria-label={t("onlySome")} />;
+  }
+
   return (
     <Link
       href={`/lists/${list.id}`}
@@ -114,7 +175,10 @@ async function ListCard({ list }: { list: ListSummary }) {
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-semibold">{list.name}</span>
-        <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">{meta}</span>
+        <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
+          {access}
+          {meta}
+        </span>
         {bar && list.total > 0 && (
           <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[#eef1f0]">
             <span className={cn("block h-full rounded-full", bar)} style={{ width: `${(list.done / list.total) * 100}%` }} />

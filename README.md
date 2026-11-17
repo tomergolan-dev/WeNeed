@@ -11,7 +11,7 @@ Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates
 
 New direction (2026-11-16): a multi-place web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused.
 
-- Stage A (design) is approved. Stages B (places, and sign-in with Google or an email code), C (lists of all three kinds: shopping, chores, checklists) and D (the AI chat in every list) are live. Next: invites. See "Development stages" in `docs/spec.md`.
+- Stage A (design) is approved. Stages B (places, and sign-in with Google or an email code), C (lists of all three kinds: shopping, chores, checklists) and D (the AI chat in every list) are live. Stage E (the personal area "שלי", invites, roles and who sees each list) is built and tested on the dev database. See "Development stages" in `docs/spec.md`.
 - Production: https://weneed.tomergolan.dev
 
 ## Code map
@@ -26,7 +26,8 @@ New direction (2026-11-16): a multi-place web app with shopping, chores and chec
 | `src/app/(app)/page.tsx`, `src/app/(app)/lists/`, `src/components/lists/`, `src/lib/lists.ts`, `src/lib/list-kinds.ts` | Home screen with the place's lists; a list screen per kind, the list menu, choosing a kind | Active (Stage C) |
 | `src/components/shopping/`, `src/components/chores/`, `src/components/checklist/`, `src/lib/due.ts` | Shopping (finish and history), chores (due dates and signs) and checklists | Active (Stage C) |
 | `src/components/lists/assistant-bar.tsx`, `src/components/lists/quick-add.tsx`, `src/app/assistant-actions.ts`, `src/lib/ai/` | The AI chat at the bottom of a list, and adding by hand at the top | Active (Stage D) |
-| `src/app/(app)/settings/` | Place settings and members | Active (Stage B) |
+| `src/app/(app)/settings/` | Place settings (name and icon, admins only) | Active (Stage B) |
+| `src/app/(app)/members/`, `src/app/(app)/invites/`, `src/app/sharing-actions.ts`, `src/lib/invites.ts`, `src/lib/list-access.ts`, `src/components/lists/list-access-form.tsx`, `src/components/places/members-manager.tsx` | Personal area, invites by email, roles, and who sees each list | Active (Stage E) |
 | `src/lib/bot/`, `src/lib/whatsapp.ts`, `src/app/api/whatsapp/` | WhatsApp bot | Paused; kept for reuse, each file marked with a header comment |
 | `scripts/link-email.ts` | CLI that links an email to a user from the bot era | Active until Tomer and Nurit are linked in production |
 | `scripts/eval-parser.mts` | Sample messages for the bot's Claude parser | Paused with the bot |

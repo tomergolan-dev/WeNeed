@@ -1,9 +1,11 @@
 import "server-only";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { placeMembers, places, users } from "@/db/schema";
+import { lists, placeMembers, places, users } from "@/db/schema";
+import { canSeeListSql } from "./list-access";
+import { PERSONAL_ICON } from "./place-icons";
 import { getSessionUserId } from "./session";
 
 export type CurrentUser = { id: string; name: string; email: string | null };
@@ -13,7 +15,14 @@ export type PlaceSummary = {
   name: string;
   icon: string;
   role: "owner" | "member";
+  /** The user's personal area ("שלי"). Its name is shown from the messages file. */
+  personal: boolean;
+  /** False when the user was invited to some lists only. */
+  allLists: boolean;
   memberCount: number;
+  listCount: number;
+  /** Lists in the place this user can see. */
+  visibleCount: number;
 };
 
 // The place the user is looking at; any place they belong to can be chosen.
@@ -37,20 +46,52 @@ export async function requireUser(): Promise<CurrentUser> {
   return user;
 }
 
-/** The places a user belongs to, in the order they joined. */
+/**
+ * The user's personal area, created on first use. Its lists are private
+ * unless shared, and the user is its only member and admin.
+ */
+export async function ensurePersonalPlace(userId: string): Promise<string> {
+  const [existing] = await db
+    .select({ id: places.id, member: placeMembers.userId })
+    .from(places)
+    .leftJoin(placeMembers, and(eq(placeMembers.placeId, places.id), eq(placeMembers.userId, userId)))
+    .where(eq(places.personalOwnerId, userId));
+  let placeId = existing?.id;
+  if (!placeId) {
+    const [created] = await db
+      .insert(places)
+      .values({ name: "", icon: PERSONAL_ICON, personalOwnerId: userId })
+      .onConflictDoNothing()
+      .returning({ id: places.id });
+    placeId =
+      created?.id ??
+      (await db.select({ id: places.id }).from(places).where(eq(places.personalOwnerId, userId)))[0].id;
+  }
+  if (!existing?.member) {
+    await db.insert(placeMembers).values({ placeId, userId, role: "owner" }).onConflictDoNothing();
+  }
+  return placeId;
+}
+
+/** The places a user belongs to: their personal area first, then shared places in the order they joined. */
 export async function getUserPlaces(userId: string): Promise<PlaceSummary[]> {
-  return db
+  const rows = await db
     .select({
       id: places.id,
       name: places.name,
       icon: places.icon,
       role: placeMembers.role,
+      personal: sql<boolean>`${places.personalOwnerId} is not null`,
+      allLists: placeMembers.allLists,
       memberCount: sql<number>`(select count(*)::int from ${placeMembers} pm where pm.place_id = ${places.id})`,
+      listCount: sql<number>`(select count(*)::int from ${lists} where ${lists.placeId} = ${places.id})`,
+      visibleCount: sql<number>`(select count(*)::int from ${lists} vl where vl.place_id = ${places.id} and ${canSeeListSql(userId, "vl")})`,
     })
     .from(placeMembers)
     .innerJoin(places, eq(places.id, placeMembers.placeId))
     .where(eq(placeMembers.userId, userId))
-    .orderBy(asc(placeMembers.joinedAt), asc(places.name));
+    .orderBy(desc(sql`${places.personalOwnerId} is not null`), asc(placeMembers.joinedAt), asc(places.name));
+  return rows;
 }
 
 export async function isPlaceMember(userId: string, placeId: string): Promise<boolean> {
@@ -61,19 +102,23 @@ export async function isPlaceMember(userId: string, placeId: string): Promise<bo
   return Boolean(row);
 }
 
-/** The chosen place if the user still belongs to it, otherwise their first place. */
+/**
+ * The chosen place if the user still belongs to it, otherwise their first
+ * shared place, otherwise their personal area.
+ */
 export async function getCurrentPlace(userId: string) {
+  await ensurePersonalPlace(userId);
   const userPlaces = await getUserPlaces(userId);
   const chosen = (await cookies()).get(PLACE_COOKIE)?.value;
-  const place = userPlaces.find((p) => p.id === chosen) ?? userPlaces[0] ?? null;
+  const place =
+    userPlaces.find((p) => p.id === chosen) ?? userPlaces.find((p) => !p.personal) ?? userPlaces[0];
   return { place, places: userPlaces };
 }
 
-/** For pages inside a place: needs a session and at least one place. */
+/** For pages inside a place: needs a session. Every user has at least their personal area. */
 export async function requirePlace() {
   const user = await requireUser();
   const { place, places: userPlaces } = await getCurrentPlace(user.id);
-  if (!place) redirect("/places/new");
   return { user, place, places: userPlaces };
 }
 

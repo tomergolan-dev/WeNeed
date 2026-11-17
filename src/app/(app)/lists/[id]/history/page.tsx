@@ -5,8 +5,8 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { PageHeader } from "@/components/page-header";
-import { requirePlace } from "@/lib/auth";
-import { getCompletedRounds, getList } from "@/lib/lists";
+import { requireUser } from "@/lib/auth";
+import { getCompletedRounds, getListFor } from "@/lib/lists";
 
 export default function HistoryPage({ params }: PageProps<"/lists/[id]/history">) {
   return (
@@ -20,8 +20,8 @@ async function History({ params }: Pick<PageProps<"/lists/[id]/history">, "param
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const { place } = await requirePlace();
-  const list = await getList(place.id, id);
+  const user = await requireUser();
+  const list = (await getListFor(user.id, id))?.list;
   if (!list || list.type !== "shopping") notFound();
 
   const [t, format, rounds] = await Promise.all([

@@ -3,23 +3,41 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2 } from "lucide-react";
+import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2, Users } from "lucide-react";
 import { deleteList, renameList, setListType } from "@/app/actions";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
+import type { ListAccess } from "@/lib/list-access";
 import type { ListType } from "@/lib/list-kinds";
+import { ListAccessForm } from "./list-access-form";
 import { ListNameForm } from "./list-name-form";
 import { ListTypePicker } from "./list-type-picker";
 
 const row =
   "flex h-14 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-start font-semibold transition-colors active:bg-muted";
 
-/** The list's ⋯ menu: history (shopping), rename, kind and delete. */
-export function ListMenu({ listId, name, type }: { listId: string; name: string; type: ListType }) {
+/**
+ * The list's ⋯ menu: history (shopping), rename and kind; for admins also who
+ * sees the list and delete. `access` is set only for admins.
+ */
+export function ListMenu({
+  listId,
+  name,
+  type,
+  access,
+  userId,
+}: {
+  listId: string;
+  name: string;
+  type: ListType;
+  access: ListAccess | null;
+  userId: string;
+}) {
   const t = useTranslations("Lists");
+  const tAccess = useTranslations("Access");
   const tErrors = useTranslations("Errors");
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"menu" | "rename" | "type" | "delete">("menu");
+  const [view, setView] = useState<"menu" | "access" | "rename" | "type" | "delete">("menu");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -49,7 +67,9 @@ export function ListMenu({ listId, name, type }: { listId: string; name: string;
               ? t("typeTitle")
               : view === "delete"
                 ? t("deleteTitle")
-                : name
+                : view === "access" && access
+                  ? tAccess(access.personal ? "personalTitle" : "title", { name })
+                  : name
         }
       >
         {view === "menu" && (
@@ -61,6 +81,13 @@ export function ListMenu({ listId, name, type }: { listId: string; name: string;
                 <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
               </Link>
             )}
+            {access && (
+              <button type="button" onClick={() => setView("access")} className={row}>
+                <Users className="size-5 text-muted-foreground" aria-hidden />
+                <span className="flex-1">{tAccess("menu")}</span>
+                <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
+              </button>
+            )}
             <button type="button" onClick={() => setView("rename")} className={row}>
               <Pencil className="size-5 text-muted-foreground" aria-hidden />
               {t("rename")}
@@ -69,11 +96,16 @@ export function ListMenu({ listId, name, type }: { listId: string; name: string;
               <Shapes className="size-5 text-muted-foreground" aria-hidden />
               {t("changeType")}
             </button>
-            <button type="button" onClick={() => setView("delete")} className={`${row} text-destructive`}>
-              <Trash2 className="size-5" aria-hidden />
-              {t("delete")}
-            </button>
+            {access && (
+              <button type="button" onClick={() => setView("delete")} className={`${row} text-destructive`}>
+                <Trash2 className="size-5" aria-hidden />
+                {t("delete")}
+              </button>
+            )}
           </div>
+        )}
+        {view === "access" && access && (
+          <ListAccessForm listId={listId} access={access} userId={userId} onDone={close} />
         )}
         {view === "rename" && (
           <ListNameForm

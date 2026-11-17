@@ -9,8 +9,9 @@ import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ListMenu } from "@/components/lists/list-menu";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { PageHeader } from "@/components/page-header";
-import { requirePlace } from "@/lib/auth";
-import { ensureActiveRound, getChores, getList, getPlace, getRoundItems } from "@/lib/lists";
+import { requireUser } from "@/lib/auth";
+import { getListAccess, getListPeople, isPlaceAdmin } from "@/lib/list-access";
+import { ensureActiveRound, getChores, getListFor, getRoundItems } from "@/lib/lists";
 
 export default function ListPage({ params }: PageProps<"/lists/[id]">) {
   return (
@@ -24,29 +25,40 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const { place } = await requirePlace();
-  const list = await getList(place.id, id);
-  if (!list) notFound();
+  const user = await requireUser();
+  const found = await getListFor(user.id, id);
+  if (!found) notFound();
+  const { list } = found;
 
   const round = await ensureActiveRound(list.id);
-  const [t, items, details] = await Promise.all([
+  const [t, tPlaces, items, people, admin] = await Promise.all([
     getTranslations("ListKinds"),
+    getTranslations("Places"),
     list.type === "tasks" ? getChores(list.id) : getRoundItems(round.id),
-    getPlace(place.id),
+    getListPeople(list.id),
+    isPlaceAdmin(user.id, list.placeId),
   ]);
-  const people = details?.members.map(({ id, name }) => ({ id, name })) ?? [];
+  // Only admins change who sees a list.
+  const access = admin ? await getListAccess(list.id) : null;
+  // Where the list lives: a shared place, my personal area, or someone else's.
+  const where =
+    found.personalOwnerId === null
+      ? found.placeName
+      : found.personalOwnerId === user.id
+        ? tPlaces("personal")
+        : tPlaces("sharedBy", { name: found.ownerName ?? "" });
   const open = items.filter((item) => !item.done).length;
   const subtitle =
     list.type === "tasks"
-      ? `${place.name} · ${t("tasks.open", { count: open })}`
+      ? `${where} · ${t("tasks.open", { count: open })}`
       : list.type === "checklist"
-        ? t("checklist.subtitle")
-        : place.name;
+        ? `${where} · ${t("checklist.subtitle")}`
+        : where;
 
   const header = (
     <PageHeader title={list.name} subtitle={subtitle}>
       {list.type === "shopping" && <FinishListButton listId={list.id} remaining={open} />}
-      <ListMenu listId={list.id} name={list.name} type={list.type} />
+      <ListMenu listId={list.id} name={list.name} type={list.type} access={access} userId={user.id} />
     </PageHeader>
   );
 

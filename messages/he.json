@@ -8,7 +8,8 @@
     "settings": "הגדרות",
     "logOut": "יציאה",
     "switchPlace": "החלפת מקום",
-    "yourPlace": "המקום שלך"
+    "yourPlace": "המקום שלך",
+    "personalArea": "אזור אישי"
   },
   "Home": {
     "title": "מה צריך היום?",
@@ -22,7 +23,16 @@
     "attention": "{count, plural, one {מטלה אחת דורשת תשומת לב} other {# מטלות דורשות תשומת לב}}",
     "overdue": "{count} באיחור",
     "soon": "{count} בקרוב",
-    "checked": "{done} מתוך {total} מסומנים"
+    "checked": "{done} מתוך {total} מסומנים",
+    "personalSubtitle": "רשימות שלא שייכות לשום מקום",
+    "myLists": "הרשימות שלי",
+    "sharedWithMe": "משותפות איתי",
+    "onlyMe": "רק אני",
+    "sharedWith": "משותפת עם {names}",
+    "from": "מ{name}",
+    "invite": "<b>הזמנה חדשה:</b> {name} הזמין/ה אותך {what}",
+    "inviteOpen": "לצפייה",
+    "onlySome": "פתוחה לאנשים מסוימים"
   },
   "Lists": {
     "new": "רשימה חדשה",
@@ -176,7 +186,12 @@
     "generic": "משהו השתבש. נסו שוב.",
     "noPlace": "עוד אין לך מקום. צרו מקום חדש.",
     "aiLimit": "הגעתם למגבלת ההודעות היומית. אפשר להוסיף ידנית למעלה.",
-    "aiFailed": "לא הצלחתי להבין. נסו לנסח אחרת, או הוסיפו ידנית למעלה."
+    "aiFailed": "לא הצלחתי להבין. נסו לנסח אחרת, או הוסיפו ידנית למעלה.",
+    "invalidEmail": "כתובת האימייל לא תקינה.",
+    "alreadyMember": "כבר נמצא/ת כאן.",
+    "tooMany": "שלחתם הרבה הזמנות היום. נסו שוב מחר.",
+    "lastAdmin": "צריך להשאיר לפחות מנהל אחד במקום.",
+    "deliveryFailed": "ההזמנה נשמרה, אבל המייל לא נשלח. נסו שוב בעוד רגע."
   },
   "Categories": {
     "produce": "פירות וירקות",
@@ -200,9 +215,8 @@
     "title": "הגדרות המקום",
     "save": "שמירה",
     "saved": "נשמר",
-    "members": "חברי המקום",
-    "owner": "מנהל/ת",
-    "you": "(את/ה)"
+    "membersLink": "חברים והזמנות",
+    "membersCount": "{count, plural, one {חבר אחד} other {# חברים}}"
   },
   "Bot": {
     "added": "הוספתי לקניות ✅ {items}\n{url}",
@@ -232,13 +246,11 @@
     "questionExpired": "השאלה הזאת כבר לא בתוקף. שלחו שוב את ההודעה 🙂"
   },
   "Places": {
-    "title": "המקומות שלי",
+    "title": "לאן להיכנס?",
     "close": "סגירה",
-    "newPlace": "מקום חדש",
-    "members": "{count, plural, one {חבר אחד} other {# חברים}}",
-    "createTitle": "מקום חדש",
-    "createSubtitle": "דירה, בית, משרד או כל מקום שצריך בו דברים.",
-    "firstTitle": "בואו ניצור את המקום הראשון שלך",
+    "newPlace": "מקום משותף חדש",
+    "createTitle": "מקום משותף חדש",
+    "createSubtitle": "דירה, בית, משרד או כל מקום שמשתפים עם אחרים.",
     "nameLabel": "שם המקום",
     "namePlaceholder": "למשל: הדירה שלנו",
     "iconLabel": "אייקון",
@@ -250,7 +262,15 @@
       "restaurant": "מסעדה",
       "store": "חנות",
       "vacation": "חופשה"
-    }
+    },
+    "personal": "שלי",
+    "personalMeta": "אזור אישי · {lists, plural, =0 {אין רשימות} one {רשימה אחת} other {# רשימות}}{shared, plural, =0 {} other { · # משותפות איתי}}",
+    "sharedPlaces": "מקומות משותפים",
+    "sharedBy": "של {name}",
+    "placeMeta": "{members, plural, one {חבר אחד} other {# חברים}} · {lists, plural, =0 {אין רשימות} one {רשימה אחת} other {# רשימות}}",
+    "placeMetaLimited": "{members, plural, one {חבר אחד} other {# חברים}} · רואה {visible} מתוך {lists}",
+    "admin": "מנהל",
+    "member": "חבר"
   },
   "SignInEmail": {
     "subject": "{code} הוא קוד הכניסה שלכם ל-WeNeed",
@@ -313,5 +333,87 @@
     "kept": "השארתי כמו שהיה.",
     "skipped": "כבר ברשימה: {names}",
     "addedChores": "{count, plural, one {הוספתי מטלה אחת} other {הוספתי # מטלות}}"
+  },
+  "Members": {
+    "title": "חברים במקום",
+    "inviteTitle": "הזמנת חבר/ה",
+    "emailPlaceholder": "כתובת אימייל",
+    "to": "למה להזמין",
+    "toPlace": "לכל המקום",
+    "toLists": "לרשימות מסוימות",
+    "pickLists": "אילו רשימות?",
+    "send": "שליחת הזמנה",
+    "sent": "ההזמנה נשלחה",
+    "added": "נוסף/ה לרשימות",
+    "members": "חברים ({count})",
+    "me": "(אני)",
+    "allLists": "כל הרשימות",
+    "sees": "רואה: {lists}",
+    "seesNothing": "עוד לא רואה רשימות",
+    "pending": "ממתינים לאישור ({count})",
+    "invitedToPlace": "הוזמן/ה לכל המקום",
+    "invitedToLists": "הוזמן/ה ל: {lists}",
+    "cancel": "ביטול",
+    "roles": "מנהלים רואים את כל הרשימות, מזמינים ומסירים חברים. חברים רואים את הרשימות שפתוחות להם, ויכולים ליצור רשימות חדשות.",
+    "roleFor": "התפקיד של {name}",
+    "admin": "מנהל",
+    "member": "חבר",
+    "adminHint": "רואה את כל הרשימות ומזמין חברים",
+    "memberHint": "רואה את הרשימות שפתוחות לו",
+    "remove": "הסרה מהמקום",
+    "removeConfirm": "כן, להסיר את {name}",
+    "removeHint": "{name} לא יראה יותר את הרשימות של המקום."
+  },
+  "Access": {
+    "menu": "מי רואה",
+    "title": "מי רואה את ״{name}״?",
+    "personalTitle": "עם מי לשתף את ״{name}״?",
+    "group": "מי רואה",
+    "place": "כל המקום",
+    "placeHint": "כל החברים, גם מי שיצטרף בהמשך",
+    "selected": "אנשים מסוימים",
+    "selectedHint": "{count} מתוך {total} חברים",
+    "me": "(אני)",
+    "adminSees": "מנהל · רואה הכל",
+    "memberSees": "רואה את כל המקום",
+    "member": "חבר",
+    "limited": "מוזמן לרשימות מסוימות",
+    "always": "{name}, תמיד רואה",
+    "onlyMe": "עוד לא שיתפת את הרשימה. אפשר להזמין באימייל.",
+    "inviteLabel": "להזמין מישהו רק לרשימה הזאת",
+    "invite": "הזמנה",
+    "invited": "שלחנו הזמנה ל-{email}",
+    "added": "{email} נוסף/ה לרשימה",
+    "pending": "ממתין/ה לאישור",
+    "save": "שמירה"
+  },
+  "Invite": {
+    "title": "הזמנה",
+    "toList": "{name} הזמין/ה אותך לרשימה",
+    "toLists": "{name} הזמין/ה אותך ל-{count} רשימות",
+    "toPlace": "{name} הזמין/ה אותך למקום",
+    "someone": "מישהו",
+    "inPlace": "{place}",
+    "personalOf": "מהרשימות של {name}",
+    "onlyThis": "תראו רק את הרשימה הזאת, לא את שאר המקום",
+    "onlyThese": "תראו רק את הרשימות האלה, לא את שאר המקום",
+    "wholePlace": "תראו את כל הרשימות שפתוחות לחברי המקום",
+    "already": "{names} כבר ברשימה",
+    "open": "{count, plural, =0 {אין פריטים פתוחים} one {פריט פתוח אחד} other {# פריטים פתוחים}}",
+    "accept": "אישור והצטרפות",
+    "decline": "דחייה",
+    "after": "אחרי ההצטרפות הרשימה תופיע אצלך תחת ״{place}״.",
+    "afterPersonal": "אחרי ההצטרפות הרשימה תופיע אצלך ב״שלי״, תחת ״משותפות איתי״.",
+    "gone": "ההזמנה כבר לא בתוקף, או שנשלחה לכתובת אימייל אחרת.",
+    "home": "לדף הבית"
+  },
+  "InviteEmail": {
+    "heading": "{name} הזמין/ה אותך {what} ב-WeNeed",
+    "toPlace": "ל״{place}״",
+    "toList": "לרשימה ״{list}״",
+    "toLists": "ל-{count} רשימות",
+    "body": "היכנסו עם כתובת האימייל הזאת כדי לאשר את ההזמנה.",
+    "button": "לצפייה בהזמנה",
+    "footer": "לא מכירים? אפשר להתעלם מהמייל הזה."
   }
 }

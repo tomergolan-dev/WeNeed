@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { X } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { PlaceForm } from "@/components/places/place-form";
-import { getUserPlaces, requireUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 // Outside the (app) layout, which needs a place: this is where the first one is made.
 export default function NewPlacePage() {
@@ -18,26 +18,23 @@ export default function NewPlacePage() {
 }
 
 async function NewPlace() {
-  const user = await requireUser();
-  const [t, places] = await Promise.all([getTranslations("Places"), getUserPlaces(user.id)]);
-  const first = places.length === 0;
+  await requireUser();
+  const t = await getTranslations("Places");
 
   return (
     <>
       <header className="flex items-center justify-between">
         <Brand />
-        {!first && (
-          <Link
-            href="/"
-            aria-label={t("close")}
-            className="flex size-10 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853]"
-          >
-            <X className="size-4" aria-hidden />
-          </Link>
-        )}
+        <Link
+          href="/"
+          aria-label={t("close")}
+          className="flex size-10 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853]"
+        >
+          <X className="size-4" aria-hidden />
+        </Link>
       </header>
       <h1 className="mt-8 text-[26px] font-extrabold tracking-tight">
-        {first ? t("firstTitle") : t("createTitle")}
+        {t("createTitle")}
       </h1>
       <p className="mt-1 mb-6 text-sm text-muted-foreground">{t("createSubtitle")}</p>
       <PlaceForm mode="create" />

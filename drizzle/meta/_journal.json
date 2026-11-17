@@ -71,6 +71,13 @@
       "when": 1794907981587,
       "tag": "0009_ai_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794921351612,
+      "tag": "0010_personal_areas_and_invites",
+      "breakpoints": true
     }
   ]
 }

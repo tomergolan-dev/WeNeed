@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { z } from "zod";
 import type { Item } from "@/db/schema";
 import { PageHeader } from "@/components/page-header";
-import { requirePlace } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { formatQuantity, groupByCategory } from "@/lib/items";
 import { getCompletedRound, getRoundItems } from "@/lib/lists";
 import { cn } from "@/lib/utils";
@@ -24,8 +24,8 @@ async function Round({ params }: Pick<Props, "params">) {
   const { id, roundId } = await params;
   if (!z.uuid().safeParse(id).success || !z.uuid().safeParse(roundId).success) notFound();
 
-  const { place } = await requirePlace();
-  const row = await getCompletedRound(place.id, id, roundId);
+  const user = await requireUser();
+  const row = await getCompletedRound(user.id, id, roundId);
   if (!row) notFound();
 
   const [t, tCategories, tItem, format, items] = await Promise.all([

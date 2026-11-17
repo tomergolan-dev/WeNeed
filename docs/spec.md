@@ -15,10 +15,16 @@ We Need is also a portfolio project, so it includes a public demo.
 - A **user** signs in with an email address (Google, or a code sent by email).
 - A **place** is a shared space with members, for example "Parents' home", "My apartment", "Office", "Restaurant".
 - A user can belong to several places and switches between them from a selector at the top of the screen.
-- Any user can create a new place, with a name and an icon (home, apartment, office, restaurant, store, vacation), and invite others to it (see "Invites").
-- The creator of a place is its owner. In the first version owners and members have the same rights; the role is kept for later.
-- The chosen place is remembered on the device. A user with no places is taken to "create your first place".
-- Every member of a place can view and edit all of its lists.
+- Every user has a **personal area, "שלי"**, created automatically. Its lists belong to no place ("ציוד לצפון"): private by default, and each can be shared with specific people by email. Lists others shared with the user appear there under "משותפות איתי".
+- Any user can create a **shared place**, with a name and an icon (home, apartment, office, restaurant, store, vacation), and invite others to it (see "Invites").
+- The place selector ("לאן להיכנס?") shows "שלי" first, then shared places with the user's role, then pending invites.
+- The chosen place is remembered on the device. A new user starts in "שלי"; the first shared place is the default for users who have one.
+- Roles in a shared place (decided 2026-11-17):
+  - **Admin (מנהל, stored as `owner`):** sees every list, invites and removes members, changes roles, decides who sees each list, renames the place, deletes lists. The creator is an admin; a place keeps at least one.
+  - **Member (חבר):** sees the lists open to them, edits them, and can create lists.
+- Who sees a list ("מי רואה", admins only, from the list menu): **the whole place** (every member, also future ones) or **selected people** (admins always see it). The owner of a personal area is its admin.
+- Someone invited **to some lists only** joins the place as a member who sees just those lists, plus lists they create. A list such a member creates starts as "selected people", with them on it.
+- Only admins invite, for now. Regular members inviting to lists they see is an open question.
 - First real places:
   - "הדירה של תומר ותמיר": Tomer, Tamir and Nurit (Tomer's mom).
   - "בית משפחת גולן": Nurit.
@@ -114,14 +120,16 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Invites
 
-- A member of a place invites someone by email address (for example a partner or a colleague).
-- The invited person gets an invitation saying who invited them and to which place, with two actions:
-  - **"Accept in the app"**: a button with a hidden link (no raw URL shown) that opens the app.
-  - **"Decline"**.
-- Delivery:
-  - In the app: pending invites appear for the invited address after sign-in, with Accept and Decline.
-  - Optionally through the WhatsApp bot. A bot message to someone who hasn't written to it in the last 24 hours must use a template approved by Meta; templates support a link button and a quick-reply button together.
-- Declined or accepted invites can't be used again.
+- An admin invites by email address, in two ways:
+  - From "חברים במקום" (settings): to the whole place, or to selected lists.
+  - From a list's "מי רואה": to this list only. In a personal area this is how a list is shared.
+- Someone already in the place is added to the lists right away, without an invite.
+- One pending invite per address and place; inviting again widens it. Up to 30 invite emails per admin per day.
+- The email (Resend) says who invited and to what, with a "view the invite" button. The link opens `/invites/[id]`, which works only for the invited address after sign-in.
+- The invite screen shows the list or place, what the person will see, who is already on the list, and Accept / Decline. Accepting opens the list.
+- Pending invites also appear as a banner on the home screen and in the place selector.
+- Admins see pending invites on the members screen and can cancel them. Accepted, declined or canceled invites can't be used again.
+- Later, maybe: invites through the WhatsApp bot (needs a Meta-approved template).
 
 ## Demo
 
@@ -149,9 +157,10 @@ We Need is also a portfolio project, so it includes a public demo.
 - **Stack:** Next.js (App Router), TypeScript, Tailwind, shadcn/ui, next-intl, Drizzle, Neon, Vercel. Claude API for the AI chat.
 - **Data model:**
   - `users` with a unique email address (the phone number stays only for the paused bot). *(Stage B)*
-  - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
+  - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)* A place with `personal_owner_id` is that user's personal area; `place_members.all_lists` is false for someone invited to some lists only. *(Stage E)*
   - `sign_in_codes`: hashed one-time email codes with expiry and attempt count. *(Stage B)*
-  - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
+  - `invites`: place, invited email, invited by, list ids (null for the whole place), status (`pending` / `accepted` / `declined` / `canceled`). *(Stage E)*
+  - `lists.visibility` (`place` / `selected`) and `list_members` (list, user): who sees a list beyond the place's admins. *(Stage E)*
   - `lists`: place, kind (`shopping` / `tasks` / `checklist`), name. *(Stage C)*
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
@@ -174,18 +183,23 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
   - Built and tested on the `dev` database, with adding by hand moved to the top of the list.
   - Released to production on 2026-11-17: the database was backed up, then migration 0009 was run.
-- [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
+- [ ] **Stage E, personal area, invites and permissions:** "שלי", invite by email to a place or to lists, accept or decline in the app, members and roles, who sees each list.
+  - Mockup approved on 2026-11-17 (rows "שלי, הרשאות וצירופים" in the mockup).
+  - Built and tested on the `dev` database (migration 0010).
+- [ ] **Stage F, attachments:** a paperclip on an item opens its details: a note, links, and photos or files (private Vercel Blob storage).
+- [ ] **Stage G, branding:** logo (three dots, the last one a check mark), slogan, and the share cover ("צריך לקנות… / צריך לעשות… / צריך לארוז…").
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
 ## Open questions
 
-- [ ] Invites through the WhatsApp bot: in the first version, or later?
 - [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
 - [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
 - [x] "Due soon": 24 hours before the due time (decided 2026-11-17; easy to change in `src/lib/due.ts`).
 - [ ] Chores: is there an assignee per chore?
-- [ ] Permissions (Stage E): what can an owner do that a member can't (invite, remove members, delete lists, delete the place)?
+- [x] Permissions (Stage E): decided 2026-11-17, see "Users and places".
+- [ ] Can regular members invite people to lists they see? For now only admins invite.
+- [ ] Leaving a place, and deleting a place: not built yet.
 
 ## Future
 

@@ -5,13 +5,13 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { items, lists, placeMembers, places, rounds } from "@/db/schema";
+import { items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { combineQuantities, findOpenItem } from "@/lib/items";
 import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
-import { findEditableItem, findList, guessCategory, nextPosition } from "@/lib/list-access";
+import { canSeeList, findEditableItem, findList, guessCategory, isPlaceAdmin, nextPosition } from "@/lib/list-access";
 import { isPlaceIcon } from "@/lib/place-icons";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
@@ -212,10 +212,14 @@ export async function createList(name: string, type: ListType): Promise<ActionRe
   const parsed = listName.safeParse(name);
   if (!parsed.success || !isListType(type)) return fail("invalid");
 
+  // Someone invited to some lists only sees what they create: it starts
+  // with just them (and the admins), and they can open it up later.
+  const limited = !context.place.allLists && context.place.role !== "owner";
   const [list] = await db
     .insert(lists)
-    .values({ placeId: context.place.id, type, name: parsed.data })
+    .values({ placeId: context.place.id, type, name: parsed.data, visibility: limited ? "selected" : "place" })
     .returning({ id: lists.id });
+  if (limited) await db.insert(listMembers).values({ listId: list.id, userId: context.user.id });
   await ensureActiveRound(list.id);
   redirect(`/lists/${list.id}`);
 }
@@ -276,6 +280,7 @@ export async function deleteList(listId: string): Promise<ActionResult> {
 
   const list = await findList(listId, user.id);
   if (!list) return fail("notFound");
+  if (!(await isPlaceAdmin(user.id, list.placeId))) return fail("unauthorized");
 
   await db.delete(lists).where(eq(lists.id, list.id));
   redirect("/");
@@ -292,9 +297,9 @@ const choreInput = z.object({
 });
 export type ChoreInput = z.input<typeof choreInput>;
 
-/** No assignee is always fine; otherwise the assignee must belong to the place. */
-async function isValidAssignee(assigneeId: string | null, placeId: string) {
-  return assigneeId === null || isPlaceMember(assigneeId, placeId);
+/** No assignee is always fine; otherwise the assignee must be able to see the list. */
+async function isValidAssignee(assigneeId: string | null, listId: string) {
+  return assigneeId === null || canSeeList(assigneeId, listId);
 }
 
 function choreFields({ title, assigneeId, dueDate, dueTime }: z.output<typeof choreInput>) {
@@ -311,7 +316,7 @@ export async function addChore(listId: string, input: ChoreInput): Promise<Actio
 
   const list = await findList(listId, user.id);
   if (!list) return fail("notFound");
-  if (!(await isValidAssignee(parsed.data.assigneeId, list.placeId))) return fail("invalid");
+  if (!(await isValidAssignee(parsed.data.assigneeId, list.id))) return fail("invalid");
 
   const round = await ensureActiveRound(list.id);
   await db.insert(items).values({
@@ -334,7 +339,7 @@ export async function updateChore(itemId: string, input: ChoreInput): Promise<Ac
   const item = await findEditableItem(itemId, user.id);
   if (!item) return fail("notFound");
   if (item.status !== "active") return fail("listLocked");
-  if (!(await isValidAssignee(parsed.data.assigneeId, item.placeId))) return fail("invalid");
+  if (!(await isValidAssignee(parsed.data.assigneeId, item.listId))) return fail("invalid");
 
   await db.update(items).set(choreFields(parsed.data)).where(eq(items.id, itemId));
   refresh();
@@ -361,11 +366,12 @@ export async function createPlace(input: PlaceInput): Promise<ActionResult> {
   redirect("/");
 }
 
-/** Renames the current place or changes its icon. Any member may do this. */
+/** Renames the current shared place or changes its icon. Admins only. */
 export async function updatePlace(input: PlaceInput): Promise<ActionResult> {
   const context = await getContext();
   if (!context) return fail("unauthorized");
-  if (!context.place) return fail("noPlace");
+  if (!context.place || context.place.personal) return fail("noPlace");
+  if (context.place.role !== "owner") return fail("unauthorized");
 
   const parsed = placeInput.safeParse(input);
   if (!parsed.success) return fail("invalid");
