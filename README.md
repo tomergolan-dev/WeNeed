@@ -31,6 +31,7 @@ New direction (2026-11-16): a multi-place web app with shopping, chores and chec
 | `src/components/lists/item-details.tsx`, `src/app/attachment-actions.ts`, `src/app/api/attachments/`, `src/lib/attachments.ts`, `src/lib/attachment-rules.ts` | Item details: note, links, photos and documents in private Blob storage | Active (Stage F) |
 | `src/i18n/`, `src/proxy.ts`, `messages/`, `src/components/language-switch.tsx` | Hebrew and English: routing (`/en`), message files, the language switch | Active (Stage H) |
 | `src/app/[locale]/demo/`, `src/components/demo/`, `src/components/lists/backend.tsx`, `src/app/demo-actions.ts`, `src/lib/assistant-plan.ts` | Public demo: the list screens on a store in the browser, with a limited AI chat | Active (Stage H) |
+| `src/components/sidebar.tsx`, `src/components/app-sidebar.tsx` | The wide-screen sidebar: places and their lists (app and demo) | Active (Stage H) |
 | `src/components/brand.tsx`, `src/app/icon.svg`, `src/app/apple-icon.png`, `src/app/manifest.ts`, `public/` | Logo, icons, home-screen install and the share cover | Active (Stage G) |
 | `src/lib/bot/`, `src/lib/whatsapp.ts`, `src/app/api/whatsapp/` | WhatsApp bot | Paused; kept for reuse, each file marked with a header comment |
 | `scripts/link-email.ts` | CLI that links an email to a user from the bot era | Active until Tomer and Nurit are linked in production |

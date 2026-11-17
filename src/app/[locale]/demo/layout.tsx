@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** The public demo: no sign-in, and everything stays in the visitor's browser. */
 export default function DemoLayout({ children }: LayoutProps<"/[locale]/demo">) {
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col">
+    <div className="flex w-full flex-1 flex-col">
       <DemoShell>{children}</DemoShell>
     </div>
   );

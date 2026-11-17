@@ -49,7 +49,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
           }}
         />
       </ListTop>
-      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40">
+      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
           <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
             <div className="flex items-baseline justify-between">

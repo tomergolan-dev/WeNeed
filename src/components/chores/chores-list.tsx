@@ -178,7 +178,7 @@ export function ChoresList({
           }
         />
       </ListTop>
-      <div className="flex gap-2 overflow-x-auto px-5 pt-3.5 [scrollbar-width:none]">
+      <div className="flex gap-2 overflow-x-auto px-5 pt-3.5 lg:px-8 [scrollbar-width:none]">
         <Chip on={filter === "all"} onClick={() => setFilter("all")}>
           {t("all")}
         </Chip>
@@ -193,7 +193,7 @@ export function ChoresList({
         </Chip>
       </div>
 
-      <div className="flex flex-col gap-4 px-5 pt-4 pb-40">
+      <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         {chores.length === 0 && (

@@ -103,8 +103,8 @@ export function AssistantBar({
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
-      <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
+      <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 lg:max-w-3xl lg:px-7 xl:max-w-4xl pb-[max(1rem,env(safe-area-inset-bottom))]">
         {exchange && !isOpenQuestion(exchange) && (
           <Note
             exchange={exchange}

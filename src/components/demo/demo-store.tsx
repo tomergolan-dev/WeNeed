@@ -11,9 +11,10 @@ import { MAX_ATTACHMENTS_PER_ITEM } from "@/lib/attachment-rules";
 import type { AttachmentView } from "@/lib/attachments";
 import { planChecklist, planChores, planShopping, type AssistantReply } from "@/lib/assistant-plan";
 import { DEFAULT_CATEGORY } from "@/lib/categories";
-import { DONE_TASKS_VISIBLE_MS, todayIn } from "@/lib/due";
+import { DONE_TASKS_VISIBLE_MS, dueStatus, todayIn } from "@/lib/due";
 import { combineQuantities, findOpenItem } from "@/lib/items";
 import type { ListType } from "@/lib/list-kinds";
+import type { ListSummary } from "@/lib/lists";
 
 // The public demo keeps a whole place in the visitor's browser
 // (localStorage, one copy per language). Nothing is sent to the database:
@@ -162,6 +163,26 @@ export function itemsOf(state: DemoState, list: DemoList) {
     .filter((item) => item.roundId === list.id)
     .filter((item) => list.type !== "tasks" || !item.done || (item.doneAt && item.doneAt.getTime() > since))
     .sort((a, b) => a.position - b.position);
+}
+
+/** The demo's lists with their counts, as on the home screen; due times as of `now`. */
+export function summarizeLists(state: DemoState, now: number): ListSummary[] {
+  return state.lists.map((list) => {
+    const items = itemsOf(state, list);
+    const statuses = items.filter((item) => !item.done).map((item) => dueStatus(item, now));
+    return {
+      id: list.id,
+      name: list.name,
+      type: list.type,
+      total: items.length,
+      done: items.filter((item) => item.done).length,
+      visibility: "place",
+      ownerName: null,
+      sharedWith: [],
+      overdue: statuses.filter((s) => s === "overdue").length,
+      soon: statuses.filter((s) => s === "soon").length,
+    };
+  });
 }
 
 /** Holds the demo's state outside React, so actions can read it after awaiting the AI. */

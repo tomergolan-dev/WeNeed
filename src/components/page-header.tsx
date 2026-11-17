@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /** A screen title with a back button, an optional subtitle and actions at the end. */
 export function PageHeader({
@@ -16,11 +17,15 @@ export function PageHeader({
 }) {
   const t = useTranslations("Nav");
   return (
-    <header className="flex items-center gap-3 px-5 pt-4 pb-1">
+    <header className="flex items-center gap-3 px-5 pt-4 pb-1 lg:px-8 lg:pt-6">
       <Link
         href={back}
         aria-label={t("back")}
-        className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border bg-card transition-colors active:bg-muted"
+        className={cn(
+          "flex size-11 shrink-0 items-center justify-center rounded-[14px] border bg-card transition-colors active:bg-muted",
+          // On a wide screen the sidebar leads home.
+          (back === "/" || back === "/demo") && "lg:hidden",
+        )}
       >
         <ArrowRight className="size-5 ltr:-scale-x-100" aria-hidden />
       </Link>

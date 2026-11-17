@@ -33,7 +33,7 @@ export function QuickAdd({
 
   return (
     <form
-      className="px-5"
+      className="px-5 lg:px-8"
       onSubmit={(e) => {
         e.preventDefault();
         if (!canSubmit) return;
@@ -67,7 +67,7 @@ export function QuickAdd({
         </p>
       )}
       {open && (
-        <div className="-mx-5 mt-2 flex items-center gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none]">
+        <div className="-mx-5 mt-2 flex items-center gap-2 overflow-x-auto px-5 pb-0.5 lg:-mx-8 lg:px-8 [scrollbar-width:none]">
           {options}
         </div>
       )}

@@ -1,15 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { RotateCcw } from "lucide-react";
-import { DemoProvider, useDemo } from "./demo-store";
+import { Sidebar } from "@/components/sidebar";
+import { DemoProvider, summarizeLists, useDemo } from "./demo-store";
 
 /** The demo's frame: the sample place in this browser, and a strip that says so. */
 export function DemoShell({ children }: { children: React.ReactNode }) {
   return (
     <DemoProvider fallback={<DemoSkeleton />}>
       <DemoStrip />
-      {children}
+      <div className="flex w-full flex-1">
+        <DemoSidebar />
+        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col lg:max-w-3xl xl:max-w-4xl">{children}</div>
+      </div>
     </DemoProvider>
   );
 }
@@ -30,6 +35,15 @@ function DemoStrip() {
       </button>
     </div>
   );
+}
+
+const DEMO_PLACE = "demo";
+
+function DemoSidebar() {
+  const { state } = useDemo();
+  const [now] = useState(() => Date.now());
+  const groups = [{ id: DEMO_PLACE, name: state.place, icon: "home", lists: summarizeLists(state, now) }];
+  return <Sidebar groups={groups} currentId={DEMO_PLACE} base="/demo" switchable={false} />;
 }
 
 function DemoSkeleton() {

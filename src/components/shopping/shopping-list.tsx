@@ -136,7 +136,7 @@ export function ShoppingList({
           }
         />
       </ListTop>
-      <div className="flex flex-col gap-4 px-5 pt-3.5 pb-40">
+      <div className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
           <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
             <p className="text-sm font-semibold">{t("progress", { done: bought.length, total })}</p>
@@ -160,6 +160,7 @@ export function ShoppingList({
           </div>
         )}
 
+        <div className="flex flex-col gap-4 lg:block lg:columns-2 lg:gap-x-4 lg:*:mb-4 lg:*:break-inside-avoid">
         {groupByCategory(open).map(({ category, items }) => {
           const { icon: Icon, tone } = CATEGORY_ICONS[isCategory(category) ? category : DEFAULT_CATEGORY];
           return (
@@ -182,6 +183,7 @@ export function ShoppingList({
             ))}
           </Section>
         )}
+        </div>
       </div>
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
     </>

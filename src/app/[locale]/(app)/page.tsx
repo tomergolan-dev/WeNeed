@@ -22,10 +22,12 @@ export default async function HomePage() {
 
   return (
     <>
-      <header className="flex items-center justify-between px-5 pt-[18px]">
-        <Brand />
+      <header className="flex items-center justify-between px-5 pt-[18px] lg:px-8 lg:pt-6">
+        <span className="lg:invisible">
+          <Brand />
+        </span>
         <div className="flex items-center gap-2">
-          <LanguageSwitch />
+          <LanguageSwitch className="lg:hidden" />
           <Suspense>
             <SettingsLink label={t("settings")} />
           </Suspense>
@@ -36,7 +38,7 @@ export default async function HomePage() {
           </form>
         </div>
       </header>
-      <main className="flex flex-1 flex-col px-5 pt-3 pb-8">
+      <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
         <Suspense fallback={<HomeSkeleton />}>
           <Home />
         </Suspense>
@@ -94,7 +96,7 @@ async function Home() {
           {t("empty")}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2.5">
+        <ul className="grid gap-2.5 lg:grid-cols-2">
           {lists.map((list) => (
             <li key={list.id}>
               <ListCard list={list} personal={place.personal} />
@@ -105,7 +107,7 @@ async function Home() {
       {shared.length > 0 && (
         <>
           <h2 className="px-1 pt-6 pb-2.5 text-[13px] font-semibold text-muted-foreground">{t("sharedWithMe")}</h2>
-          <ul className="flex flex-col gap-2.5">
+          <ul className="grid gap-2.5 lg:grid-cols-2">
             {shared.map((list) => (
               <li key={list.id}>
                 <ListCard list={list} personal={false} />
