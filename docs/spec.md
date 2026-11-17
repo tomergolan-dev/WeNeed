@@ -145,7 +145,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Demo
 
-- At `/demo` (and `/en/demo`), open to everyone with no sign-up; a "צפייה בדמו" button sits in the sign-in screen's header, next to the language switch.
+- At `/demo` (and `/en/demo`), open to everyone with no sign-up; a "Demo ↗" button (in English in both languages) sits in the sign-in screen's header, next to the language switch.
 - Shows a sample place ("הבית לדוגמה" / "Sample home") with a shopping list, a tasks list (one overdue, one due soon, one with a note and a link) and a checklist, in the page's language.
 - Visitors can do everything they can in the app on those lists: add, check, edit, delete, reorder, finish a shopping trip, create, rename and delete lists, and add notes, links and files (decided 2026-11-17).
   - Everything stays in the visitor's browser (localStorage, one copy per language). Files stay only until the page reloads. "Start over" brings back the sample place.
@@ -160,7 +160,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - Mobile-first, installable to the home screen (PWA), so it opens like a regular app.
 - Visual style influenced by CheckPlease (Tomer's earlier app): similar icon style and the feel of a polished, modern, high-end app. Not a copy, and with a different color palette.
 - The design is drafted and approved as a mockup before it is built.
-- Wide screens (1024px and up), decided 2026-11-17 (option A of three mockups): a sidebar beside the screen with the logo, the language switch, and every place the user belongs to with its lists (the personal area first, with lists shared with the user). Each list shows what is left, or tasks overdue or due soon. Clicking a place opens its home screen; "New list" sits under the current place. The screen beside it is wider, the home screen's lists are in two columns, a shopping list's sections flow into two columns, and "back to home" is left to the sidebar. Phones keep the single-column app unchanged. The demo has the same sidebar.
+- Wide screens (1024px and up), decided 2026-11-17 (option A of three mockups): a sidebar beside the screen with the logo, the language switch, and every place the user belongs to with its lists (the personal area first, with lists shared with the user). Each list shows what is left, or tasks overdue or due soon. Clicking a place opens its home screen; "New list" sits under the current place. The screen beside it is wider, the home screen's lists are in two columns, a shopping list's sections flow into two columns, and "back to home" is left to the sidebar. Phones keep the single-column app unchanged. The demo has the same sidebar. The sign-in screen on a wide screen is split: the form on one half, and on the other a brand-green panel with the slogan, a line on what WeNeed is, and the three kinds of lists.
 - Hebrew (right to left) and English (left to right), decided 2026-11-17:
   - Hebrew lives at the plain addresses, English under `/en` (for example `/en/lists/…`).
   - A switch (a globe, like the Mac keyboard key) on the home, demo, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
