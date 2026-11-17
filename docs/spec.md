@@ -99,7 +99,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - The details sheet: the note (saved when leaving the field), links (opened in a new tab), and thumbnails of photos and documents, with buttons to add a link, take a photo, or pick a file.
 - Files: photos (JPEG, PNG, WebP, GIF, HEIC), PDF, Word, Excel and plain text, up to 15MB each and 20 attachments per item.
 - Storage: a private Vercel Blob store (`weneed-attachments`, Frankfurt). The browser uploads straight to it with a one-time token that only someone who can edit the item gets, under `items/<itemId>/`. Files are served only through `/api/attachments/[id]`, to people who see the list; they never get a public address. Deleting an attachment, an item or a list deletes its files.
-- Items in a finished shopping round keep their attachments in the history, read-only; items carried over to the new round start without them.
+- When a shopping round is finished, unbought items carried over to the new round take their note and attachments with them (decided 2026-11-17, at Tomer's request). Bought items keep theirs in the history, read-only.
 
 ## AI chat
 

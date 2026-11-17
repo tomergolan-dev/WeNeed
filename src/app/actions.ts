@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
+import { attachments, items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
 import { deleteStoredFiles } from "@/lib/attachments";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
@@ -190,12 +190,24 @@ export async function finishRound(listId: string, carryOver: boolean): Promise<A
 
   const next = await ensureActiveRound(list.id);
   if (carryOver) {
+    // Unbought items move to the new round with their note and attachments;
+    // the copies left in the history keep only what was bought with them.
     await db.execute(sql`
-      insert into ${items} (round_id, name, quantity, unit, category, assignee_id, added_by, position)
-      select ${next.id}, name, quantity, unit, category, assignee_id, added_by,
-        row_number() over (order by position, created_at)
-      from ${items}
-      where round_id = ${finished.id} and done = false
+      with carried as (
+        select id as old_id, gen_random_uuid() as new_id, name, quantity, unit, category, assignee_id, added_by, note,
+          row_number() over (order by position, created_at) as position
+        from ${items}
+        where round_id = ${finished.id} and done = false
+      ),
+      inserted as (
+        insert into ${items} (id, round_id, name, quantity, unit, category, assignee_id, added_by, note, position)
+        select new_id, ${next.id}, name, quantity, unit, category, assignee_id, added_by, note, position
+        from carried
+        returning id
+      )
+      update ${attachments} set item_id = carried.new_id
+      from carried
+      where ${attachments}.item_id = carried.old_id
     `);
   }
 
