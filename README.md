@@ -11,7 +11,7 @@ Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates
 
 New direction (2026-11-16): a multi-place web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused.
 
-- Stage A (design) is approved. Stages B (places, and sign-in with Google or an email code) and C (lists of all three kinds: shopping, chores, checklists) are live. Next: the AI chat, then invites. See "Development stages" in `docs/spec.md`.
+- Stage A (design) is approved. Stages B (places, and sign-in with Google or an email code) and C (lists of all three kinds: shopping, chores, checklists) are live. Stage D (the AI chat in every list) is built and not yet live. Next: invites. See "Development stages" in `docs/spec.md`.
 - Production: https://weneed.tomergolan.dev
 
 ## Code map
@@ -25,10 +25,11 @@ New direction (2026-11-16): a multi-place web app with shopping, chores and chec
 | `src/db/schema.ts`, `drizzle/` | Database schema and migrations (users, places, lists, rounds, items) | Active |
 | `src/app/(app)/page.tsx`, `src/app/(app)/lists/`, `src/components/lists/`, `src/lib/lists.ts`, `src/lib/list-kinds.ts` | Home screen with the place's lists; a list screen per kind, the list menu, choosing a kind | Active (Stage C) |
 | `src/components/shopping/`, `src/components/chores/`, `src/components/checklist/`, `src/lib/due.ts` | Shopping (finish and history), chores (due dates and signs) and checklists | Active (Stage C) |
+| `src/components/lists/assistant-bar.tsx`, `src/components/lists/quick-add.tsx`, `src/app/assistant-actions.ts`, `src/lib/ai/` | The AI chat at the bottom of a list, and adding by hand at the top | Active (Stage D) |
 | `src/app/(app)/settings/` | Place settings and members | Active (Stage B) |
 | `src/lib/bot/`, `src/lib/whatsapp.ts`, `src/app/api/whatsapp/` | WhatsApp bot | Paused; kept for reuse, each file marked with a header comment |
 | `scripts/link-email.ts` | CLI that links an email to a user from the bot era | Active until Tomer and Nurit are linked in production |
-| `scripts/eval-parser.mts` | Sample messages for the Claude parser | Active; reused for the AI chat |
+| `scripts/eval-parser.mts` | Sample messages for the bot's Claude parser | Paused with the bot |
 
 ## Getting started
 
@@ -44,4 +45,4 @@ Useful scripts:
 - `npm run typecheck`, `npm run lint`, `npm run build`
 - `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle Kit)
 - `npm run user:link-email -- name@gmail.com +972501234567` links an email to a user from the bot era
-- `npm run eval:parser` runs sample messages through the Claude parser (calls the real API, a fraction of a cent per run)
+- `npm run eval:parser` runs sample messages through the paused bot's Claude parser (calls the real API, a fraction of a cent per run)

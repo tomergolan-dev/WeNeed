@@ -10,13 +10,21 @@ import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from 
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
 import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
+import { findEditableItem, findList, guessCategory, nextPosition } from "@/lib/list-access";
 import { isPlaceIcon } from "@/lib/place-icons";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
 
 // Error codes map to messages under "Errors" in messages/he.json.
-export type ActionError = "unauthorized" | "invalid" | "notFound" | "listLocked" | "noPlace";
+export type ActionError =
+  | "unauthorized"
+  | "invalid"
+  | "notFound"
+  | "listLocked"
+  | "noPlace"
+  | "aiLimit"
+  | "aiFailed";
 export type ActionResult = { ok: true } | { ok: false; error: ActionError };
 
 const ok: ActionResult = { ok: true };
@@ -26,11 +34,10 @@ const itemInput = z.object({
   name: z.string().trim().min(1).max(100),
   quantity: z.number().positive().max(100_000).nullable(),
   unit: z.string().trim().max(30).nullable().transform((u) => u || null),
-  category: z.enum(CATEGORIES).default(DEFAULT_CATEGORY),
+  // Left out when adding: shopping items get a guessed section.
+  category: z.enum(CATEGORIES).optional(),
 });
 export type ItemInput = z.input<typeof itemInput>;
-
-const uuid = z.uuid();
 
 /** The signed-in user and the place they are looking at. */
 async function getContext() {
@@ -38,30 +45,6 @@ async function getContext() {
   if (!user) return null;
   const { place } = await getCurrentPlace(user.id);
   return { user, place };
-}
-
-/** Loads an item only if its list is in a place the user belongs to. */
-async function findEditableItem(itemId: string, userId: string) {
-  if (!uuid.safeParse(itemId).success) return null;
-  const [row] = await db
-    .select({ id: items.id, status: rounds.status, placeId: lists.placeId })
-    .from(items)
-    .innerJoin(rounds, eq(rounds.id, items.roundId))
-    .innerJoin(lists, eq(lists.id, rounds.listId))
-    .innerJoin(placeMembers, and(eq(placeMembers.placeId, lists.placeId), eq(placeMembers.userId, userId)))
-    .where(eq(items.id, itemId));
-  return row ?? null;
-}
-
-/** Loads a list only if it is in a place the user belongs to. */
-async function findList(listId: string, userId: string) {
-  if (!uuid.safeParse(listId).success) return null;
-  const [row] = await db
-    .select({ id: lists.id, placeId: lists.placeId, type: lists.type })
-    .from(lists)
-    .innerJoin(placeMembers, and(eq(placeMembers.placeId, lists.placeId), eq(placeMembers.userId, userId)))
-    .where(eq(lists.id, listId));
-  return row ?? null;
 }
 
 export async function addItem(listId: string, input: ItemInput): Promise<ActionResult> {
@@ -74,17 +57,19 @@ export async function addItem(listId: string, input: ItemInput): Promise<ActionR
   const list = await findList(listId, user.id);
   if (!list) return fail("notFound");
 
+  const category =
+    parsed.data.category ??
+    (list.type === "shopping" ? await guessCategory(list.placeId, parsed.data.name) : DEFAULT_CATEGORY);
   const round = await ensureActiveRound(list.id);
-  await db
-    .insert(items)
-    .values({ ...parsed.data, roundId: round.id, addedBy: user.id, position: nextPosition(round.id) });
+  await db.insert(items).values({
+    ...parsed.data,
+    category,
+    roundId: round.id,
+    addedBy: user.id,
+    position: nextPosition(round.id),
+  });
   refresh();
   return ok;
-}
-
-/** The position after the last item in a round, so new items go last. */
-function nextPosition(roundId: string) {
-  return sql<number>`(select coalesce(max(${items.position}), 0) + 1 from ${items} where ${items.roundId} = ${roundId})`;
 }
 
 /** Saves a new order for the items of a list's current round. */
@@ -119,7 +104,10 @@ export async function updateItem(itemId: string, input: ItemInput): Promise<Acti
   if (!item) return fail("notFound");
   if (item.status !== "active") return fail("listLocked");
 
-  await db.update(items).set(parsed.data).where(eq(items.id, itemId));
+  await db
+    .update(items)
+    .set({ ...parsed.data, category: parsed.data.category ?? DEFAULT_CATEGORY })
+    .where(eq(items.id, itemId));
   refresh();
   return ok;
 }
@@ -369,7 +357,7 @@ export async function updatePlace(input: PlaceInput): Promise<ActionResult> {
 export async function switchPlace(placeId: string): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return fail("unauthorized");
-  if (!uuid.safeParse(placeId).success || !(await isPlaceMember(user.id, placeId))) {
+  if (!z.uuid().safeParse(placeId).success || !(await isPlaceMember(user.id, placeId))) {
     return fail("notFound");
   }
 

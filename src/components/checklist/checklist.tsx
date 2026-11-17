@@ -6,7 +6,9 @@ import { ArrowUpDown, Check, CheckCheck, ListChecks, RotateCcw } from "lucide-re
 import { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
-import { AddItemBar } from "@/components/lists/add-item-bar";
+import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListTop } from "@/components/lists/list-top";
+import { QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +16,13 @@ import { cn } from "@/lib/utils";
 import { SortableItems } from "./sortable-items";
 
 /** A permanent list: items are checked, and all unchecked again for next time. */
-export function Checklist({ listId, items }: { listId: string; items: Item[] }) {
+export function Checklist({ listId, header, items }: { listId: string; header: React.ReactNode; items: Item[] }) {
   const t = useTranslations("Checklist");
   const tItem = useTranslations("ItemForm");
   const { items: optimistic, run, error } = useListItems(items);
   const [editing, setEditing] = useState<Item | null>(null);
   const [reordering, setReordering] = useState(false);
+  const [name, setName] = useState("");
 
   // Unchecked first, so what's left is at the top; each group keeps the list's order.
   const sorted = [...optimistic.filter((i) => !i.done), ...optimistic.filter((i) => i.done)];
@@ -30,7 +33,21 @@ export function Checklist({ listId, items }: { listId: string; items: Item[] }) 
 
   return (
     <>
-      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-32">
+      <ListTop header={header}>
+        <QuickAdd
+          placeholder={t("quickAddPlaceholder")}
+          value={name}
+          onChange={setName}
+          onSubmit={() => {
+            const trimmed = name.trim();
+            run({ type: "add", item: draftItem({ name: trimmed }) }, () =>
+              addItem(listId, { name: trimmed, quantity: null, unit: null }),
+            );
+            setName("");
+          }}
+        />
+      </ListTop>
+      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40">
         {total > 0 && (
           <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
             <div className="flex items-baseline justify-between">
@@ -136,14 +153,7 @@ export function Checklist({ listId, items }: { listId: string; items: Item[] }) 
         )}
       </div>
 
-      <AddItemBar
-        placeholder={t("addPlaceholder")}
-        onAdd={(name) =>
-          run({ type: "add", item: draftItem({ name }) }, () =>
-            addItem(listId, { name, quantity: null, unit: null }),
-          )
-        }
-      />
+      <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
 
       <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={tItem("editTitle")}>
         {editing && (

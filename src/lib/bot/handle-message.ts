@@ -14,7 +14,7 @@ import { formatQuantity, groupByCategory } from "@/lib/items";
 import { ensureActiveRound, ensureFirstList, getChores, getPlace, getRoundItems } from "@/lib/lists";
 import { sendButtons, sendText, type Button, type IncomingMessage } from "@/lib/whatsapp";
 import messages from "../../../messages/he.json";
-import { normalizeName } from "./normalize";
+import { normalizeName } from "@/lib/normalize";
 import { parseAnswer } from "./parse-answer";
 import { parseMessage, type Target } from "./parse-message";
 import { clearPending, readPending, setPending, type NewItem, type PendingAction } from "./pending";

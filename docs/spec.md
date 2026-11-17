@@ -44,7 +44,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - Items have a name, quantity, unit and store section (category), and are grouped by section in store walking order.
 - Each item shows the initial of the member who added it.
 - Check-off while shopping; checked items move to an "in the cart" section, and a progress bar shows how much is in the cart.
-- Adding by hand: a bar at the bottom of the list; type a name and press Enter, or press + with nothing typed to fill in quantity, unit and section. Stage D turns this bar into the AI chat.
+- Adding by hand: see "List screens". When the section is left on automatic, the item gets the section it had the last time it was bought in this place, otherwise the AI guesses it.
 - **Finish shopping:** locks the current round and moves it to the list's history, and the list starts a new round. Unbought items stay on the list by default (the user can choose to drop them).
 - **History:** per list, from the list's menu; each finished round shows what was bought and what wasn't, read-only.
 - Item rules (from the bot era, kept for the AI chat):
@@ -76,14 +76,28 @@ We Need is also a portfolio project, so it includes a public demo.
 - Unchecked items are shown first, with a progress bar; each group keeps the list's order.
 - **Reorder:** "Change order" switches the list to a mode where items are dragged by a handle (touch, mouse or keyboard). The order is saved for everyone. New items go last.
 
+### List screens
+
+- The title and the manual add field stay at the top, and the AI chat at the bottom; only the list scrolls between them.
+- **Adding by hand** (top): one field with an "Add" button. Once a name is typed, a row of small controls opens under it:
+  - Shopping: quantity (with − and +), unit, and section (automatic by default).
+  - Chores: "today", "tomorrow", another date, a time (once there is a date), and an assignee.
+  - Checklists: the name only.
+- Decided 2026-11-17, at Tomer's request: adding by hand moved to the top so quantities and details are set while adding, not by editing afterwards, and the bottom is kept for the AI chat.
+
 ## AI chat
 
+- The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply to the last message opens above the bar, so the list stays in view: what was added (with "undo"), and questions about items already on the list.
+- Each message is read once; there is no chat history yet.
+- Limits against abuse: at most 100 messages per user and 2,000 in total in 24 hours.
+
 - Every list has a chat where the user writes what they need, and the AI updates the list.
-- Shopping: extracts name, quantity, unit and section per item, and handles items already on the list.
+- Shopping: extracts name, quantity, unit and section per item. For an item already on the list it asks whether to update the quantity (for example "כן, 24 יח׳" or "להשאיר").
 - Chores: extracts the title and, when given, the date and time ("tomorrow at 5", "by Friday").
-- Checklists: adds the items written.
+- Checklists: adds the items written, and skips those already on the list.
 - Manual adding and editing always remain available, for quick or precise changes.
-- Model: Claude (`claude-haiku-5-5`), with structured outputs. The parsing rules and sample-message tests from the bot carry over (`npm run eval:parser`).
+- Model: Claude (`claude-haiku-5-5`), with structured outputs. The parsing rules come from the bot (`src/lib/ai/list-assistant.ts`).
+- Later: editing by chat ("remove the milk", "check the eggs").
 
 ## Sign-in
 
@@ -139,6 +153,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `lists`: place, kind (`shopping` / `tasks` / `checklist`), name. *(Stage C)*
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
+  - `ai_requests`: one row per AI chat message, for the daily limits. *(Stage D)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
 
@@ -155,6 +170,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - Chores and checklists were moved into this stage on 2026-11-17, before the AI chat, at Tomer's request. Reordering checklists and the two chores sorts were added the same day, also at his request.
   - Released to production on 2026-11-17: the database was backed up, then migrations 0004–0008 were run.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
+  - Built and tested on the `dev` database, with adding by hand moved to the top of the list.
 - [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.

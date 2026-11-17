@@ -148,6 +148,19 @@ export const items = pgTable(
   (t) => [index("items_round_idx").on(t.roundId)],
 );
 
+// One row per message to a list's AI chat, for the daily limits.
+export const aiRequests = pgTable(
+  "ai_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("ai_requests_user_idx").on(t.userId, t.createdAt), index("ai_requests_created_idx").on(t.createdAt)],
+);
+
 // Paused WhatsApp bot: Meta may deliver a message more than once.
 export const processedMessages = pgTable("processed_messages", {
   waMessageId: text("wa_message_id").primaryKey(),

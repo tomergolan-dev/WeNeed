@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, ListTodo } from "lucide-react";
+import { CalendarDays, Check, Clock, ListTodo } from "lucide-react";
 import { addChore, deleteItem, setItemDone, updateChore, type ChoreInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
-import { AddItemBar } from "@/components/lists/add-item-bar";
+import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListTop } from "@/components/lists/list-top";
+import { chipClass, OptionChip, PickerChip, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
-import { dueAt, dueStatus, type DueStatus } from "@/lib/due";
+import { dueAt, dueStatus, todayIn, type DueStatus } from "@/lib/due";
 import { cn } from "@/lib/utils";
 import { ChoreFields, emptyChore, toChoreInput, type ChoreDraft } from "./chore-fields";
 import { DuePill, useDueText } from "./chore-due";
@@ -39,13 +41,36 @@ function patchOf(input: ChoreInput): Partial<Item> {
   };
 }
 
-export function ChoresList({ listId, items, people }: { listId: string; items: Item[]; people: Person[] }) {
+/** A date `days` after `date`, both YYYY-MM-DD. */
+function addDays(date: string, days: number) {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+export function ChoresList({
+  listId,
+  header,
+  items,
+  people,
+}: {
+  listId: string;
+  header: React.ReactNode;
+  items: Item[];
+  people: Person[];
+}) {
   const t = useTranslations("Chores");
   const { items: chores, run, error } = useListItems(items);
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("date");
   const [editing, setEditing] = useState<Item | null>(null);
+  const [draft, setDraft] = useState<ChoreDraft>(emptyChore);
+  const setField = (patch: Partial<ChoreDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const now = useNow();
+  const dueText = useDueText();
+  const today = todayIn(now);
+  const tomorrow = addDays(today, 1);
+  const pickDate = (date: string) =>
+    setField({ dueDate: draft.dueDate === date ? "" : date, dueTime: draft.dueDate === date ? "" : draft.dueTime });
 
   const add = (input: ChoreInput) =>
     run({ type: "add", item: draftItem({ ...patchOf(input), name: input.title }) }, () => addChore(listId, input));
@@ -80,8 +105,76 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
     onEdit: setEditing,
   };
 
+  const quickInput = toChoreInput(draft);
+
   return (
     <>
+      <ListTop header={header}>
+        <QuickAdd
+          placeholder={t("quickAddPlaceholder")}
+          value={draft.title}
+          onChange={(title) => setField({ title })}
+          canSubmit={quickInput !== null}
+          onSubmit={() => {
+            if (!quickInput) return;
+            add(quickInput);
+            setDraft(emptyChore);
+          }}
+          options={
+            <>
+              <OptionChip on={draft.dueDate === today} onClick={() => pickDate(today)}>
+                {t("today")}
+              </OptionChip>
+              <OptionChip on={draft.dueDate === tomorrow} onClick={() => pickDate(tomorrow)}>
+                {t("tomorrow")}
+              </OptionChip>
+              <PickerChip
+                type="date"
+                value={draft.dueDate === today || draft.dueDate === tomorrow ? "" : draft.dueDate}
+                onChange={(dueDate) => setField({ dueDate, dueTime: dueDate ? draft.dueTime : "" })}
+                label={t("date")}
+                text={
+                  <>
+                    <CalendarDays className="size-4" aria-hidden />
+                    {draft.dueDate && draft.dueDate !== today && draft.dueDate !== tomorrow
+                      ? dueText({ dueDate: draft.dueDate, dueTime: null }, now)
+                      : t("otherDate")}
+                  </>
+                }
+              />
+              {draft.dueDate && (
+                <PickerChip
+                  type="time"
+                  value={draft.dueTime}
+                  onChange={(dueTime) => setField({ dueTime })}
+                  label={t("time")}
+                  text={
+                    <>
+                      <Clock className="size-4" aria-hidden />
+                      {draft.dueTime || t("time")}
+                    </>
+                  }
+                />
+              )}
+              {people.length > 1 && (
+                <select
+                  value={draft.assigneeId}
+                  onChange={(e) => setField({ assigneeId: e.target.value })}
+                  aria-label={t("assignee")}
+                  className={`${chipClass} appearance-none pe-3`}
+                >
+                  <option value="">{t("assignee")}</option>
+                  {people.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </>
+          }
+        />
+      </ListTop>
       <div className="flex gap-2 overflow-x-auto px-5 pt-3.5 [scrollbar-width:none]">
         <Chip on={filter === "all"} onClick={() => setFilter("all")}>
           {t("all")}
@@ -97,7 +190,7 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
         </Chip>
       </div>
 
-      <div className="flex flex-col gap-4 px-5 pt-4 pb-32">
+      <div className="flex flex-col gap-4 px-5 pt-4 pb-40">
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         {chores.length === 0 && (
@@ -153,24 +246,7 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
         )}
       </div>
 
-      <AddItemBar
-        placeholder={t("addPlaceholder")}
-        onAdd={(title) => add({ title, assigneeId: null, dueDate: null, dueTime: null })}
-        details={{
-          title: t("newTitle"),
-          render: (close) => (
-            <ChoreForm
-              initial={emptyChore}
-              people={people}
-              submitLabel={t("add")}
-              onSubmit={(input) => {
-                add(input);
-                close();
-              }}
-            />
-          ),
-        }}
-      />
+      <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
 
       <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={t("editTitle")}>
         {editing && (

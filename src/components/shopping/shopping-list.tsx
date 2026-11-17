@@ -5,24 +5,30 @@ import { useTranslations } from "next-intl";
 import { ShoppingCart } from "lucide-react";
 import { addItem, deleteItem, setItemDone, updateItem, type ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
-import { AddItemBar } from "@/components/lists/add-item-bar";
+import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListTop } from "@/components/lists/list-top";
+import { chipClass, QuantityStepper, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, useListItems } from "@/components/lists/use-list-items";
-import { Button } from "@/components/ui/button";
-import { DEFAULT_CATEGORY, isCategory } from "@/lib/categories";
+import { CATEGORIES, DEFAULT_CATEGORY, isCategory } from "@/lib/categories";
 import { CATEGORY_ICONS, TONES } from "@/lib/category-icons";
 import { groupByCategory } from "@/lib/items";
 import { cn } from "@/lib/utils";
-import { emptyDraft, ItemFields, toItemInput, type ItemDraft } from "./item-fields";
+import { toItemInput, type ItemDraft } from "./item-fields";
 import { ItemRow } from "./item-row";
 
 export type Person = { id: string; name: string };
 
+// An empty category means "find the section automatically".
+const emptyDraft: ItemDraft = { name: "", quantity: "", unit: "", category: "" };
+
 export function ShoppingList({
   listId,
+  header,
   items,
   people,
 }: {
   listId: string;
+  header: React.ReactNode;
   items: Item[];
   people: Person[];
 }) {
@@ -30,12 +36,22 @@ export function ShoppingList({
   const tItem = useTranslations("ItemForm");
   const tCategories = useTranslations("Categories");
   const { items: optimisticItems, run, error } = useListItems(items);
+  const [draft, setDraft] = useState<ItemDraft>(emptyDraft);
+  const set = (patch: Partial<ItemDraft>) => setDraft((d) => ({ ...d, ...patch }));
+  const input = toItemInput(draft);
 
-  const handleAdd = (input: ItemInput) =>
+  const handleAdd = () => {
+    if (!input) return;
+    const auto = !draft.category;
+    const added: ItemInput = { ...input, category: auto ? undefined : input.category };
+    // Until the server finds the section, show it where the same product already is.
+    const known = optimisticItems.find((item) => item.name.trim() === input.name)?.category;
     run(
-      { type: "add", item: draftItem({ ...input, category: input.category ?? DEFAULT_CATEGORY }) },
-      () => addItem(listId, input),
+      { type: "add", item: draftItem({ ...input, category: auto ? (known ?? DEFAULT_CATEGORY) : input.category }) },
+      () => addItem(listId, added),
     );
+    setDraft(emptyDraft);
+  };
 
   const handlers = {
     onToggle: (id: string, done: boolean) =>
@@ -60,7 +76,42 @@ export function ShoppingList({
 
   return (
     <>
-      <div className="flex flex-col gap-4 px-5 pt-3.5 pb-32">
+      <ListTop header={header}>
+        <QuickAdd
+          placeholder={t("quickAddPlaceholder")}
+          value={draft.name}
+          onChange={(name) => set({ name })}
+          canSubmit={input !== null}
+          onSubmit={handleAdd}
+          options={
+            <>
+              <QuantityStepper value={draft.quantity} onChange={(quantity) => set({ quantity })} />
+              <input
+                value={draft.unit}
+                onChange={(e) => set({ unit: e.target.value })}
+                placeholder={tItem("unit")}
+                aria-label={tItem("unit")}
+                maxLength={30}
+                className={`${chipClass} w-24 placeholder:text-muted-foreground`}
+              />
+              <select
+                value={draft.category}
+                onChange={(e) => set({ category: e.target.value })}
+                aria-label={tItem("category")}
+                className={`${chipClass} appearance-none pe-3`}
+              >
+                <option value="">{t("autoCategory")}</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {tCategories(category)}
+                  </option>
+                ))}
+              </select>
+            </>
+          }
+        />
+      </ListTop>
+      <div className="flex flex-col gap-4 px-5 pt-3.5 pb-40">
         {total > 0 && (
           <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
             <p className="text-sm font-semibold">{t("progress", { done: bought.length, total })}</p>
@@ -107,21 +158,7 @@ export function ShoppingList({
           </Section>
         )}
       </div>
-      <AddItemBar
-        placeholder={tItem("addPlaceholder")}
-        onAdd={(name) => handleAdd({ name, quantity: null, unit: null })}
-        details={{
-          title: tItem("newTitle"),
-          render: (close) => (
-            <NewItemForm
-              onAdd={(input) => {
-                handleAdd(input);
-                close();
-              }}
-            />
-          ),
-        }}
-      />
+      <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
     </>
   );
 }
@@ -147,25 +184,5 @@ function Section({
       </h2>
       <ul className="rounded-[18px] border bg-card shadow-soft">{children}</ul>
     </section>
-  );
-}
-
-function NewItemForm({ onAdd }: { onAdd: (input: ItemInput) => void }) {
-  const t = useTranslations("ItemForm");
-  const [draft, setDraft] = useState<ItemDraft>(emptyDraft);
-  const input = toItemInput(draft);
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (input) onAdd(input);
-      }}
-    >
-      <ItemFields draft={draft} onChange={setDraft} />
-      <Button type="submit" size="xl" disabled={!input}>
-        {t("add")}
-      </Button>
-    </form>
   );
 }

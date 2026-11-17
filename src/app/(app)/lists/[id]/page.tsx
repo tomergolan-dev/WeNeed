@@ -43,16 +43,19 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
         ? t("checklist.subtitle")
         : place.name;
 
+  const header = (
+    <PageHeader title={list.name} subtitle={subtitle}>
+      {list.type === "shopping" && <FinishListButton listId={list.id} remaining={open} />}
+      <ListMenu listId={list.id} name={list.name} type={list.type} />
+    </PageHeader>
+  );
+
   return (
     <>
       <AutoRefresh />
-      <PageHeader title={list.name} subtitle={subtitle}>
-        {list.type === "shopping" && <FinishListButton listId={list.id} remaining={open} />}
-        <ListMenu listId={list.id} name={list.name} type={list.type} />
-      </PageHeader>
-      {list.type === "shopping" && <ShoppingList listId={list.id} items={items} people={people} />}
-      {list.type === "tasks" && <ChoresList listId={list.id} items={items} people={people} />}
-      {list.type === "checklist" && <Checklist listId={list.id} items={items} />}
+      {list.type === "shopping" && <ShoppingList listId={list.id} header={header} items={items} people={people} />}
+      {list.type === "tasks" && <ChoresList listId={list.id} header={header} items={items} people={people} />}
+      {list.type === "checklist" && <Checklist listId={list.id} header={header} items={items} />}
     </>
   );
 }

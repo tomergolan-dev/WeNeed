@@ -70,14 +70,14 @@
     "finishConfirm": "כן, לסיים",
     "cancel": "ביטול",
     "carryOver": "{count, plural, one {להשאיר ברשימה את הפריט שלא נקנה} other {להשאיר ברשימה את # הפריטים שלא נקנו}}",
-    "progress": "{done} מתוך {total} בעגלה"
+    "progress": "{done} מתוך {total} בעגלה",
+    "quickAddPlaceholder": "הוספה ידנית, למשל ״תפוחים״",
+    "autoCategory": "מחלקה אוטומטית",
+    "aiPlaceholder": "מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"
   },
   "Chores": {
     "empty": "אין מטלות. מה צריך לעשות?",
-    "addPlaceholder": "מה צריך לעשות?",
-    "newTitle": "מטלה חדשה",
     "editTitle": "עריכת מטלה",
-    "add": "הוספה",
     "save": "שמירה",
     "delete": "מחיקה",
     "titleLabel": "מטלה",
@@ -100,7 +100,10 @@
     "inHours": "{count, plural, one {בעוד שעה} two {בעוד שעתיים} other {בעוד # שעות}}",
     "sortBy": "מיון",
     "sortDate": "לפי תאריך",
-    "sortAdded": "לפי הוספה"
+    "sortAdded": "לפי הוספה",
+    "quickAddPlaceholder": "הוספה ידנית של מטלה",
+    "aiPlaceholder": "מה צריך לעשות? למשל: לתקן את הברז מחר ב-5",
+    "otherDate": "תאריך"
   },
   "Checklist": {
     "progress": "{done} מתוך {total} מסומנים",
@@ -108,7 +111,6 @@
     "checkAll": "סמן הכל",
     "uncheckAll": "בטל הכל",
     "empty": "הרשימה ריקה. מה צריך לזכור?",
-    "addPlaceholder": "מה עוד צריך? למשל ״פנס״",
     "reorder": "שינוי סדר",
     "reorderDone": "סיום",
     "reorderHint": "גררו פריט מהידית כדי להזיז אותו",
@@ -117,10 +119,11 @@
     "dragStart": "הרמת את {name}",
     "dragOver": "{name} במקום {place}",
     "dragEnd": "{name} הונח במקום {place}",
-    "dragCancel": "ההזזה בוטלה"
+    "dragCancel": "ההזזה בוטלה",
+    "quickAddPlaceholder": "הוספה ידנית, למשל ״פנס״",
+    "aiPlaceholder": "מה להוסיף? למשל: פנס, כובע וקרם הגנה"
   },
   "ItemForm": {
-    "addPlaceholder": "מה צריך?",
     "add": "הוספה",
     "name": "שם",
     "quantity": "כמות",
@@ -130,9 +133,7 @@
     "editTitle": "עריכת פריט",
     "save": "שמירה",
     "delete": "מחיקה",
-    "units": "יח׳",
-    "addWithDetails": "הוספה עם פרטים",
-    "newTitle": "פריט חדש"
+    "units": "יח׳"
   },
   "History": {
     "title": "היסטוריה",
@@ -171,7 +172,9 @@
     "notFound": "זה כבר לא קיים.",
     "listLocked": "הרשימה כבר הסתיימה.",
     "generic": "משהו השתבש. נסו שוב.",
-    "noPlace": "עוד אין לך מקום. צרו מקום חדש."
+    "noPlace": "עוד אין לך מקום. צרו מקום חדש.",
+    "aiLimit": "הגעתם למגבלת ההודעות היומית. אפשר להוסיף ידנית למעלה.",
+    "aiFailed": "לא הצלחתי להבין. נסו לנסח אחרת, או הוסיפו ידנית למעלה."
   },
   "Categories": {
     "produce": "פירות וירקות",
@@ -281,5 +284,32 @@
     },
     "contact": "יצירת קשר",
     "back": "חזרה לאפליקציה"
+  },
+  "QuickAdd": {
+    "label": "הוספה ידנית",
+    "add": "הוספה",
+    "quantity": "כמות",
+    "less": "פחות",
+    "more": "עוד"
+  },
+  "Assistant": {
+    "label": "הודעה לעוזר ה-AI",
+    "send": "שליחה",
+    "close": "סגירה",
+    "replyLabel": "תשובת העוזר",
+    "thinking": "רגע, מעדכן את הרשימה…",
+    "nothing": "לא מצאתי מה להוסיף. כתבו מה צריך, למשל ״חלב וביצים״.",
+    "added": "{count, plural, one {הוספתי פריט אחד} other {הוספתי # פריטים}}",
+    "undo": "ביטול",
+    "undone": "ביטלתי את ההוספה.",
+    "already": "<b>{name}</b> כבר ברשימה.",
+    "alreadyWith": "<b>{name}</b> כבר ברשימה ({quantity}).",
+    "addMore": "לעדכן את הכמות?",
+    "yesTotal": "כן, {quantity}",
+    "keep": "להשאיר",
+    "increased": "עדכנתי ל-{quantity}.",
+    "kept": "השארתי כמו שהיה.",
+    "skipped": "כבר ברשימה: {names}",
+    "addedChores": "{count, plural, one {הוספתי מטלה אחת} other {הוספתי # מטלות}}"
   }
 }
