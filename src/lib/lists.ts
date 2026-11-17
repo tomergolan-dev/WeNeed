@@ -81,7 +81,11 @@ export async function ensureActiveRound(listId: string) {
 }
 
 export async function getRoundItems(roundId: string): Promise<Item[]> {
-  return db.select().from(items).where(eq(items.roundId, roundId)).orderBy(asc(items.createdAt));
+  return db
+    .select()
+    .from(items)
+    .where(eq(items.roundId, roundId))
+    .orderBy(asc(items.position), asc(items.createdAt));
 }
 
 /** Finished rounds of a list, newest first, with item counts. */

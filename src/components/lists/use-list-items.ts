@@ -9,6 +9,7 @@ export type ItemChange =
   | { type: "add"; item: Item }
   | { type: "patch"; id: string; patch: Partial<Item> }
   | { type: "all"; done: boolean }
+  | { type: "order"; ids: string[] }
   | { type: "delete"; id: string };
 
 function reduce(items: Item[], change: ItemChange): Item[] {
@@ -21,6 +22,11 @@ function reduce(items: Item[], change: ItemChange): Item[] {
       return items.map((item) => ({ ...item, done: change.done }));
     case "delete":
       return items.filter((item) => item.id !== change.id);
+    case "order": {
+      const rank = new Map(change.ids.map((id, i) => [id, i]));
+      const last = change.ids.length;
+      return [...items].sort((a, b) => (rank.get(a.id) ?? last) - (rank.get(b.id) ?? last));
+    }
   }
 }
 
@@ -39,6 +45,7 @@ export function draftItem(fields: Partial<Item> & { name: string }): Item {
     addedBy: null,
     dueDate: null,
     dueTime: null,
+    position: Number.MAX_SAFE_INTEGER,
     createdAt: new Date(),
     ...fields,
   };

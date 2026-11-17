@@ -16,6 +16,7 @@ import { DuePill, useDueText } from "./chore-due";
 
 type Person = { id: string; name: string };
 type Filter = "all" | "overdue" | "soon" | "noDate";
+type Sort = "date" | "added";
 
 const RANK: Record<DueStatus, number> = { overdue: 0, soon: 1, later: 2, none: 3 };
 
@@ -42,6 +43,7 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
   const t = useTranslations("Chores");
   const { items: chores, run, error } = useListItems(items);
   const [filter, setFilter] = useState<Filter>("all");
+  const [sort, setSort] = useState<Sort>("date");
   const [editing, setEditing] = useState<Item | null>(null);
   const now = useNow();
 
@@ -49,15 +51,18 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
     run({ type: "add", item: draftItem({ ...patchOf(input), name: input.title }) }, () => addChore(listId, input));
 
   const withStatus = chores.map((chore) => ({ chore, status: dueStatus(chore, now) }));
-  const open = withStatus
-    .filter(({ chore }) => !chore.done)
-    .sort(
+  // Chores arrive in the order they were added. By date: overdue, soon, later
+  // by due time, then those without a date; ties keep the order added.
+  const open = withStatus.filter(({ chore }) => !chore.done);
+  if (sort === "date") {
+    open.sort(
       (a, b) =>
         RANK[a.status] - RANK[b.status] ||
         (a.chore.dueDate && b.chore.dueDate
           ? dueAt(a.chore.dueDate, a.chore.dueTime) - dueAt(b.chore.dueDate, b.chore.dueTime)
           : 0),
     );
+  }
   const done = withStatus.filter(({ chore }) => chore.done);
   const counts = {
     overdue: open.filter((c) => c.status === "overdue").length,
@@ -106,7 +111,25 @@ export function ChoresList({ listId, items, people }: { listId: string; items: I
 
         {shown.length > 0 && (
           <section>
-            <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
+            <div className="mb-2 flex items-center justify-between gap-3 px-1">
+              <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
+              <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
+                {(["date", "added"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={sort === option}
+                    onClick={() => setSort(option)}
+                    className={cn(
+                      "h-8 rounded-full px-3 text-[13px] font-medium text-muted-foreground transition-colors",
+                      sort === option && "bg-card text-foreground shadow-sm",
+                    )}
+                  >
+                    {option === "date" ? t("sortDate") : t("sortAdded")}
+                  </button>
+                ))}
+              </div>
+            </div>
             <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
               {shown.map(({ chore, status }) => (
                 <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />

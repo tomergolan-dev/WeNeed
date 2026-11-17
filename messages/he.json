@@ -97,7 +97,10 @@
     "yesterday": "אתמול",
     "overdue": "באיחור",
     "overdueDays": "{count, plural, one {באיחור של יום} two {באיחור של יומיים} other {באיחור של # ימים}}",
-    "inHours": "{count, plural, one {בעוד שעה} two {בעוד שעתיים} other {בעוד # שעות}}"
+    "inHours": "{count, plural, one {בעוד שעה} two {בעוד שעתיים} other {בעוד # שעות}}",
+    "sortBy": "מיון",
+    "sortDate": "לפי תאריך",
+    "sortAdded": "לפי הוספה"
   },
   "Checklist": {
     "progress": "{done} מתוך {total} מסומנים",
@@ -105,7 +108,16 @@
     "checkAll": "סמן הכל",
     "uncheckAll": "בטל הכל",
     "empty": "הרשימה ריקה. מה צריך לזכור?",
-    "addPlaceholder": "מה עוד צריך? למשל ״פנס״"
+    "addPlaceholder": "מה עוד צריך? למשל ״פנס״",
+    "reorder": "שינוי סדר",
+    "reorderDone": "סיום",
+    "reorderHint": "גררו פריט מהידית כדי להזיז אותו",
+    "dragHandle": "הזזת {name}",
+    "dragInstructions": "כדי להזיז פריט, לחצו רווח, הזיזו בחיצים ולחצו רווח שוב כדי להניח. Escape מבטל.",
+    "dragStart": "הרמת את {name}",
+    "dragOver": "{name} במקום {place}",
+    "dragEnd": "{name} הונח במקום {place}",
+    "dragCancel": "ההזזה בוטלה"
   },
   "ItemForm": {
     "addPlaceholder": "מה צריך?",

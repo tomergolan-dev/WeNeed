@@ -141,6 +141,8 @@ export const items = pgTable(
     addedBy: uuid("added_by").references(() => users.id, {
       onDelete: "set null",
     }),
+    // Order within the round; members can reorder a checklist. New items go last.
+    position: integer("position").notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [index("items_round_idx").on(t.roundId)],

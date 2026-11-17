@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, CheckCheck, ListChecks, RotateCcw } from "lucide-react";
-import { addItem, deleteItem, setAllDone, setItemDone, updateItem } from "@/app/actions";
+import { ArrowUpDown, Check, CheckCheck, ListChecks, RotateCcw } from "lucide-react";
+import { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { AddItemBar } from "@/components/lists/add-item-bar";
@@ -11,6 +11,7 @@ import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-it
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { SortableItems } from "./sortable-items";
 
 /** A permanent list: items are checked, and all unchecked again for next time. */
 export function Checklist({ listId, items }: { listId: string; items: Item[] }) {
@@ -18,8 +19,9 @@ export function Checklist({ listId, items }: { listId: string; items: Item[] }) 
   const tItem = useTranslations("ItemForm");
   const { items: optimistic, run, error } = useListItems(items);
   const [editing, setEditing] = useState<Item | null>(null);
+  const [reordering, setReordering] = useState(false);
 
-  // Unchecked first, so what's left is at the top.
+  // Unchecked first, so what's left is at the top; each group keeps the list's order.
   const sorted = [...optimistic.filter((i) => !i.done), ...optimistic.filter((i) => i.done)];
   const done = optimistic.filter((i) => i.done).length;
   const total = optimistic.length;
@@ -66,45 +68,71 @@ export function Checklist({ listId, items }: { listId: string; items: Item[] }) 
             {t("empty")}
           </div>
         ) : (
-          <ul className="rounded-[18px] border bg-card shadow-soft">
-            {sorted.map((item) => (
-              <li
-                key={item.id}
-                className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0"
-              >
+          <div className="flex flex-col gap-2">
+            {total > 1 && (
+              <div className="flex min-h-9 items-center justify-between gap-3 px-1">
+                <span className="text-[13px] text-muted-foreground">{reordering && t("reorderHint")}</span>
                 <button
                   type="button"
-                  role="checkbox"
-                  aria-checked={item.done}
-                  aria-label={item.name}
-                  disabled={isDraft(item)}
-                  onClick={() =>
-                    run({ type: "patch", id: item.id, patch: { done: !item.done } }, () =>
-                      setItemDone(item.id, !item.done),
-                    )
-                  }
+                  aria-pressed={reordering}
+                  onClick={() => setReordering((r) => !r)}
                   className={cn(
-                    "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-white transition-colors",
-                    item.done && "border-[#c9962a] bg-[#c9962a]",
+                    "flex h-9 shrink-0 items-center gap-1.5 rounded-full border bg-card px-3.5 text-sm font-semibold transition-colors",
+                    reordering && "border-foreground bg-foreground text-background",
                   )}
                 >
-                  {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+                  {!reordering && <ArrowUpDown className="size-4" aria-hidden />}
+                  {reordering ? t("reorderDone") : t("reorder")}
                 </button>
-                <button
-                  type="button"
-                  disabled={isDraft(item)}
-                  onClick={() => setEditing(item)}
-                  className={cn(
-                    "min-w-0 flex-1 truncate py-3 text-start text-base font-medium",
-                    item.done && "text-muted-foreground",
-                    isDraft(item) && "opacity-60",
-                  )}
-                >
-                  {item.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+              </div>
+            )}
+            {reordering ? (
+              <SortableItems
+                items={optimistic.filter((item) => !isDraft(item))}
+                onReorder={(ids) => run({ type: "order", ids }, () => reorderItems(listId, ids))}
+              />
+            ) : (
+              <ul className="rounded-[18px] border bg-card shadow-soft">
+                {sorted.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0"
+                  >
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={item.done}
+                      aria-label={item.name}
+                      disabled={isDraft(item)}
+                      onClick={() =>
+                        run({ type: "patch", id: item.id, patch: { done: !item.done } }, () =>
+                          setItemDone(item.id, !item.done),
+                        )
+                      }
+                      className={cn(
+                        "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-white transition-colors",
+                        item.done && "border-[#c9962a] bg-[#c9962a]",
+                      )}
+                    >
+                      {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDraft(item)}
+                      onClick={() => setEditing(item)}
+                      className={cn(
+                        "min-w-0 flex-1 truncate py-3 text-start text-base font-medium",
+                        item.done && "text-muted-foreground",
+                        isDraft(item) && "opacity-60",
+                      )}
+                    >
+                      {item.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
       </div>
 

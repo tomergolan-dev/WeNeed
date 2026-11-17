@@ -75,7 +75,35 @@ export async function addItem(listId: string, input: ItemInput): Promise<ActionR
   if (!list) return fail("notFound");
 
   const round = await ensureActiveRound(list.id);
-  await db.insert(items).values({ ...parsed.data, roundId: round.id, addedBy: user.id });
+  await db
+    .insert(items)
+    .values({ ...parsed.data, roundId: round.id, addedBy: user.id, position: nextPosition(round.id) });
+  refresh();
+  return ok;
+}
+
+/** The position after the last item in a round, so new items go last. */
+function nextPosition(roundId: string) {
+  return sql<number>`(select coalesce(max(${items.position}), 0) + 1 from ${items} where ${items.roundId} = ${roundId})`;
+}
+
+/** Saves a new order for the items of a list's current round. */
+export async function reorderItems(listId: string, itemIds: string[]): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const parsed = z.array(z.uuid()).min(1).max(1000).safeParse(itemIds);
+  if (!parsed.success) return fail("invalid");
+
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  const round = await ensureActiveRound(list.id);
+  const ids = sql`array[${sql.join(parsed.data.map((id) => sql`${id}`), sql`, `)}]::uuid[]`;
+  await db
+    .update(items)
+    .set({ position: sql`array_position(${ids}, ${items.id})` })
+    .where(and(eq(items.roundId, round.id), sql`${items.id} = any(${ids})`));
   refresh();
   return ok;
 }
@@ -152,11 +180,11 @@ export async function finishRound(listId: string, carryOver: boolean): Promise<A
   const next = await ensureActiveRound(list.id);
   if (carryOver) {
     await db.execute(sql`
-      insert into ${items} (round_id, name, quantity, unit, category, assignee_id, added_by)
-      select ${next.id}, name, quantity, unit, category, assignee_id, added_by
+      insert into ${items} (round_id, name, quantity, unit, category, assignee_id, added_by, position)
+      select ${next.id}, name, quantity, unit, category, assignee_id, added_by,
+        row_number() over (order by position, created_at)
       from ${items}
       where round_id = ${finished.id} and done = false
-      order by created_at
     `);
   }
 
@@ -277,7 +305,12 @@ export async function addChore(listId: string, input: ChoreInput): Promise<Actio
   if (!(await isValidAssignee(parsed.data.assigneeId, list.placeId))) return fail("invalid");
 
   const round = await ensureActiveRound(list.id);
-  await db.insert(items).values({ ...choreFields(parsed.data), roundId: round.id, addedBy: user.id });
+  await db.insert(items).values({
+    ...choreFields(parsed.data),
+    roundId: round.id,
+    addedBy: user.id,
+    position: nextPosition(round.id),
+  });
   refresh();
   return ok;
 }

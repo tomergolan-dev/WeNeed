@@ -61,7 +61,10 @@ We Need is also a portfolio project, so it includes a public demo.
   - **Due soon** (within 24 hours): a yellow mark and a pill ("בעוד 3 שעות", "היום").
   - **Overdue:** a red mark and a pill ("באיחור של יום").
   - A chore with a date and no time is due at the end of that day.
-- Open chores are sorted: overdue, due soon, later by date, then those without a date. Filters: all, overdue, due soon, no date.
+- Open chores have two sorts, switched above the list:
+  - **By date** (the default): overdue, due soon, later by date, then those without a date in the order they were added.
+  - **By order added.**
+- Filters: all, overdue, due soon, no date.
 - Check-off marks a chore as done; done chores stay visible for a week under "done recently".
 - Later: calendar integration (see "Future").
 
@@ -70,7 +73,8 @@ We Need is also a portfolio project, so it includes a public demo.
 - For example "Weekend up north" or "Gym bag".
 - Items can be added, edited and removed at any time; the list itself stays.
 - **Check all** and **Uncheck all**, mainly to reset the list before the next use.
-- Unchecked items are shown first, with a progress bar.
+- Unchecked items are shown first, with a progress bar; each group keeps the list's order.
+- **Reorder:** "Change order" switches the list to a mode where items are dragged by a handle (touch, mouse or keyboard). The order is saved for everyone. New items go last.
 
 ## AI chat
 
@@ -134,7 +138,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
   - `lists`: place, kind (`shopping` / `tasks` / `checklist`), name. *(Stage C)*
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
-  - `items` have an optional due date and time, used by chores. *(Stage C)*
+  - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
 
@@ -148,7 +152,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage C, lists:** named lists of all three kinds, several per place, in the new design.
   - Shopping: finish shopping and per-list history. Chores: due date and time, due-soon and overdue signs. Checklists: check all / uncheck all.
   - Built and tested on the `dev` database. The existing lists became "קניות" (with its finished rounds as history) and "מטלות".
-  - Chores and checklists were moved into this stage on 2026-11-17, before the AI chat, at Tomer's request.
+  - Chores and checklists were moved into this stage on 2026-11-17, before the AI chat, at Tomer's request. Reordering checklists and the two chores sorts were added the same day, also at his request.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
