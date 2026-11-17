@@ -51,6 +51,7 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
         {google && (
           <>
             {/* A plain link: the route handler redirects to Google. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- an API route, not a page */}
             <a href="/api/auth/google" className={buttonVariants({ variant: "outline", size: "xl" })}>
               <GoogleLogo />
               {t("google")}
