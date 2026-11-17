@@ -332,7 +332,10 @@
     "increased": "עדכנתי ל-{quantity}.",
     "kept": "השארתי כמו שהיה.",
     "skipped": "כבר ברשימה: {names}",
-    "addedChores": "{count, plural, one {הוספתי מטלה אחת} other {הוספתי # מטלות}}"
+    "addedChores": "{count, plural, one {הוספתי מטלה אחת} other {הוספתי # מטלות}}",
+    "addedShort": "הוספתי: {names}",
+    "addedChoresShort": "הוספתי: {names}",
+    "increasedShort": "{name} עודכן ל-{quantity}"
   },
   "Members": {
     "title": "חברים במקום",

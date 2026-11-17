@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUp, Check, LoaderCircle, Sparkles, X } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import {
 import type { ActionResult } from "@/app/actions";
 import { useDueText } from "@/components/chores/chore-due";
 import { formatQuantity } from "@/lib/items";
+import { cn } from "@/lib/utils";
 
 type Exchange = {
   message: string;
@@ -26,9 +27,19 @@ type Exchange = {
   answered: Record<string, "increased" | "kept">;
 };
 
+// How long a short reply stays above the bar.
+const NOTE_MS = 3000;
+const ERROR_MS = 5000;
+
+/** A duplicate the user still has to answer ("add 2 more?"). */
+const isOpenQuestion = (exchange: Exchange) =>
+  exchange.state === "done" &&
+  exchange.reply!.duplicates.some((dup) => dup.newQuantity !== null && !exchange.answered[dup.itemId]);
+
 /**
- * The list's AI chat, always at the bottom of the screen. The reply to the
- * last message shows above the bar, so the list stays in view.
+ * The list's AI chat, always at the bottom of the screen. Its reply shows
+ * above the bar: a short note that fades after a few seconds, or a card when
+ * there is a question to answer, so the list stays in view.
  */
 export function AssistantBar({
   listId,
@@ -45,6 +56,13 @@ export function AssistantBar({
   const [exchange, setExchange] = useState<Exchange | null>(null);
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Short replies close on their own; a reply with a question waits for the answer.
+  useEffect(() => {
+    if (!exchange || exchange.state === "pending" || isOpenQuestion(exchange)) return;
+    const timer = setTimeout(() => setExchange(null), exchange.state === "error" ? ERROR_MS : NOTE_MS);
+    return () => clearTimeout(timer);
+  }, [exchange]);
 
   const update = (patch: Partial<Exchange>) => setExchange((current) => (current ? { ...current, ...patch } : current));
 
@@ -84,7 +102,14 @@ export function AssistantBar({
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
       <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {exchange && (
+        {exchange && !isOpenQuestion(exchange) && (
+          <Note
+            exchange={exchange}
+            chores={chores}
+            onUndo={(ids) => call(() => removeAdded(listId, ids), () => update({ undone: true }))}
+          />
+        )}
+        {exchange && isOpenQuestion(exchange) && (
           <section
             aria-live="polite"
             aria-label={t("replyLabel")}
@@ -149,6 +174,85 @@ export function AssistantBar({
   );
 }
 
+/** A one-line reply: "Added: eggs, tomatoes · Undo". Closes on its own. */
+function Note({
+  exchange,
+  chores,
+  onUndo,
+}: {
+  exchange: Exchange;
+  chores: boolean;
+  onUndo: (ids: string[]) => void;
+}) {
+  const t = useTranslations("Assistant");
+  const tItem = useTranslations("ItemForm");
+
+  let icon: React.ReactNode = (
+    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
+      <Check className="size-3.5" strokeWidth={3} aria-hidden />
+    </span>
+  );
+  let text: string;
+  let undo: string[] | null = null;
+
+  if (exchange.state === "pending") {
+    icon = <LoaderCircle className="size-4 shrink-0 animate-spin text-primary" aria-hidden />;
+    text = t("thinking");
+  } else if (exchange.state === "error") {
+    icon = null;
+    text = exchange.error ?? "";
+  } else {
+    const { added, duplicates, skipped } = exchange.reply!;
+    const parts: string[] = [];
+    if (exchange.undone) parts.push(t("undone"));
+    else if (added.length > 0) {
+      parts.push(t(chores ? "addedChoresShort" : "addedShort", { names: added.map((item) => item.name).join(", ") }));
+      undo = added.map((item) => item.id);
+    }
+    for (const dup of duplicates) {
+      const answer = exchange.answered[dup.itemId];
+      if (answer === "increased") {
+        parts.push(
+          t("increasedShort", {
+            name: dup.name,
+            quantity: formatQuantity({ quantity: dup.newQuantity, unit: dup.newUnit }, tItem("units")),
+          }),
+        );
+      } else {
+        parts.push(t("skipped", { names: dup.name }));
+      }
+    }
+    if (skipped.length > 0) parts.push(t("skipped", { names: skipped.join(", ") }));
+    if (parts.length === 0) {
+      icon = null;
+      parts.push(t("nothing"));
+    }
+    text = parts.join(" · ");
+  }
+
+  return (
+    <div
+      role="status"
+      className={cn(
+        "mb-2 flex animate-in items-center gap-2.5 rounded-2xl border bg-card py-2 ps-3 pe-2 text-sm shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] fade-in slide-in-from-bottom-1",
+        exchange.state === "error" && "text-destructive",
+      )}
+    >
+      {icon}
+      <span className="min-w-0 flex-1 truncate py-1">{text}</span>
+      {undo && (
+        <button
+          type="button"
+          onClick={() => onUndo(undo)}
+          className="h-8 shrink-0 rounded-lg px-2 text-sm font-semibold text-accent-foreground active:bg-accent"
+        >
+          {t("undo")}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ExchangeBody({
   exchange,
   chores,
@@ -165,22 +269,8 @@ function ExchangeBody({
   const t = useTranslations("Assistant");
   const tItem = useTranslations("ItemForm");
 
-  if (exchange.state === "pending") {
-    return (
-      <p className="mt-1 flex items-center gap-2 text-[15px] text-muted-foreground">
-        <LoaderCircle className="size-4 animate-spin text-primary" aria-hidden />
-        {t("thinking")}
-      </p>
-    );
-  }
-  if (exchange.state === "error") {
-    return <p className="mt-1 text-[15px] text-destructive">{exchange.error}</p>;
-  }
-
+  // Shown only while a question is open, so there is always a reply here.
   const { added, duplicates, skipped } = exchange.reply!;
-  if (added.length === 0 && duplicates.length === 0 && skipped.length === 0) {
-    return <p className="mt-1 text-[15px]">{t("nothing")}</p>;
-  }
 
   return (
     <div className="mt-1 flex flex-col gap-3 text-[15px]">

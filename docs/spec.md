@@ -95,7 +95,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## AI chat
 
-- The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply to the last message opens above the bar, so the list stays in view: what was added (with "undo"), and questions about items already on the list.
+- The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply shows above the bar, so the list stays in view. A plain reply is one short line ("הוספתי: ביצים, עגבניות" with "undo") that disappears after 3 seconds (errors after 5). A question about an item already on the list ("להוסיף עוד 2?") opens a card that stays until answered. Decided 2026-11-17, at Tomer's request.
 - Each message is read once; there is no chat history yet.
 - Limits against abuse: at most 100 messages per user and 2,000 in total in 24 hours.
 
