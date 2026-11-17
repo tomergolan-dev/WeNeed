@@ -158,6 +158,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Design
 
 - Mobile-first, installable to the home screen (PWA), so it opens like a regular app.
+  - Like an app, the screen does not zoom or move sideways (decided 2026-11-18): zoom is off in the viewport, and nothing is wider than the screen. Rows that scroll sideways scroll inside themselves.
 - Visual style influenced by CheckPlease (Tomer's earlier app): similar icon style and the feel of a polished, modern, high-end app. Not a copy, and with a different color palette.
 - The design is drafted and approved as a mockup before it is built.
 - Wide screens (1024px and up), decided 2026-11-17 (option A of three mockups): a sidebar beside the screen with the logo, the language switch, and every place the user belongs to with its lists (the personal area first, with lists shared with the user). Each list shows what is left, or tasks overdue or due soon. Clicking a place opens its home screen; "New list" sits under the current place. The screen beside it is wider, the home screen's lists are in two columns, a shopping list's sections flow into two columns, and "back to home" is left to the sidebar. Phones keep the single-column app unchanged. The demo has the same sidebar. The sign-in screen on a wide screen is split: the form on one half, and on the other a brand-green panel with the slogan, a line on what WeNeed is, and the three kinds of lists.

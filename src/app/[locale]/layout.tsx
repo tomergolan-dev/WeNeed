@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Heebo } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
@@ -13,6 +13,15 @@ const fontSans = Heebo({
   subsets: ["hebrew", "latin"],
   variable: "--font-sans",
 });
+
+// An app screen, not a page to zoom: no zooming in when a field is tapped
+// (iOS zooms into text under 16px) and no zooming out.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");

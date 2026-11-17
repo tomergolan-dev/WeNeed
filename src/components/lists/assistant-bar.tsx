@@ -175,7 +175,7 @@ export function AssistantBar({
             placeholder={placeholder}
             aria-label={t("label")}
             maxLength={500}
-            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-base leading-6 outline-none placeholder:text-muted-foreground"
           />
           <button
             type="submit"

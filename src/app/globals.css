@@ -85,6 +85,11 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+  /* Nothing moves the screen sideways; rows that scroll sideways scroll inside themselves. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
