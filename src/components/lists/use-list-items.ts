@@ -1,0 +1,74 @@
+"use client";
+
+import { useOptimistic, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
+import type { ActionResult } from "@/app/actions";
+import type { Item } from "@/db/schema";
+
+export type ItemChange =
+  | { type: "add"; item: Item }
+  | { type: "patch"; id: string; patch: Partial<Item> }
+  | { type: "all"; done: boolean }
+  | { type: "delete"; id: string };
+
+function reduce(items: Item[], change: ItemChange): Item[] {
+  switch (change.type) {
+    case "add":
+      return [...items, change.item];
+    case "patch":
+      return items.map((item) => (item.id === change.id ? { ...item, ...change.patch } : item));
+    case "all":
+      return items.map((item) => ({ ...item, done: change.done }));
+    case "delete":
+      return items.filter((item) => item.id !== change.id);
+  }
+}
+
+/** A new item shown right away, until the server confirms it. */
+export function draftItem(fields: Partial<Item> & { name: string }): Item {
+  return {
+    id: `draft-${crypto.randomUUID()}`,
+    roundId: "",
+    quantity: null,
+    unit: null,
+    category: "other",
+    assigneeId: null,
+    done: false,
+    doneBy: null,
+    doneAt: null,
+    addedBy: null,
+    dueDate: null,
+    dueTime: null,
+    createdAt: new Date(),
+    ...fields,
+  };
+}
+
+export function isDraft(item: Item) {
+  return item.id.startsWith("draft-");
+}
+
+/**
+ * A list's items with optimistic changes: `run` shows the change at once,
+ * calls the server action, and shows an error if it fails.
+ */
+export function useListItems(items: Item[]) {
+  const tErrors = useTranslations("Errors");
+  const [optimistic, apply] = useOptimistic(items, reduce);
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  const run = (change: ItemChange, call: () => Promise<ActionResult>) =>
+    startTransition(async () => {
+      setError(null);
+      apply(change);
+      try {
+        const result = await call();
+        if (!result.ok) setError(tErrors(result.error));
+      } catch {
+        setError(tErrors("generic"));
+      }
+    });
+
+  return { items: optimistic, run, error };
+}

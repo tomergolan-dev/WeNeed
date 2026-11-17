@@ -46,5 +46,5 @@ export const CATEGORY_ICONS: Record<Category, { icon: LucideIcon; tone: string }
   other: { icon: Package, tone: teal },
 };
 
-/** Tones for people's initials and list cards, picked by position. */
+/** Tones for people's initials, picked by their position in the place. */
 export const TONES = [teal, rose, blue, amber, violet, green];

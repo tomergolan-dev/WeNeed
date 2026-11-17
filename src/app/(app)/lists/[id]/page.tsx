@@ -1,13 +1,16 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { Checklist } from "@/components/checklist/checklist";
+import { ChoresList } from "@/components/chores/chores-list";
 import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ListMenu } from "@/components/lists/list-menu";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { PageHeader } from "@/components/page-header";
 import { requirePlace } from "@/lib/auth";
-import { ensureActiveRound, getList, getPlace, getRoundItems } from "@/lib/lists";
+import { ensureActiveRound, getChores, getList, getPlace, getRoundItems } from "@/lib/lists";
 
 export default function ListPage({ params }: PageProps<"/lists/[id]">) {
   return (
@@ -23,20 +26,33 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
 
   const { place } = await requirePlace();
   const list = await getList(place.id, id);
-  if (!list || list.type !== "shopping") notFound();
+  if (!list) notFound();
 
   const round = await ensureActiveRound(list.id);
-  const [items, details] = await Promise.all([getRoundItems(round.id), getPlace(place.id)]);
+  const [t, items, details] = await Promise.all([
+    getTranslations("ListKinds"),
+    list.type === "tasks" ? getChores(list.id) : getRoundItems(round.id),
+    getPlace(place.id),
+  ]);
   const people = details?.members.map(({ id, name }) => ({ id, name })) ?? [];
+  const open = items.filter((item) => !item.done).length;
+  const subtitle =
+    list.type === "tasks"
+      ? `${place.name} · ${t("tasks.open", { count: open })}`
+      : list.type === "checklist"
+        ? t("checklist.subtitle")
+        : place.name;
 
   return (
     <>
       <AutoRefresh />
-      <PageHeader title={list.name} subtitle={place.name}>
-        <FinishListButton listId={list.id} remaining={items.filter((item) => !item.done).length} />
-        <ListMenu listId={list.id} name={list.name} />
+      <PageHeader title={list.name} subtitle={subtitle}>
+        {list.type === "shopping" && <FinishListButton listId={list.id} remaining={open} />}
+        <ListMenu listId={list.id} name={list.name} type={list.type} />
       </PageHeader>
-      <ShoppingList listId={list.id} items={items} people={people} />
+      {list.type === "shopping" && <ShoppingList listId={list.id} items={items} people={people} />}
+      {list.type === "tasks" && <ChoresList listId={list.id} items={items} people={people} />}
+      {list.type === "checklist" && <Checklist listId={list.id} items={items} />}
     </>
   );
 }

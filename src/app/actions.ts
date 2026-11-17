@@ -8,7 +8,8 @@ import { db } from "@/db";
 import { items, lists, placeMembers, places, rounds } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, setCurrentPlace } from "@/lib/auth";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
-import { ensureActiveRound, ensureFirstList } from "@/lib/lists";
+import { isListType, type ListType } from "@/lib/list-kinds";
+import { ensureActiveRound } from "@/lib/lists";
 import { isPlaceIcon } from "@/lib/place-icons";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
@@ -139,6 +140,7 @@ export async function finishRound(listId: string, carryOver: boolean): Promise<A
 
   const list = await findList(listId, user.id);
   if (!list) return fail("notFound");
+  if (list.type !== "shopping") return fail("invalid");
 
   const [finished] = await db
     .update(rounds)
@@ -164,18 +166,18 @@ export async function finishRound(listId: string, carryOver: boolean): Promise<A
 
 const listName = z.string().trim().min(1).max(40);
 
-/** Creates a shopping list in the current place and opens it. */
-export async function createList(name: string): Promise<ActionResult> {
+/** Creates a list in the current place and opens it. */
+export async function createList(name: string, type: ListType): Promise<ActionResult> {
   const context = await getContext();
   if (!context) return fail("unauthorized");
   if (!context.place) return fail("noPlace");
 
   const parsed = listName.safeParse(name);
-  if (!parsed.success) return fail("invalid");
+  if (!parsed.success || !isListType(type)) return fail("invalid");
 
   const [list] = await db
     .insert(lists)
-    .values({ placeId: context.place.id, type: "shopping", name: parsed.data })
+    .values({ placeId: context.place.id, type, name: parsed.data })
     .returning({ id: lists.id });
   await ensureActiveRound(list.id);
   redirect(`/lists/${list.id}`);
@@ -196,6 +198,40 @@ export async function renameList(listId: string, name: string): Promise<ActionRe
   return ok;
 }
 
+/**
+ * Changes a list's kind. Items stay; fields the new kind doesn't use (like a
+ * chore's due date) are kept but not shown.
+ */
+export async function setListType(listId: string, type: ListType): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  if (!isListType(type)) return fail("invalid");
+
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  await db.update(lists).set({ type }).where(eq(lists.id, list.id));
+  refresh();
+  return ok;
+}
+
+/** Checklists: checks or unchecks every item at once. */
+export async function setAllDone(listId: string, done: boolean): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  const round = await ensureActiveRound(list.id);
+  await db
+    .update(items)
+    .set(done ? { done: true, doneBy: user.id, doneAt: new Date() } : { done: false, doneBy: null, doneAt: null })
+    .where(and(eq(items.roundId, round.id), eq(items.done, !done)));
+  refresh();
+  return ok;
+}
+
 /** Deletes a list with all its rounds and items. */
 export async function deleteList(listId: string): Promise<ActionResult> {
   const user = await getCurrentUser();
@@ -211,6 +247,11 @@ export async function deleteList(listId: string): Promise<ActionResult> {
 const choreInput = z.object({
   title: z.string().trim().min(1).max(200),
   assigneeId: z.uuid().nullable(),
+  dueDate: z.iso.date().nullable(),
+  dueTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .nullable(),
 });
 export type ChoreInput = z.input<typeof choreInput>;
 
@@ -219,27 +260,24 @@ async function isValidAssignee(assigneeId: string | null, placeId: string) {
   return assigneeId === null || isPlaceMember(assigneeId, placeId);
 }
 
-// Chores live on one ongoing "tasks" list per place, made on first use (until Stage D).
-const CHORES_LIST_NAME = "מטלות";
+function choreFields({ title, assigneeId, dueDate, dueTime }: z.output<typeof choreInput>) {
+  // A time only means something with a date.
+  return { name: title, assigneeId, dueDate, dueTime: dueDate ? dueTime : null };
+}
 
-/** Adds a chore to the place's chores list. */
-export async function addChore(input: ChoreInput): Promise<ActionResult> {
-  const context = await getContext();
-  if (!context) return fail("unauthorized");
-  if (!context.place) return fail("noPlace");
+export async function addChore(listId: string, input: ChoreInput): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
 
   const parsed = choreInput.safeParse(input);
   if (!parsed.success) return fail("invalid");
-  if (!(await isValidAssignee(parsed.data.assigneeId, context.place.id))) return fail("invalid");
 
-  const list = await ensureFirstList(context.place.id, "tasks", CHORES_LIST_NAME);
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+  if (!(await isValidAssignee(parsed.data.assigneeId, list.placeId))) return fail("invalid");
+
   const round = await ensureActiveRound(list.id);
-  await db.insert(items).values({
-    roundId: round.id,
-    name: parsed.data.title,
-    assigneeId: parsed.data.assigneeId,
-    addedBy: context.user.id,
-  });
+  await db.insert(items).values({ ...choreFields(parsed.data), roundId: round.id, addedBy: user.id });
   refresh();
   return ok;
 }
@@ -256,10 +294,7 @@ export async function updateChore(itemId: string, input: ChoreInput): Promise<Ac
   if (item.status !== "active") return fail("listLocked");
   if (!(await isValidAssignee(parsed.data.assigneeId, item.placeId))) return fail("invalid");
 
-  await db
-    .update(items)
-    .set({ name: parsed.data.title, assigneeId: parsed.data.assigneeId })
-    .where(eq(items.id, itemId));
+  await db.update(items).set(choreFields(parsed.data)).where(eq(items.id, itemId));
   refresh();
   return ok;
 }

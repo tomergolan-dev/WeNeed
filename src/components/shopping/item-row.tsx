@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import type { ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { isDraft } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
 import { formatQuantity } from "@/lib/items";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ type Props = {
 export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   // Items added a moment ago only exist on this screen until the server confirms.
-  const isDraft = item.id.startsWith("draft-");
+  const draft = isDraft(item);
   const tItem = useTranslations("ItemForm");
   const quantity = formatQuantity(item, tItem("units"));
 
@@ -33,7 +34,7 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
         role="checkbox"
         aria-checked={item.done}
         aria-label={item.name}
-        disabled={isDraft}
+        disabled={draft}
         onClick={() => onToggle(item.id, !item.done)}
         className={cn(
           "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
@@ -44,11 +45,11 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
       </button>
       <button
         type="button"
-        disabled={isDraft}
+        disabled={draft}
         onClick={() => setEditing(true)}
         className={cn(
           "flex min-w-0 flex-1 items-center gap-3 py-3 text-start",
-          isDraft && "opacity-60",
+          draft && "opacity-60",
         )}
       >
         <span

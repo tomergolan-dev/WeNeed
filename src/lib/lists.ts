@@ -1,7 +1,8 @@
 import "server-only";
-import { and, asc, desc, eq, gt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNotNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { items, lists, placeMembers, places, rounds, users, type Item, type List } from "@/db/schema";
+import { dueStatus } from "./due";
 
 type ListType = List["type"];
 
@@ -11,11 +12,15 @@ export type ListSummary = {
   type: ListType;
   total: number;
   done: number;
+  /** Chores lists only: open chores past or near their due time. */
+  overdue: number;
+  soon: number;
 };
 
 /** The place's lists with counts for their active rounds, oldest first. */
 export async function getPlaceLists(placeId: string): Promise<ListSummary[]> {
-  return db
+  const [rows, dated] = await Promise.all([
+    db
     .select({
       id: lists.id,
       name: lists.name,
@@ -28,7 +33,24 @@ export async function getPlaceLists(placeId: string): Promise<ListSummary[]> {
     .leftJoin(items, eq(items.roundId, rounds.id))
     .where(eq(lists.placeId, placeId))
     .groupBy(lists.id)
-    .orderBy(asc(lists.createdAt));
+    .orderBy(asc(lists.createdAt)),
+    // Open chores with a due date; their status depends on the time now.
+    db
+      .select({ listId: rounds.listId, done: items.done, dueDate: items.dueDate, dueTime: items.dueTime })
+      .from(items)
+      .innerJoin(rounds, and(eq(rounds.id, items.roundId), eq(rounds.status, "active")))
+      .innerJoin(lists, and(eq(lists.id, rounds.listId), eq(lists.type, "tasks")))
+      .where(and(eq(lists.placeId, placeId), eq(items.done, false), isNotNull(items.dueDate))),
+  ]);
+  const now = Date.now();
+  return rows.map((row) => {
+    const statuses = dated.filter((d) => d.listId === row.id).map((d) => dueStatus(d, now));
+    return {
+      ...row,
+      overdue: statuses.filter((s) => s === "overdue").length,
+      soon: statuses.filter((s) => s === "soon").length,
+    };
+  });
 }
 
 /** A list, only if it is in the given place. */
@@ -116,7 +138,7 @@ export async function getPlace(placeId: string) {
 
 /**
  * The place's first list of a type, created with the given name if there is
- * none. Used for chores (one list until Stage D) and by the paused bot.
+ * none. Used by the paused bot.
  */
 export async function ensureFirstList(placeId: string, type: ListType, name: string) {
   const [existing] = await db
@@ -132,16 +154,9 @@ export async function ensureFirstList(placeId: string, type: ListType, name: str
 
 const DONE_CHORES_VISIBLE_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Open chores plus chores done in the last week, on the place's chores list. */
-export async function getChores(placeId: string): Promise<Item[]> {
-  const [list] = await db
-    .select({ id: lists.id })
-    .from(lists)
-    .where(and(eq(lists.placeId, placeId), eq(lists.type, "tasks")))
-    .orderBy(asc(lists.createdAt))
-    .limit(1);
-  if (!list) return [];
-  const round = await ensureActiveRound(list.id);
+/** A chores list's open chores plus those done in the last week. */
+export async function getChores(listId: string): Promise<Item[]> {
+  const round = await ensureActiveRound(listId);
   const since = new Date(Date.now() - DONE_CHORES_VISIBLE_MS);
   return db
     .select()

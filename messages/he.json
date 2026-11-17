@@ -14,18 +14,21 @@
     "title": "מה צריך היום?",
     "count": "{count, plural, =0 {עוד אין רשימות} one {רשימה אחת} other {# רשימות}}",
     "lists": "הרשימות",
-    "empty": "עוד אין רשימות קניות. אפשר ליצור כמה שרוצים, למשל ״סופר״ ו״שוק״.",
+    "empty": "עוד אין רשימות. אפשר ליצור כמה שרוצים: קניות, מטלות או צ׳קליסט.",
     "listEmpty": "הרשימה ריקה",
     "items": "{count, plural, one {פריט אחד} other {# פריטים}}",
     "itemsInCart": "{count, plural, one {פריט אחד} other {# פריטים}} · {done} בעגלה",
-    "chores": "מטלות",
-    "choresOpen": "{count, plural, =0 {אין מטלות פתוחות} one {מטלה פתוחה אחת} other {# פתוחות}}"
+    "choresOpen": "{count, plural, =0 {אין מטלות פתוחות} one {מטלה פתוחה אחת} other {# פתוחות}}",
+    "attention": "{count, plural, one {מטלה אחת דורשת תשומת לב} other {# מטלות דורשות תשומת לב}}",
+    "overdue": "{count} באיחור",
+    "soon": "{count} בקרוב",
+    "checked": "{done} מתוך {total} מסומנים"
   },
   "Lists": {
     "new": "רשימה חדשה",
-    "newTitle": "רשימת קניות חדשה",
+    "newTitle": "רשימה חדשה",
     "nameLabel": "שם הרשימה",
-    "namePlaceholder": "למשל: קניות סופר",
+    "namePlaceholder": "למשל: קניות סופר, מטלות הבית, ציוד לטיול",
     "create": "יצירת רשימה",
     "menu": "אפשרויות הרשימה",
     "history": "היסטוריה",
@@ -36,7 +39,27 @@
     "deleteTitle": "למחוק את הרשימה?",
     "deleteDescription": "״{name}״ תימחק לגמרי, כולל ההיסטוריה שלה. אי אפשר לבטל.",
     "deleteConfirm": "כן, למחוק",
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "typeLabel": "סוג הרשימה",
+    "typeTitle": "סוג הרשימה",
+    "changeType": "שינוי סוג"
+  },
+  "ListKinds": {
+    "label": "סוג הרשימה",
+    "shopping": {
+      "name": "קניות",
+      "description": "פריטים לפי מחלקות. מסיימים קנייה והיא נשמרת בהיסטוריה."
+    },
+    "tasks": {
+      "name": "מטלות",
+      "description": "דברים לעשות, עם תאריך ושעה. מה שבאיחור או בקרוב מסומן.",
+      "open": "{count, plural, =0 {אין פתוחות} one {אחת פתוחה} other {# פתוחות}}"
+    },
+    "checklist": {
+      "name": "צ׳קליסט",
+      "description": "רשימה קבועה שמסמנים ומאפסים, למשל ציוד לטיול או לבריכה.",
+      "subtitle": "רשימה קבועה · נשמרת לפעם הבאה"
+    }
   },
   "Shopping": {
     "empty": "הרשימה ריקה. מה צריך?",
@@ -48,6 +71,41 @@
     "cancel": "ביטול",
     "carryOver": "{count, plural, one {להשאיר ברשימה את הפריט שלא נקנה} other {להשאיר ברשימה את # הפריטים שלא נקנו}}",
     "progress": "{done} מתוך {total} בעגלה"
+  },
+  "Chores": {
+    "empty": "אין מטלות. מה צריך לעשות?",
+    "addPlaceholder": "מה צריך לעשות?",
+    "newTitle": "מטלה חדשה",
+    "editTitle": "עריכת מטלה",
+    "add": "הוספה",
+    "save": "שמירה",
+    "delete": "מחיקה",
+    "titleLabel": "מטלה",
+    "date": "תאריך",
+    "time": "שעה",
+    "assignee": "אחראי/ת",
+    "unassigned": "לא משויך",
+    "all": "הכל",
+    "filterOverdue": "באיחור {count}",
+    "filterSoon": "בקרוב {count}",
+    "noDate": "בלי תאריך",
+    "open": "לטיפול",
+    "done": "בוצעו לאחרונה",
+    "nothingHere": "אין כאן מטלות.",
+    "today": "היום",
+    "tomorrow": "מחר",
+    "yesterday": "אתמול",
+    "overdue": "באיחור",
+    "overdueDays": "{count, plural, one {באיחור של יום} two {באיחור של יומיים} other {באיחור של # ימים}}",
+    "inHours": "{count, plural, one {בעוד שעה} two {בעוד שעתיים} other {בעוד # שעות}}"
+  },
+  "Checklist": {
+    "progress": "{done} מתוך {total} מסומנים",
+    "left": "עוד {count}",
+    "checkAll": "סמן הכל",
+    "uncheckAll": "בטל הכל",
+    "empty": "הרשימה ריקה. מה צריך לזכור?",
+    "addPlaceholder": "מה עוד צריך? למשל ״פנס״"
   },
   "ItemForm": {
     "addPlaceholder": "מה צריך?",
@@ -155,21 +213,6 @@
     "chooseShopping": "🛒 קניות",
     "chooseBoth": "✌️ גם וגם",
     "questionExpired": "השאלה הזאת כבר לא בתוקף. שלחו שוב את ההודעה 🙂"
-  },
-  "Chores": {
-    "title": "מטלות",
-    "empty": "אין מטלות פתוחות 🎉",
-    "addPlaceholder": "מה צריך לעשות?",
-    "add": "הוספה",
-    "titleLabel": "מטלה",
-    "assignee": "אחראי/ת",
-    "unassigned": "לא משויך",
-    "all": "הכל",
-    "mine": "שלי",
-    "done": "בוצעו בשבוע האחרון ({count})",
-    "editTitle": "עריכת מטלה",
-    "save": "שמירה",
-    "delete": "מחיקה"
   },
   "Places": {
     "title": "המקומות שלי",

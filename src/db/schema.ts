@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -9,6 +10,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  time,
   timestamp,
   uniqueIndex,
   uuid,
@@ -17,7 +19,8 @@ import {
 const createdAt = () =>
   timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 
-export const listType = pgEnum("list_type", ["shopping", "tasks"]);
+// "tasks" is a chores list.
+export const listType = pgEnum("list_type", ["shopping", "tasks", "checklist"]);
 export const listStatus = pgEnum("list_status", ["active", "completed"]);
 
 export const placeRole = pgEnum("place_role", ["owner", "member"]);
@@ -131,6 +134,10 @@ export const items = pgTable(
       onDelete: "set null",
     }),
     doneAt: timestamp("done_at", { withTimezone: true }),
+    // Chores only: an optional due date and time, in Israel time. A date with
+    // no time is due at the end of that day.
+    dueDate: date("due_date", { mode: "string" }),
+    dueTime: time("due_time"),
     addedBy: uuid("added_by").references(() => users.id, {
       onDelete: "set null",
     }),

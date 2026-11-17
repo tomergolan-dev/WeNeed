@@ -3,21 +3,23 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Ellipsis, History, Pencil, Trash2 } from "lucide-react";
-import { deleteList, renameList } from "@/app/actions";
+import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2 } from "lucide-react";
+import { deleteList, renameList, setListType } from "@/app/actions";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
+import type { ListType } from "@/lib/list-kinds";
 import { ListNameForm } from "./list-name-form";
+import { ListTypePicker } from "./list-type-picker";
 
 const row =
   "flex h-14 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-start font-semibold transition-colors active:bg-muted";
 
-/** The list's ⋯ menu: rename, history and delete. */
-export function ListMenu({ listId, name }: { listId: string; name: string }) {
+/** The list's ⋯ menu: history (shopping), rename, kind and delete. */
+export function ListMenu({ listId, name, type }: { listId: string; name: string; type: ListType }) {
   const t = useTranslations("Lists");
   const tErrors = useTranslations("Errors");
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"menu" | "rename" | "delete">("menu");
+  const [view, setView] = useState<"menu" | "rename" | "type" | "delete">("menu");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -40,18 +42,32 @@ export function ListMenu({ listId, name }: { listId: string; name: string }) {
       <BottomSheet
         open={open}
         onOpenChange={setOpen}
-        title={view === "rename" ? t("renameTitle") : view === "delete" ? t("deleteTitle") : name}
+        title={
+          view === "rename"
+            ? t("renameTitle")
+            : view === "type"
+              ? t("typeTitle")
+              : view === "delete"
+                ? t("deleteTitle")
+                : name
+        }
       >
         {view === "menu" && (
           <div className="flex flex-col gap-2.5">
-            <Link href={`/lists/${listId}/history`} onClick={close} className={row}>
-              <History className="size-5 text-muted-foreground" aria-hidden />
-              <span className="flex-1">{t("history")}</span>
-              <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
-            </Link>
+            {type === "shopping" && (
+              <Link href={`/lists/${listId}/history`} onClick={close} className={row}>
+                <History className="size-5 text-muted-foreground" aria-hidden />
+                <span className="flex-1">{t("history")}</span>
+                <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
+              </Link>
+            )}
             <button type="button" onClick={() => setView("rename")} className={row}>
               <Pencil className="size-5 text-muted-foreground" aria-hidden />
               {t("rename")}
+            </button>
+            <button type="button" onClick={() => setView("type")} className={row}>
+              <Shapes className="size-5 text-muted-foreground" aria-hidden />
+              {t("changeType")}
             </button>
             <button type="button" onClick={() => setView("delete")} className={`${row} text-destructive`}>
               <Trash2 className="size-5" aria-hidden />
@@ -66,6 +82,22 @@ export function ListMenu({ listId, name }: { listId: string; name: string }) {
             onSubmit={(value) => renameList(listId, value)}
             onDone={close}
           />
+        )}
+        {view === "type" && (
+          <div className="flex flex-col gap-3">
+            <ListTypePicker
+              value={type}
+              onChange={(next) =>
+                startTransition(async () => {
+                  if (next === type) return close();
+                  const result = await setListType(listId, next);
+                  if (result.ok) close();
+                  else setError(tErrors(result.error));
+                })
+              }
+            />
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
         )}
         {view === "delete" && (
           <div className="flex flex-col gap-4">

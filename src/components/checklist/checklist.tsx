@@ -1,0 +1,189 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Check, CheckCheck, ListChecks, RotateCcw } from "lucide-react";
+import { addItem, deleteItem, setAllDone, setItemDone, updateItem } from "@/app/actions";
+import type { Item } from "@/db/schema";
+import { BottomSheet } from "@/components/bottom-sheet";
+import { AddItemBar } from "@/components/lists/add-item-bar";
+import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+/** A permanent list: items are checked, and all unchecked again for next time. */
+export function Checklist({ listId, items }: { listId: string; items: Item[] }) {
+  const t = useTranslations("Checklist");
+  const tItem = useTranslations("ItemForm");
+  const { items: optimistic, run, error } = useListItems(items);
+  const [editing, setEditing] = useState<Item | null>(null);
+
+  // Unchecked first, so what's left is at the top.
+  const sorted = [...optimistic.filter((i) => !i.done), ...optimistic.filter((i) => i.done)];
+  const done = optimistic.filter((i) => i.done).length;
+  const total = optimistic.length;
+
+  const all = (value: boolean) => run({ type: "all", done: value }, () => setAllDone(listId, value));
+
+  return (
+    <>
+      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-32">
+        {total > 0 && (
+          <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[15px] font-bold">{t("progress", { done, total })}</span>
+              {done < total && (
+                <span className="text-[13px] text-muted-foreground">{t("left", { count: total - done })}</span>
+              )}
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#f3eedf]">
+              <div
+                className="h-full rounded-full bg-[#c9962a] transition-[width]"
+                style={{ width: `${(done / total) * 100}%` }}
+              />
+            </div>
+            <div className="mt-3.5 flex gap-2">
+              <ToolButton onClick={() => all(true)} disabled={done === total}>
+                <CheckCheck className="size-4" aria-hidden />
+                {t("checkAll")}
+              </ToolButton>
+              <ToolButton onClick={() => all(false)} disabled={done === 0}>
+                <RotateCcw className="size-4" aria-hidden />
+                {t("uncheckAll")}
+              </ToolButton>
+            </div>
+          </div>
+        )}
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        {total === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+            <span className="flex size-14 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
+              <ListChecks className="size-6" aria-hidden />
+            </span>
+            {t("empty")}
+          </div>
+        ) : (
+          <ul className="rounded-[18px] border bg-card shadow-soft">
+            {sorted.map((item) => (
+              <li
+                key={item.id}
+                className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0"
+              >
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={item.done}
+                  aria-label={item.name}
+                  disabled={isDraft(item)}
+                  onClick={() =>
+                    run({ type: "patch", id: item.id, patch: { done: !item.done } }, () =>
+                      setItemDone(item.id, !item.done),
+                    )
+                  }
+                  className={cn(
+                    "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-white transition-colors",
+                    item.done && "border-[#c9962a] bg-[#c9962a]",
+                  )}
+                >
+                  {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+                </button>
+                <button
+                  type="button"
+                  disabled={isDraft(item)}
+                  onClick={() => setEditing(item)}
+                  className={cn(
+                    "min-w-0 flex-1 truncate py-3 text-start text-base font-medium",
+                    item.done && "text-muted-foreground",
+                    isDraft(item) && "opacity-60",
+                  )}
+                >
+                  {item.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <AddItemBar
+        placeholder={t("addPlaceholder")}
+        onAdd={(name) =>
+          run({ type: "add", item: draftItem({ name }) }, () =>
+            addItem(listId, { name, quantity: null, unit: null }),
+          )
+        }
+      />
+
+      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={tItem("editTitle")}>
+        {editing && (
+          <RenameItemForm
+            item={editing}
+            onSave={(name) => {
+              const { id, quantity, unit } = editing;
+              run({ type: "patch", id, patch: { name } }, () =>
+                updateItem(id, { name, quantity, unit, category: "other" }),
+              );
+              setEditing(null);
+            }}
+            onDelete={() => {
+              const id = editing.id;
+              run({ type: "delete", id }, () => deleteItem(id));
+              setEditing(null);
+            }}
+          />
+        )}
+      </BottomSheet>
+    </>
+  );
+}
+
+function ToolButton(props: React.ComponentProps<"button">) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border bg-card text-sm font-semibold transition-colors active:bg-muted disabled:opacity-50"
+    />
+  );
+}
+
+function RenameItemForm({
+  item,
+  onSave,
+  onDelete,
+}: {
+  item: Item;
+  onSave: (name: string) => void;
+  onDelete: () => void;
+}) {
+  const t = useTranslations("ItemForm");
+  const [name, setName] = useState(item.name);
+  return (
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (name.trim()) onSave(name.trim());
+      }}
+    >
+      <Input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        aria-label={t("name")}
+        maxLength={100}
+        className="h-12 rounded-2xl bg-card text-base"
+      />
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" size="xl" className="text-destructive" onClick={onDelete}>
+          {t("delete")}
+        </Button>
+        <Button type="submit" size="xl" className="flex-1" disabled={!name.trim()}>
+          {t("save")}
+        </Button>
+      </div>
+    </form>
+  );
+}

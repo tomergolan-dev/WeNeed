@@ -11,7 +11,7 @@ Write "need 2 cartons of milk and eggs" in a list's AI chat and the list updates
 
 New direction (2026-11-16): a multi-place web app with shopping, chores and checklists, plus an AI chat per list. The WhatsApp bot is paused.
 
-- Stage A (design) is approved. Stage B (places, and sign-in with Google or an email code) is live. Stage C (several shopping lists, finish and history) is in progress. Next: the AI chat, then invites. See "Development stages" in `docs/spec.md`.
+- Stage A (design) is approved. Stage B (places, and sign-in with Google or an email code) is live. Stage C (lists of all three kinds: shopping, chores, checklists) is in progress. Next: the AI chat, then invites. See "Development stages" in `docs/spec.md`.
 - Production: https://weneed.tomergolan.dev
 
 ## Code map
@@ -23,9 +23,9 @@ New direction (2026-11-16): a multi-place web app with shopping, chores and chec
 | `src/app/privacy/` | Public privacy policy, linked from the login page and Google's consent screen | Active |
 | `src/app/places/`, `src/components/places/`, `src/lib/place-icons.ts` | Place selector sheet and the create/edit place form | Active (Stage B) |
 | `src/db/schema.ts`, `drizzle/` | Database schema and migrations (users, places, lists, rounds, items) | Active |
-| `src/app/(app)/page.tsx`, `src/app/(app)/lists/`, `src/components/lists/`, `src/components/shopping/`, `src/lib/lists.ts` | Home screen with the place's lists; a shopping list, its menu, finish and history | Active (Stage C) |
+| `src/app/(app)/page.tsx`, `src/app/(app)/lists/`, `src/components/lists/`, `src/lib/lists.ts`, `src/lib/list-kinds.ts` | Home screen with the place's lists; a list screen per kind, the list menu, choosing a kind | Active (Stage C) |
+| `src/components/shopping/`, `src/components/chores/`, `src/components/checklist/`, `src/lib/due.ts` | Shopping (finish and history), chores (due dates and signs) and checklists | Active (Stage C) |
 | `src/app/(app)/settings/` | Place settings and members | Active (Stage B) |
-| `src/app/(app)/chores/`, `src/components/chores/` | Chores screen | Active; to be rebuilt with due dates (Stage F) |
 | `src/lib/bot/`, `src/lib/whatsapp.ts`, `src/app/api/whatsapp/` | WhatsApp bot | Paused; kept for reuse, each file marked with a header comment |
 | `scripts/link-email.ts` | CLI that links an email to a user from the bot era | Active until Tomer and Nurit are linked in production |
 | `scripts/eval-parser.mts` | Sample messages for the Claude parser | Active; reused for the AI chat |

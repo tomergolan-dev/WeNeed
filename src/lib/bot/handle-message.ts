@@ -166,7 +166,11 @@ async function reply(member: Member, rawText: string, buttonId: string | null): 
     case "show_list":
       return formatList(open);
     case "show_chores":
-      return formatChores(member, await getChores(member.placeId), people);
+      return formatChores(
+        member,
+        await getChores((await ensureFirstList(member.placeId, "tasks", "מטלות")).id),
+        people,
+      );
     case "login_link":
       return t("loginLink", { url: `${appUrl()}/login` });
     case "other":
@@ -195,7 +199,7 @@ async function addParsed(
     requested.length > 0 ? await addItems(member, context.list, requested, context.open) : "";
   // One link per reply: the shopping part brings its own when it added items.
   if (choresReply && !shoppingReply.includes(appUrl())) {
-    return [`${choresReply}\n${appUrl()}/chores`, shoppingReply].filter(Boolean).join("\n\n");
+    return [`${choresReply}\n${appUrl()}`, shoppingReply].filter(Boolean).join("\n\n");
   }
   return [choresReply, shoppingReply].filter(Boolean).join("\n\n");
 }
@@ -405,7 +409,7 @@ function describeChore(title: string, assigneeId: string | null, people: Person[
 
 function formatChores(member: Member, chores: Item[], people: Person[]): string {
   const open = chores.filter((chore) => !chore.done);
-  const url = `${appUrl()}/chores`;
+  const url = appUrl();
   if (open.length === 0) return t("choresEmpty", { url });
   // The sender's chores first, then everyone else's, then unassigned.
   const rank = (chore: Item) => (chore.assigneeId === member.id ? 0 : chore.assigneeId ? 1 : 2);

@@ -1,46 +1,19 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ShoppingCart } from "lucide-react";
-import {
-  addItem,
-  deleteItem,
-  setItemDone,
-  updateItem,
-  type ActionResult,
-  type ItemInput,
-} from "@/app/actions";
+import { addItem, deleteItem, setItemDone, updateItem, type ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
+import { AddItemBar } from "@/components/lists/add-item-bar";
+import { draftItem, useListItems } from "@/components/lists/use-list-items";
+import { Button } from "@/components/ui/button";
 import { DEFAULT_CATEGORY, isCategory } from "@/lib/categories";
 import { CATEGORY_ICONS, TONES } from "@/lib/category-icons";
 import { groupByCategory } from "@/lib/items";
 import { cn } from "@/lib/utils";
-import { AddItemBar } from "./add-item-bar";
+import { emptyDraft, ItemFields, toItemInput, type ItemDraft } from "./item-fields";
 import { ItemRow } from "./item-row";
-
-type OptimisticAction =
-  | { type: "add"; item: Item }
-  | { type: "update"; id: string; input: ItemInput }
-  | { type: "done"; id: string; done: boolean }
-  | { type: "delete"; id: string };
-
-function reduce(items: Item[], action: OptimisticAction): Item[] {
-  switch (action.type) {
-    case "add":
-      return [...items, action.item];
-    case "update":
-      return items.map((item) =>
-        item.id === action.id
-          ? { ...item, ...action.input, category: action.input.category ?? item.category }
-          : item,
-      );
-    case "done":
-      return items.map((item) => (item.id === action.id ? { ...item, done: action.done } : item));
-    case "delete":
-      return items.filter((item) => item.id !== action.id);
-  }
-}
 
 export type Person = { id: string; name: string };
 
@@ -54,47 +27,24 @@ export function ShoppingList({
   people: Person[];
 }) {
   const t = useTranslations("Shopping");
+  const tItem = useTranslations("ItemForm");
   const tCategories = useTranslations("Categories");
-  const tErrors = useTranslations("Errors");
-  const [optimisticItems, apply] = useOptimistic(items, reduce);
-  const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const { items: optimisticItems, run, error } = useListItems(items);
 
-  const run = (action: OptimisticAction, call: () => Promise<ActionResult>) =>
-    startTransition(async () => {
-      setError(null);
-      apply(action);
-      try {
-        const result = await call();
-        if (!result.ok) setError(tErrors(result.error));
-      } catch {
-        setError(tErrors("generic"));
-      }
-    });
-
-  const handleAdd = (input: ItemInput) => {
-    const draft: Item = {
-      id: `draft-${crypto.randomUUID()}`,
-      roundId: "",
-      name: input.name,
-      quantity: input.quantity,
-      unit: input.unit,
-      category: input.category ?? DEFAULT_CATEGORY,
-      assigneeId: null,
-      done: false,
-      doneBy: null,
-      doneAt: null,
-      addedBy: null,
-      createdAt: new Date(),
-    };
-    run({ type: "add", item: draft }, () => addItem(listId, input));
-  };
+  const handleAdd = (input: ItemInput) =>
+    run(
+      { type: "add", item: draftItem({ ...input, category: input.category ?? DEFAULT_CATEGORY }) },
+      () => addItem(listId, input),
+    );
 
   const handlers = {
     onToggle: (id: string, done: boolean) =>
-      run({ type: "done", id, done }, () => setItemDone(id, done)),
+      run({ type: "patch", id, patch: { done } }, () => setItemDone(id, done)),
     onUpdate: (id: string, input: ItemInput) =>
-      run({ type: "update", id, input }, () => updateItem(id, input)),
+      run(
+        { type: "patch", id, patch: { ...input, category: input.category ?? DEFAULT_CATEGORY } },
+        () => updateItem(id, input),
+      ),
     onDelete: (id: string) => run({ type: "delete", id }, () => deleteItem(id)),
   };
 
@@ -157,7 +107,21 @@ export function ShoppingList({
           </Section>
         )}
       </div>
-      <AddItemBar onAdd={handleAdd} />
+      <AddItemBar
+        placeholder={tItem("addPlaceholder")}
+        onAdd={(name) => handleAdd({ name, quantity: null, unit: null })}
+        details={{
+          title: tItem("newTitle"),
+          render: (close) => (
+            <NewItemForm
+              onAdd={(input) => {
+                handleAdd(input);
+                close();
+              }}
+            />
+          ),
+        }}
+      />
     </>
   );
 }
@@ -183,5 +147,25 @@ function Section({
       </h2>
       <ul className="rounded-[18px] border bg-card shadow-soft">{children}</ul>
     </section>
+  );
+}
+
+function NewItemForm({ onAdd }: { onAdd: (input: ItemInput) => void }) {
+  const t = useTranslations("ItemForm");
+  const [draft, setDraft] = useState<ItemDraft>(emptyDraft);
+  const input = toItemInput(draft);
+  return (
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (input) onAdd(input);
+      }}
+    >
+      <ItemFields draft={draft} onChange={setDraft} />
+      <Button type="submit" size="xl" disabled={!input}>
+        {t("add")}
+      </Button>
+    </form>
   );
 }

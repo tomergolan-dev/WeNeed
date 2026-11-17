@@ -22,7 +22,7 @@ async function History({ params }: Pick<PageProps<"/lists/[id]/history">, "param
 
   const { place } = await requirePlace();
   const list = await getList(place.id, id);
-  if (!list) notFound();
+  if (!list || list.type !== "shopping") notFound();
 
   const [t, format, rounds] = await Promise.all([
     getTranslations("History"),

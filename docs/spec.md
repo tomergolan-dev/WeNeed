@@ -36,8 +36,8 @@ We Need is also a portfolio project, so it includes a public demo.
 | 📋 Checklist | A reusable list, e.g. "Weekend up north" | Permanent; items are checked and unchecked again and again |
 
 - Lists can be renamed and deleted by members (deleting removes the list's history too, after a confirmation).
-- The home screen shows the place's lists as cards, with item counts and progress, and a "New list" button.
-- Until Stages F and G, a place has one chores list and no checklists; Stage C builds shopping lists only.
+- The home screen shows the place's lists as cards (item counts, progress, and for chores the overdue and due-soon counts), and a "New list" button.
+- **Choosing the kind:** a new list gets a name and a kind, shown as three cards, each with a line on what it is for. The kind is guessed from the name ("קניות סופר" → shopping, "מטלות הבית" → chores, "ציוד לטיול" → checklist; shopping when nothing hints) until the user picks one. The kind can be changed later from the list's menu. Decided 2026-11-17: an explicit kind keeps each list's actions clear (finish, due dates, check all), and the guess keeps it effortless. The AI chat may later guess less obvious names.
 
 ### Shopping lists
 
@@ -55,12 +55,14 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ### Chores
 
-- A chore has a title and optional **due date** and **due time**.
+- A place can have several chores lists.
+- A chore has a title, an optional **due date** and **due time** (Israel time), and an optional assignee.
 - Status signs, like traffic signs:
-  - **Due soon:** a yellow warning sign ⚠️.
-  - **Overdue:** a red sign ⛔.
+  - **Due soon** (within 24 hours): a yellow mark and a pill ("בעוד 3 שעות", "היום").
+  - **Overdue:** a red mark and a pill ("באיחור של יום").
   - A chore with a date and no time is due at the end of that day.
-- Check-off marks a chore as done.
+- Open chores are sorted: overdue, due soon, later by date, then those without a date. Filters: all, overdue, due soon, no date.
+- Check-off marks a chore as done; done chores stay visible for a week under "done recently".
 - Later: calendar integration (see "Future").
 
 ### Checklists
@@ -68,6 +70,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - For example "Weekend up north" or "Gym bag".
 - Items can be added, edited and removed at any time; the list itself stays.
 - **Check all** and **Uncheck all**, mainly to reset the list before the next use.
+- Unchecked items are shown first, with a progress bar.
 
 ## AI chat
 
@@ -129,9 +132,9 @@ We Need is also a portfolio project, so it includes a public demo.
   - `places` (name, icon), and a many-to-many `place_members` table between users and places, with a role (`owner` / `member`). *(Stage B)*
   - `sign_in_codes`: hashed one-time email codes with expiry and attempt count. *(Stage B)*
   - `invites`: place, invited email, invited by, status (`pending` / `accepted` / `declined`).
-  - `lists`: place, kind (`shopping` / `tasks`, later `checklist`), name. *(Stage C)*
+  - `lists`: place, kind (`shopping` / `tasks` / `checklist`), name. *(Stage C)*
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
-  - `items` gain an optional due date and time for chores.
+  - `items` have an optional due date and time, used by chores. *(Stage C)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
 
@@ -142,13 +145,12 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage B, places and sign-in:** users, several places per user, place selector, sign-in with Google or an email code, open to everyone.
   - Built and tested on the `dev` database. The existing household moved to a place, its members to users (as owners).
   - Released to production on 2026-11-17: migrations run, Tomer's and Nurit's addresses linked to their bot-era users.
-- [ ] **Stage C, lists:** several named shopping lists per place, in the new design, with finish shopping and per-list history.
-  - Built and tested on the `dev` database. The existing list became "קניות", with its finished rounds as its history.
+- [ ] **Stage C, lists:** named lists of all three kinds, several per place, in the new design.
+  - Shopping: finish shopping and per-list history. Chores: due date and time, due-soon and overdue signs. Checklists: check all / uncheck all.
+  - Built and tested on the `dev` database. The existing lists became "קניות" (with its finished rounds as history) and "מטלות".
+  - Chores and checklists were moved into this stage on 2026-11-17, before the AI chat, at Tomer's request.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
 - [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
-- [ ] **Stage F, chores:** several chores lists, due date and time, due-soon and overdue signs.
-- [ ] **Stage G, checklists:** check all / uncheck all.
-- Order changed on 2026-11-17: the AI chat and invites come before chores and checklists, at Tomer's request.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
@@ -157,7 +159,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] Invites through the WhatsApp bot: in the first version, or later?
 - [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
 - [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
-- [ ] "Due soon": how long before the due time does the yellow sign appear?
+- [x] "Due soon": 24 hours before the due time (decided 2026-11-17; easy to change in `src/lib/due.ts`).
 - [ ] Chores: is there an assignee per chore?
 - [ ] Permissions (Stage E): what can an owner do that a member can't (invite, remove members, delete lists, delete the place)?
 

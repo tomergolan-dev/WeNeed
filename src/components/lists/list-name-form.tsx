@@ -6,7 +6,7 @@ import type { ActionResult } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-/** A name field with a submit button; used to create and to rename a list. */
+/** A name field with a submit button, for renaming a list. */
 export function ListNameForm({
   initial = "",
   submitLabel,
