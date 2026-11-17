@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Eye, ListChecks, Users } from "lucide-react";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import { countOpenItems, getInvite, getListMemberNames } from "@/lib/invites";
 import { LIST_KINDS } from "@/lib/list-kinds";
 import { cn } from "@/lib/utils";
 
-export default function InvitePage({ params }: PageProps<"/invites/[id]">) {
+export default function InvitePage({ params }: PageProps<"/[locale]/invites/[id]">) {
   return (
     <>
       <header className="px-5 pt-[18px]">
@@ -27,7 +27,7 @@ export default function InvitePage({ params }: PageProps<"/invites/[id]">) {
   );
 }
 
-async function Invite({ params }: Pick<PageProps<"/invites/[id]">, "params">) {
+async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "params">) {
   const { id } = await params;
   const [user, t] = await Promise.all([requireUser(), getTranslations("Invite")]);
   const invite = z.uuid().safeParse(id).success && user.email ? await getInvite(id, user.email) : null;
@@ -70,7 +70,7 @@ async function Invite({ params }: Pick<PageProps<"/invites/[id]">, "params">) {
             ) : (
               <PlaceBadge icon="home" className="size-19 [&_svg]:size-8.5" />
             )}
-            <Initial name={from} className="absolute -bottom-1 -left-1.5 size-8.5 border-3 border-card" />
+            <Initial name={from} className="absolute -bottom-1 -end-1.5 size-8.5 border-3 border-card" />
           </div>
         </div>
         <p className="text-[15px] text-muted-foreground">

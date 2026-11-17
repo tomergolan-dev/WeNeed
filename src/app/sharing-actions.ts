@@ -2,7 +2,7 @@
 
 import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { db } from "@/db";
@@ -171,7 +171,7 @@ export async function respondToInvite(inviteId: string, accept: boolean): Promis
       .values(listIds.map((listId) => ({ listId, userId: user.id })))
       .onConflictDoNothing();
   }
-  redirect(listIds?.length === 1 ? `/lists/${listIds[0]}` : "/");
+  return redirectTo(listIds?.length === 1 ? `/lists/${listIds[0]}` : "/");
 }
 
 /**

@@ -1,18 +1,20 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Brand } from "@/components/brand";
+import { LanguageSwitch } from "@/components/language-switch";
 import { isGoogleConfigured } from "@/lib/google";
 import { LoginForm } from "./login-form";
 
 
-export default async function LoginPage({ searchParams }: PageProps<"/login">) {
+export default async function LoginPage({ searchParams }: PageProps<"/[locale]/login">) {
   const t = await getTranslations("Login");
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-[18px]">
-      <header>
+      <header className="flex items-center justify-between">
         <Brand />
+        <LanguageSwitch />
       </header>
       <div className="flex flex-1 flex-col justify-center pb-10">
         <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
@@ -28,7 +30,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   );
 }
 
-async function Form({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
+async function Form({ searchParams }: Pick<PageProps<"/[locale]/login">, "searchParams">) {
   // Set by the Google callback when it sends the user back here.
   const { error } = await searchParams;
   return <LoginForm google={isGoogleConfigured()} initialError={error === "googleFailed" ? error : null} />;

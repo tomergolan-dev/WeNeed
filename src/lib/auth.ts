@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/i18n/navigation";
 import { db } from "@/db";
 import { lists, placeMembers, places, users } from "@/db/schema";
 import { canSeeListSql } from "./list-access";
@@ -42,7 +42,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 /** For pages: sends visitors without a valid session to /login. */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) return redirectTo("/login");
   return user;
 }
 

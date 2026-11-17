@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/i18n/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { MembersManager } from "@/components/places/members-manager";
@@ -31,7 +31,7 @@ async function Header() {
 async function Members() {
   const { user, place } = await requirePlace();
   // A personal area is shared list by list, from each list's menu.
-  if (place.personal) redirect("/");
+  if (place.personal) return redirectTo("/");
 
   const [format, details, invites, lists] = await Promise.all([
     getFormatter(),
@@ -39,7 +39,7 @@ async function Members() {
     getPlaceInvites(place.id),
     getPlaceLists(place.id, user.id),
   ]);
-  if (!details) redirect("/");
+  if (!details) return redirectTo("/");
   const now = new Date();
 
   return (

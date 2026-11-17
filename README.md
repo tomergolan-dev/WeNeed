@@ -18,17 +18,18 @@ New direction (2026-11-16): a multi-place web app with shopping, chores and chec
 
 | Path | What it is | State |
 | --- | --- | --- |
-| `src/app/login/`, `src/app/api/auth/google/`, `src/lib/sign-in.ts`, `src/lib/sign-in-delivery.ts`, `src/lib/google.ts`, `src/lib/email.ts` | Sign-in with Google or a one-time email code (Resend); open sign-up with rate limits | Active (Stage B) |
+| `src/app/[locale]/login/`, `src/app/api/auth/google/`, `src/lib/sign-in.ts`, `src/lib/sign-in-delivery.ts`, `src/lib/google.ts`, `src/lib/email.ts` | Sign-in with Google or a one-time email code (Resend); open sign-up with rate limits | Active (Stage B) |
 | `src/lib/session.ts`, `src/lib/auth.ts` | Session cookie, current user and current place | Active (Stage B) |
-| `src/app/privacy/` | Public privacy policy, linked from the login page and Google's consent screen | Active |
-| `src/app/places/`, `src/components/places/`, `src/lib/place-icons.ts` | Place selector sheet and the create/edit place form | Active (Stage B) |
+| `src/app/[locale]/privacy/` | Public privacy policy, linked from the login page and Google's consent screen | Active |
+| `src/app/[locale]/places/`, `src/components/places/`, `src/lib/place-icons.ts` | Place selector sheet and the create/edit place form | Active (Stage B) |
 | `src/db/schema.ts`, `drizzle/` | Database schema and migrations (users, places, lists, rounds, items) | Active |
-| `src/app/(app)/page.tsx`, `src/app/(app)/lists/`, `src/components/lists/`, `src/lib/lists.ts`, `src/lib/list-kinds.ts` | Home screen with the place's lists; a list screen per kind, the list menu, choosing a kind | Active (Stage C) |
+| `src/app/[locale]/(app)/page.tsx`, `src/app/[locale]/(app)/lists/`, `src/components/lists/`, `src/lib/lists.ts`, `src/lib/list-kinds.ts` | Home screen with the place's lists; a list screen per kind, the list menu, choosing a kind | Active (Stage C) |
 | `src/components/shopping/`, `src/components/chores/`, `src/components/checklist/`, `src/lib/due.ts` | Shopping (finish and history), chores (due dates and signs) and checklists | Active (Stage C) |
 | `src/components/lists/assistant-bar.tsx`, `src/components/lists/quick-add.tsx`, `src/app/assistant-actions.ts`, `src/lib/ai/` | The AI chat at the bottom of a list, and adding by hand at the top | Active (Stage D) |
-| `src/app/(app)/settings/` | Place settings (name and icon, admins only) | Active (Stage B) |
-| `src/app/(app)/members/`, `src/app/(app)/invites/`, `src/app/sharing-actions.ts`, `src/lib/invites.ts`, `src/lib/list-access.ts`, `src/components/lists/list-access-form.tsx`, `src/components/places/members-manager.tsx` | Personal area, invites by email, roles, and who sees each list | Active (Stage E) |
+| `src/app/[locale]/(app)/settings/` | Place settings (name and icon, admins only) | Active (Stage B) |
+| `src/app/[locale]/(app)/members/`, `src/app/[locale]/(app)/invites/`, `src/app/sharing-actions.ts`, `src/lib/invites.ts`, `src/lib/list-access.ts`, `src/components/lists/list-access-form.tsx`, `src/components/places/members-manager.tsx` | Personal area, invites by email, roles, and who sees each list | Active (Stage E) |
 | `src/components/lists/item-details.tsx`, `src/app/attachment-actions.ts`, `src/app/api/attachments/`, `src/lib/attachments.ts`, `src/lib/attachment-rules.ts` | Item details: note, links, photos and documents in private Blob storage | Active (Stage F) |
+| `src/i18n/`, `src/proxy.ts`, `messages/`, `src/components/language-switch.tsx` | Hebrew and English: routing (`/en`), message files, the language switch | Active (Stage H) |
 | `src/components/brand.tsx`, `src/app/icon.svg`, `src/app/apple-icon.png`, `src/app/manifest.ts`, `public/` | Logo, icons, home-screen install and the share cover | Active (Stage G) |
 | `src/lib/bot/`, `src/lib/whatsapp.ts`, `src/app/api/whatsapp/` | WhatsApp bot | Paused; kept for reuse, each file marked with a header comment |
 | `scripts/link-email.ts` | CLI that links an email to a user from the bot era | Active until Tomer and Nurit are linked in production |

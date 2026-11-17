@@ -6,13 +6,13 @@ A mobile-first web app for everything a place (apartment, home, office) "needs":
 
 - Talk to me (Tomer) in Hebrew in chat.
 - Everything written into the repo is in English: code, comments, commit messages, docs, specs, README, PR descriptions.
-- Exception: user-facing UI strings (and AI chat replies) are in Hebrew, and they live in the next-intl message files, not hard-coded.
+- Exception: user-facing UI strings (and AI chat replies) are in Hebrew and English, and they live in the next-intl message files (`messages/he.json`, `messages/en.json`), not hard-coded.
 
 ## Stack
 
 - Next.js (App Router) + TypeScript
 - Tailwind + shadcn/ui
-- next-intl (Hebrew, RTL)
+- next-intl: Hebrew (RTL, plain URLs) and English (LTR, under `/en`); pages live in `src/app/[locale]/`, links and redirects go through `@/i18n/navigation`
 - Drizzle ORM + Neon Postgres
 - Claude API for the AI chat in each list
 - WhatsApp bot code (Meta Cloud API) is paused and disconnected; see "History" in the spec

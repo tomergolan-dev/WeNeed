@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Lock, LogOut, Settings } from "lucide-react";
 import { logOut } from "@/app/actions";
@@ -13,6 +13,7 @@ import { getInvitesFor } from "@/lib/invites";
 import { getPlaceLists, getSharedWithMe, type ListSummary } from "@/lib/lists";
 import { MiniInitials } from "@/components/people";
 import { InviteBanner } from "@/components/places/invite-banner";
+import { LanguageSwitch } from "@/components/language-switch";
 import { cn } from "@/lib/utils";
 
 const iconButton =
@@ -26,6 +27,7 @@ export default async function HomePage() {
       <header className="flex items-center justify-between px-5 pt-[18px]">
         <Brand />
         <div className="flex items-center gap-2">
+          <LanguageSwitch />
           <Suspense>
             <SettingsLink label={t("settings")} />
           </Suspense>

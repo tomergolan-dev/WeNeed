@@ -10,7 +10,7 @@ import { formatQuantity, groupByCategory } from "@/lib/items";
 import { getCompletedRound, getRoundItems } from "@/lib/lists";
 import { cn } from "@/lib/utils";
 
-type Props = PageProps<"/lists/[id]/history/[roundId]">;
+type Props = PageProps<"/[locale]/lists/[id]/history/[roundId]">;
 
 export default function RoundPage({ params }: Props) {
   return (

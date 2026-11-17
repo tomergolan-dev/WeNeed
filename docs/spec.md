@@ -152,7 +152,12 @@ We Need is also a portfolio project, so it includes a public demo.
 - Mobile-first, installable to the home screen (PWA), so it opens like a regular app.
 - Visual style influenced by CheckPlease (Tomer's earlier app): similar icon style and the feel of a polished, modern, high-end app. Not a copy, and with a different color palette.
 - The design is drafted and approved as a mockup before it is built.
-- Hebrew with RTL.
+- Hebrew (right to left) and English (left to right), decided 2026-11-17:
+  - Hebrew lives at the plain addresses, English under `/en` (for example `/en/lists/…`).
+  - A switch on the home, sign-in and privacy screens moves to the same page in the other language. The choice is remembered in a cookie; a first visit follows the browser's language.
+  - Sign-in and invite emails go out in the language of the page they were sent from.
+  - What people type (list and item names) is shown as written, in any language.
+  - The paused WhatsApp bot stays Hebrew only.
 - Branding (decided 2026-11-17):
   - Name: **WeNeed**, in English only, everywhere (browser tab, home screen, emails).
   - Slogan: "כל מה שצריך. ביחד."
@@ -213,7 +218,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## Open questions
 
 - [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
-- [ ] Language: Hebrew only, or English too (useful for portfolio visitors)?
+- [x] Language: Hebrew and English (decided 2026-11-17, see "Design").
 - [x] "Due soon": 24 hours before the due time (decided 2026-11-17; easy to change in `src/lib/due.ts`).
 - [ ] Chores: is there an assignee per chore?
 - [x] Permissions (Stage E): decided 2026-11-17, see "Users and places".

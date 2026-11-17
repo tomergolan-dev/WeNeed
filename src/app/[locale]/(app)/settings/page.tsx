@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { notFound } from "next/navigation";
+import { redirectTo } from "@/i18n/navigation";
 import { ChevronLeft, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
@@ -27,7 +28,7 @@ export default async function SettingsPage() {
 async function PlaceSettings() {
   const { place: current } = await requirePlace();
   // The personal area has no settings of its own.
-  if (current.personal) redirect("/");
+  if (current.personal) return redirectTo("/");
   const [t, place] = await Promise.all([getTranslations("Settings"), getPlace(current.id)]);
   if (!place) notFound();
 

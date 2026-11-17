@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
+import { notFound } from "next/navigation";
+import { locale as rootLocale } from "next/root-params";
+import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { DirectionProvider } from "@/components/ui/direction";
-import { locale } from "@/i18n/request";
-import "./globals.css";
+import { directionOf, routing } from "@/i18n/routing";
+import "../globals.css";
 
 const fontSans = Heebo({
   subsets: ["hebrew", "latin"],
@@ -13,8 +16,9 @@ const fontSans = Heebo({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
+  const locale = await rootLocale();
   // The cover shown when a link to the app is shared (WhatsApp, iMessage, etc.).
-  const cover = { url: "/og.png", width: 1200, height: 630, alt: t("ogAlt") };
+  const cover = { url: locale === "en" ? "/og-en.png" : "/og.png", width: 1200, height: 630, alt: t("ogAlt") };
   return {
     metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
     title: t("title"),
@@ -22,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       siteName: "WeNeed",
-      locale: "he_IL",
+      locale: locale === "en" ? "en_US" : "he_IL",
       title: t("title"),
       description: t("description"),
       images: [cover],
@@ -31,16 +35,23 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/[locale]">) {
+  const locale = await rootLocale();
+  if (!hasLocale(routing.locales, locale)) notFound();
+  const dir = directionOf(locale);
   return (
     <html
       lang={locale}
-      dir="rtl"
+      dir={dir}
       className={`${fontSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
-          <DirectionProvider direction="rtl">{children}</DirectionProvider>
+          <DirectionProvider direction={dir}>{children}</DirectionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

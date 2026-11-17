@@ -15,7 +15,7 @@ import { requireUser } from "@/lib/auth";
 import { getListAccess, getListPeople, isPlaceAdmin } from "@/lib/list-access";
 import { ensureActiveRound, getChores, getListFor, getRoundItems } from "@/lib/lists";
 
-export default function ListPage({ params }: PageProps<"/lists/[id]">) {
+export default function ListPage({ params }: PageProps<"/[locale]/lists/[id]">) {
   return (
     <Suspense fallback={<ListSkeleton />}>
       <List params={params} />
@@ -23,7 +23,7 @@ export default function ListPage({ params }: PageProps<"/lists/[id]">) {
   );
 }
 
-async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
+async function List({ params }: Pick<PageProps<"/[locale]/lists/[id]">, "params">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
@@ -53,11 +53,13 @@ async function List({ params }: Pick<PageProps<"/lists/[id]">, "params">) {
         ? tPlaces("personal")
         : tPlaces("sharedBy", { name: found.ownerName ?? "" });
   const open = items.filter((item) => !item.done).length;
+  // Isolated so a Hebrew place name keeps its place in an English line, and back.
+  const whereText = `\u2068${where}\u2069`;
   const subtitle =
     list.type === "tasks"
-      ? `${where} · ${t("tasks.open", { count: open })}`
+      ? `${whereText} · ${t("tasks.open", { count: open })}`
       : list.type === "checklist"
-        ? `${where} · ${t("checklist.subtitle")}`
+        ? `${whereText} · ${t("checklist.subtitle")}`
         : where;
 
   const header = (

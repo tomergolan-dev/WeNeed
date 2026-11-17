@@ -1,11 +1,11 @@
 import "server-only";
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
-import { createTranslator } from "next-intl";
 import { Resend } from "resend";
 import { db } from "@/db";
 import { invites, items, listMembers, lists, places, rounds, users } from "@/db/schema";
-import { locale } from "@/i18n/request";
-import messages from "../../messages/he.json";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getPathname } from "@/i18n/navigation";
+import { directionOf } from "@/i18n/routing";
 
 export type InviteView = {
   id: string;
@@ -107,17 +107,19 @@ export async function canSendInvite(userId: string) {
   return (row?.sent ?? 0) < MAX_INVITES_PER_DAY;
 }
 
-const t = createTranslator({ locale, messages, namespace: "InviteEmail" });
-
 const escape = (text: string) =>
   text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /**
  * Emails an invite through Resend. Without RESEND_API_KEY in development,
- * the link is printed to the server log instead.
+ * the link is printed to the server log instead. The email and the link are
+ * in the inviter's language.
  */
 export async function sendInviteEmail(input: { email: string; inviteId: string; from: string; what: string }) {
-  const url = `${(process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}/invites/${input.inviteId}`;
+  const locale = await getLocale();
+  const t = await getTranslations("InviteEmail");
+  const path = getPathname({ href: `/invites/${input.inviteId}`, locale });
+  const url = `${(process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}${path}`;
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     if (process.env.NODE_ENV !== "production") {
@@ -130,7 +132,7 @@ export async function sendInviteEmail(input: { email: string; inviteId: string; 
   if (!sender) throw new Error("EMAIL_FROM is not set");
 
   const heading = t("heading", { name: input.from, what: input.what });
-  const html = `<!doctype html><html lang="${locale}" dir="rtl"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
+  const html = `<!doctype html><html lang="${locale}" dir="${directionOf(locale)}"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
 <div style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
 <p dir="ltr" style="margin:0 0 24px;font-size:16px;font-weight:800;color:#16835f">WeNeed</p>
 <h1 style="margin:0 0 12px;font-size:20px">${escape(heading)}</h1>

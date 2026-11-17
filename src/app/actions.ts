@@ -2,7 +2,7 @@
 
 import { and, eq, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { attachments, items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
@@ -235,7 +235,7 @@ export async function createList(name: string, type: ListType): Promise<ActionRe
     .returning({ id: lists.id });
   if (limited) await db.insert(listMembers).values({ listId: list.id, userId: context.user.id });
   await ensureActiveRound(list.id);
-  redirect(`/lists/${list.id}`);
+  return redirectTo(`/lists/${list.id}`);
 }
 
 export async function renameList(listId: string, name: string): Promise<ActionResult> {
@@ -298,7 +298,7 @@ export async function deleteList(listId: string): Promise<ActionResult> {
 
   await deleteStoredFiles({ listId: list.id });
   await db.delete(lists).where(eq(lists.id, list.id));
-  redirect("/");
+  return redirectTo("/");
 }
 
 const choreInput = z.object({
@@ -378,7 +378,7 @@ export async function createPlace(input: PlaceInput): Promise<ActionResult> {
   const [place] = await db.insert(places).values(parsed.data).returning({ id: places.id });
   await db.insert(placeMembers).values({ placeId: place.id, userId: user.id, role: "owner" });
   await setCurrentPlace(place.id);
-  redirect("/");
+  return redirectTo("/");
 }
 
 /** Renames the current shared place or changes its icon. Admins only. */
@@ -430,10 +430,10 @@ export async function verifyCode(email: string, code: string): Promise<{ ok: fal
   if (!result.ok) return result;
 
   await startSession(result.userId);
-  redirect("/");
+  return redirectTo("/");
 }
 
 export async function logOut(): Promise<void> {
   await endSession();
-  redirect("/login");
+  return redirectTo("/login");
 }

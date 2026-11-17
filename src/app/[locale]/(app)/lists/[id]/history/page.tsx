@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/page-header";
 import { requireUser } from "@/lib/auth";
 import { getCompletedRounds, getListFor } from "@/lib/lists";
 
-export default function HistoryPage({ params }: PageProps<"/lists/[id]/history">) {
+export default function HistoryPage({ params }: PageProps<"/[locale]/lists/[id]/history">) {
   return (
     <Suspense fallback={<div className="mx-5 mt-4 h-40 animate-pulse rounded-[18px] bg-muted" />}>
       <History params={params} />
@@ -16,7 +16,7 @@ export default function HistoryPage({ params }: PageProps<"/lists/[id]/history">
   );
 }
 
-async function History({ params }: Pick<PageProps<"/lists/[id]/history">, "params">) {
+async function History({ params }: Pick<PageProps<"/[locale]/lists/[id]/history">, "params">) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 

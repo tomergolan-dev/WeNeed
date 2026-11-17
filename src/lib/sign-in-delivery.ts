@@ -1,14 +1,14 @@
 import "server-only";
-import { createTranslator } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Resend } from "resend";
-import { locale } from "@/i18n/request";
-import messages from "../../messages/he.json";
-
-const t = createTranslator({ locale, messages, namespace: "SignInEmail" });
+import { directionOf } from "@/i18n/routing";
 
 // Inline styles only: email clients ignore stylesheets. Colors follow the app theme.
-function renderHtml(code: string): string {
-  return `<!doctype html><html lang="${locale}" dir="rtl"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
+// The email is in the language of the page the code was asked for.
+async function renderHtml(code: string): Promise<string> {
+  const locale = await getLocale();
+  const t = await getTranslations("SignInEmail");
+  return `<!doctype html><html lang="${locale}" dir="${directionOf(locale)}"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
 <div style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
 <p dir="ltr" style="margin:0 0 24px;font-size:16px;font-weight:800;color:#16835f">WeNeed</p>
 <h1 style="margin:0 0 12px;font-size:20px">${t("heading")}</h1>
@@ -35,11 +35,12 @@ export async function sendSignInCode(email: string, code: string): Promise<void>
   const from = process.env.EMAIL_FROM;
   if (!from) throw new Error("EMAIL_FROM is not set");
 
+  const t = await getTranslations("SignInEmail");
   const { error } = await new Resend(apiKey).emails.send({
     from,
     to: email,
     subject: t("subject", { code }),
-    html: renderHtml(code),
+    html: await renderHtml(code),
     text: `${t("heading")}: ${code}\n\n${t("body")}\n\n${t("footer")}`,
   });
   if (error) throw new Error(`Resend: ${error.message}`);

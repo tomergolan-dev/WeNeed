@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Brand } from "@/components/brand";
+import { LanguageSwitch } from "@/components/language-switch";
 
 // Public: linked from the login page and from the Google sign-in consent screen.
 const CONTACT_EMAIL = "tomergolan01@gmail.com";
@@ -17,10 +18,11 @@ export default async function PrivacyPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 py-[18px]">
-      <header>
+      <header className="flex items-center justify-between">
         <Link href="/">
           <Brand />
         </Link>
+        <LanguageSwitch />
       </header>
       <h1 className="mt-8 text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{t("updated")}</p>

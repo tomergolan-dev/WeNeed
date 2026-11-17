@@ -8,7 +8,8 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { createTranslator } from "next-intl";
 import { db } from "@/db";
 import { items, lists, placeMembers, processedMessages, rounds, users, type Item, type Round } from "@/db/schema";
-import { locale } from "@/i18n/request";
+// The paused WhatsApp bot speaks Hebrew only.
+const locale = "he";
 import { isCategory } from "@/lib/categories";
 import { formatQuantity, groupByCategory } from "@/lib/items";
 import { ensureActiveRound, ensureFirstList, getChores, getPlace, getRoundItems } from "@/lib/lists";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2, Users } from "lucide-react";
 import { deleteList, renameList, setListType } from "@/app/actions";
