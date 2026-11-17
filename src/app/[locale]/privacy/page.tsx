@@ -6,7 +6,7 @@ import { LanguageSwitch } from "@/components/language-switch";
 
 // Public: linked from the login page and from the Google sign-in consent screen.
 const CONTACT_EMAIL = "tomergolan01@gmail.com";
-const SECTIONS = ["collect", "use", "services", "cookies", "delete"] as const;
+const SECTIONS = ["collect", "use", "services", "cookies", "demo", "delete"] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Privacy");

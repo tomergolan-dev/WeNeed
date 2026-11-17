@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2, Users } from "lucide-react";
-import { deleteList, renameList, setListType } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import type { ListAccess } from "@/lib/list-access";
@@ -36,6 +36,7 @@ export function ListMenu({
   const t = useTranslations("Lists");
   const tAccess = useTranslations("Access");
   const tErrors = useTranslations("Errors");
+  const { history, deleteList, renameList, setListType } = useBackend();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"menu" | "access" | "rename" | "type" | "delete">("menu");
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export function ListMenu({
       >
         {view === "menu" && (
           <div className="flex flex-col gap-2.5">
-            {type === "shopping" && (
+            {type === "shopping" && history && (
               <Link href={`/lists/${listId}/history`} onClick={close} className={row}>
                 <History className="size-5 text-muted-foreground" aria-hidden />
                 <span className="flex-1">{t("history")}</span>

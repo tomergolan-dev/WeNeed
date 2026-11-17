@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { createList } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,9 @@ import { ListTypePicker } from "./list-type-picker";
 export function NewListButton() {
   const t = useTranslations("Lists");
   const [open, setOpen] = useState(false);
+  // Creating a list moves to it, and Next keeps this screen in the background
+  // (its effects are cleaned up then): start closed when coming back.
+  useEffect(() => () => setOpen(false), []);
 
   return (
     <>
@@ -34,6 +37,7 @@ export function NewListButton() {
 
 function NewListForm() {
   const t = useTranslations("Lists");
+  const { createList } = useBackend();
   const tErrors = useTranslations("Errors");
   const [name, setName] = useState("");
   const [picked, setPicked] = useState<ListType | null>(null);

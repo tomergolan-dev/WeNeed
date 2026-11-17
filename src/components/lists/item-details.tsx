@@ -9,7 +9,6 @@ import {
   useTransition,
 } from "react";
 import { useTranslations } from "next-intl";
-import { upload } from "@vercel/blob/client";
 import {
   Camera,
   ChevronLeft,
@@ -23,22 +22,15 @@ import {
   StickyNote,
   X,
 } from "lucide-react";
-import {
-  addFile,
-  addLink,
-  deleteAttachment,
-  getItemDetails,
-  setItemNote,
-  type AttachmentError,
-} from "@/app/attachment-actions";
+import type { AttachmentError } from "@/app/attachment-actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { useBackend } from "@/components/lists/backend";
 import { Button } from "@/components/ui/button";
 import {
   ALLOWED_FILE_TYPES,
   MAX_FILE_BYTES,
   isImageType,
-  itemFolder,
 } from "@/lib/attachment-rules";
 import type { AttachmentView } from "@/lib/attachments";
 import { cn } from "@/lib/utils";
@@ -165,6 +157,7 @@ function DetailsSheet({
 }: Opened & { onClose: () => void }) {
   const t = useTranslations("Attachments");
   const tErrors = useTranslations("Errors");
+  const { getItemDetails, setItemNote, addLink, deleteAttachment, uploadFile, fileUrl } = useBackend();
   const [loaded, setLoaded] = useState<{
     note: string;
     attachments: AttachmentView[];
@@ -196,7 +189,7 @@ function DetailsSheet({
     return () => {
       live = false;
     };
-  }, [item.id, tErrors]);
+  }, [item.id, tErrors, getItemDetails]);
 
   const add = (attachment: AttachmentView) =>
     setLoaded(
@@ -232,26 +225,7 @@ function DetailsSheet({
       const key = `${file.name}-${crypto.randomUUID()}`;
       setUploading((current) => [...current, key]);
       try {
-        const dot = file.name.lastIndexOf(".");
-        const extension =
-          dot > 0
-            ? file.name
-                .slice(dot)
-                .toLowerCase()
-                .replace(/[^.a-z0-9]/g, "")
-            : "";
-        const blob = await upload(
-          `${itemFolder(item.id)}file${extension}`,
-          file,
-          {
-            access: "private",
-            handleUploadUrl: "/api/attachments/upload",
-            clientPayload: item.id,
-            contentType: file.type,
-            multipart: file.size > 5 * 1024 * 1024,
-          },
-        );
-        const result = await addFile(item.id, blob.pathname, file.name);
+        const result = await uploadFile(item.id, file);
         if (result.ok) add(result.attachment);
         else showError(result.error);
       } catch {
@@ -396,7 +370,7 @@ function DetailsSheet({
                   {files.map((file) => (
                     <li key={file.id} className="relative">
                       <a
-                        href={`/api/attachments/${file.id}`}
+                        href={fileUrl(file)}
                         target="_blank"
                         rel="noopener"
                         className="flex size-21 flex-col items-center justify-center gap-1 overflow-hidden rounded-[14px] border bg-[#eef1f0] text-[11px] text-muted-foreground"
@@ -404,7 +378,7 @@ function DetailsSheet({
                         {isImageType(file.contentType) ? (
                           // eslint-disable-next-line @next/next/no-img-element -- private file behind our own route
                           <img
-                            src={`/api/attachments/${file.id}`}
+                            src={fileUrl(file)}
                             alt={file.name}
                             className="size-full object-cover"
                           />

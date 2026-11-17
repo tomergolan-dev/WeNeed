@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ShoppingCart } from "lucide-react";
-import { addItem, deleteItem, setItemDone, updateItem, type ItemInput } from "@/app/actions";
+import type { ItemInput } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListTop } from "@/components/lists/list-top";
@@ -33,6 +34,7 @@ export function ShoppingList({
   people: Person[];
 }) {
   const t = useTranslations("Shopping");
+  const { addItem, deleteItem, setItemDone, updateItem } = useBackend();
   const tItem = useTranslations("ItemForm");
   const tCategories = useTranslations("Categories");
   const { items: optimisticItems, run, error } = useListItems(items);

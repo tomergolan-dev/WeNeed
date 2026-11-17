@@ -3,7 +3,7 @@ import { and, asc, desc, eq, gt, inArray, isNotNull, ne, or, sql, type SQL } fro
 import { db } from "@/db";
 import { items, listMembers, lists, placeMembers, places, rounds, users, type Item, type List } from "@/db/schema";
 import { canSeeListSql } from "./list-access";
-import { dueStatus } from "./due";
+import { DONE_TASKS_VISIBLE_MS, dueStatus } from "./due";
 
 type ListType = List["type"];
 
@@ -211,12 +211,11 @@ export async function ensureFirstList(placeId: string, type: ListType, name: str
   return created;
 }
 
-const DONE_CHORES_VISIBLE_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** A chores list's open chores plus those done in the last week. */
 export async function getChores(listId: string): Promise<Item[]> {
   const round = await ensureActiveRound(listId);
-  const since = new Date(Date.now() - DONE_CHORES_VISIBLE_MS);
+  const since = new Date(Date.now() - DONE_TASKS_VISIBLE_MS);
   return db
     .select()
     .from(items)

@@ -8,10 +8,8 @@ import { aiRequests, items } from "@/db/schema";
 import type { ActionError, ActionResult } from "@/app/actions";
 import { parseChecklist, parseChores, parseShopping } from "@/lib/ai/list-assistant";
 import { getCurrentUser } from "@/lib/auth";
-import { normalizeName } from "@/lib/normalize";
-import { DEFAULT_CATEGORY } from "@/lib/categories";
-import { TIME_ZONE } from "@/lib/due";
-import { combineQuantities } from "@/lib/items";
+import { planChecklist, planChores, planShopping, type AssistantReply, type Plan } from "@/lib/assistant-plan";
+import { israelNow } from "@/lib/due";
 import { findEditableItem, findList, getListPeople } from "@/lib/list-access";
 import { ensureActiveRound } from "@/lib/lists";
 
@@ -20,36 +18,9 @@ const DAILY_LIMIT_PER_USER = 100;
 const DAILY_LIMIT_TOTAL = 2000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** An item the chat added, with what the reply shows about it. */
-export type AddedItem = {
-  id: string;
-  name: string;
-  quantity: number | null;
-  unit: string | null;
-  dueDate: string | null;
-  dueTime: string | null;
-  assignee: string | null;
-};
-
-/**
- * A product already on the list. When the quantities can be combined,
- * `newQuantity` is the suggested total (in `newUnit`).
- */
-export type Duplicate = {
-  itemId: string;
-  name: string;
-  quantity: number | null;
-  unit: string | null;
-  newQuantity: number | null;
-  newUnit: string | null;
-};
-
-export type AssistantReply = { added: AddedItem[]; duplicates: Duplicate[]; skipped: string[] };
 export type AssistantResult = { ok: true; reply: AssistantReply } | { ok: false; error: ActionError };
 
 const message = z.string().trim().min(1).max(500);
-const isoDate = z.iso.date();
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 /** Counts this message against the daily limits; false when over a limit. */
 async function withinLimits(userId: string) {
@@ -64,18 +35,6 @@ async function withinLimits(userId: string) {
   if (mine.n >= DAILY_LIMIT_PER_USER || all.n >= DAILY_LIMIT_TOTAL) return false;
   await db.insert(aiRequests).values({ userId });
   return true;
-}
-
-/** Today's date, weekday and time in Israel, for dates like "tomorrow at 5". */
-function israelNow() {
-  const now = new Date();
-  const part = (options: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, ...options }).format(now);
-  return {
-    date: part({ year: "numeric", month: "2-digit", day: "2-digit" }),
-    weekday: part({ weekday: "long" }),
-    time: part({ hour: "2-digit", minute: "2-digit", hourCycle: "h23" }),
-  };
 }
 
 /** Reads a message written in a list's AI chat and adds what it asks for. */
@@ -112,50 +71,17 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
   };
 
   try {
+    let plan: Plan;
     if (list.type === "shopping") {
       // Products already bought ("in the cart") are added again.
       const open = current.filter((item) => !item.done);
       const result = await parseShopping(parsedText.data, open.map((item) => item.name));
       if (!result) return { ok: false, error: "aiFailed" };
-
-      for (const item of result.items) {
-        const name = item.name.trim().slice(0, 100);
-        if (!name) continue;
-        const quantity = item.quantity && item.quantity > 0 && item.quantity <= 100_000 ? item.quantity : null;
-        const unit = item.unit?.trim().slice(0, 30) || null;
-        const existing =
-          item.existing && open.find((row) => normalizeName(row.name) === normalizeName(item.existing!));
-        if (existing) {
-          const total = combineQuantities(existing, { quantity, unit });
-          reply.duplicates.push({
-            itemId: existing.id,
-            name: existing.name,
-            quantity: existing.quantity,
-            unit: existing.unit,
-            newQuantity: total?.quantity ?? null,
-            newUnit: total?.unit ?? null,
-          });
-          continue;
-        }
-        const id = await insert({ name, quantity, unit, category: item.category });
-        reply.added.push({ id, name, quantity, unit, dueDate: null, dueTime: null, assignee: null });
-      }
+      plan = planShopping(result, open);
     } else if (list.type === "checklist") {
       const result = await parseChecklist(parsedText.data, current.map((item) => item.name));
       if (!result) return { ok: false, error: "aiFailed" };
-
-      for (const item of result.items) {
-        const name = item.name.trim().slice(0, 100);
-        if (!name) continue;
-        const existing =
-          item.existing && current.find((row) => normalizeName(row.name) === normalizeName(item.existing!));
-        if (existing) {
-          reply.skipped.push(existing.name);
-          continue;
-        }
-        const id = await insert({ name, category: DEFAULT_CATEGORY });
-        reply.added.push({ id, name, quantity: null, unit: null, dueDate: null, dueTime: null, assignee: null });
-      }
+      plan = planChecklist(result, current);
     } else {
       const members = await getListPeople(list.id);
       const result = await parseChores(
@@ -164,22 +90,30 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
         israelNow(),
       );
       if (!result) return { ok: false, error: "aiFailed" };
+      plan = planChores(result, members);
+    }
 
-      for (const chore of result.chores) {
-        const name = chore.title.trim().slice(0, 200);
-        if (!name) continue;
-        const dueDate = chore.dueDate && isoDate.safeParse(chore.dueDate).success ? chore.dueDate : null;
-        const dueTime = dueDate && chore.dueTime && hhmm.safeParse(chore.dueTime).success ? chore.dueTime : null;
-        const assignee = members.find((m) => m.name === chore.assignee) ?? null;
-        const id = await insert({
-          name,
-          category: DEFAULT_CATEGORY,
-          dueDate,
-          dueTime: dueTime ? `${dueTime}:00` : null,
-          assigneeId: assignee?.id ?? null,
-        });
-        reply.added.push({ id, name, quantity: null, unit: null, dueDate, dueTime, assignee: assignee?.name ?? null });
-      }
+    reply.duplicates = plan.duplicates;
+    reply.skipped = plan.skipped;
+    for (const item of plan.add) {
+      const id = await insert({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        category: item.category,
+        dueDate: item.dueDate,
+        dueTime: item.dueTime ? `${item.dueTime}:00` : null,
+        assigneeId: item.assigneeId,
+      });
+      reply.added.push({
+        id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        dueDate: item.dueDate,
+        dueTime: item.dueTime,
+        assignee: item.assignee,
+      });
     }
   } catch (error) {
     console.error("[ai] chat failed", error);

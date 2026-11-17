@@ -8,7 +8,7 @@ import { LoginForm } from "./login-form";
 
 
 export default async function LoginPage({ searchParams }: PageProps<"/[locale]/login">) {
-  const t = await getTranslations("Login");
+  const [t, tDemo] = await Promise.all([getTranslations("Login"), getTranslations("Demo")]);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-[18px]">
@@ -22,6 +22,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/[locale]/l
         <Suspense fallback={<div className="h-72 animate-pulse rounded-3xl bg-muted" />}>
           <Form searchParams={searchParams} />
         </Suspense>
+        <Link
+          href="/demo"
+          className="mt-5 rounded-2xl border border-dashed border-[#b9d8c9] bg-accent/60 px-4 py-3 text-center text-sm font-semibold text-accent-foreground transition-colors active:bg-accent"
+        >
+          {tDemo("try")}
+        </Link>
         <Link href="/privacy" className="mt-6 text-center text-xs text-muted-foreground underline-offset-4 hover:underline">
           {t("privacy")}
         </Link>

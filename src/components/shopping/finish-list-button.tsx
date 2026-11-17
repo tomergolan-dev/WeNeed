@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { finishRound } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 export function FinishListButton({ listId, remaining }: { listId: string; remaining: number }) {
   const t = useTranslations("Shopping");
   const tErrors = useTranslations("Errors");
+  const { finishRound } = useBackend();
   const [open, setOpen] = useState(false);
   const [carryOver, setCarryOver] = useState(true);
   const [error, setError] = useState<string | null>(null);

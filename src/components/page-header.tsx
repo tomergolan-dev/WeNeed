@@ -1,9 +1,9 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 
 /** A screen title with a back button, an optional subtitle and actions at the end. */
-export async function PageHeader({
+export function PageHeader({
   title,
   subtitle,
   back = "/",
@@ -14,7 +14,7 @@ export async function PageHeader({
   back?: string;
   children?: React.ReactNode;
 }) {
-  const t = await getTranslations("Nav");
+  const t = useTranslations("Nav");
   return (
     <header className="flex items-center gap-3 px-5 pt-4 pb-1">
       <Link

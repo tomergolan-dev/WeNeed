@@ -142,10 +142,15 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Demo
 
-- Open to everyone from the start screen, with no sign-up.
-- Shows a sample place with ready-made lists of all three kinds.
-- Nothing a demo visitor does is saved to the database. Changes, if allowed at all, stay in the visitor's browser only.
-- Demo visitors never see real places or real data.
+- At `/demo` (and `/en/demo`), open to everyone with no sign-up; linked from the sign-in screen.
+- Shows a sample place ("הבית לדוגמה" / "Sample home") with a shopping list, a tasks list (one overdue, one due soon, one with a note and a link) and a checklist, in the page's language.
+- Visitors can do everything they can in the app on those lists: add, check, edit, delete, reorder, finish a shopping trip, create, rename and delete lists, and add notes, links and files (decided 2026-11-17).
+  - Everything stays in the visitor's browser (localStorage, one copy per language). Files stay only until the page reloads. "Start over" brings back the sample place.
+  - No history of finished trips, no members, invites or settings.
+- The AI chat works in the demo (decided 2026-11-17), with limits: 10 messages per visitor and 200 for all visitors per day. The server only reads the message and returns what it understood; the browser adds the items, with the same rules as the app (`src/lib/assistant-plan.ts`).
+  - For the limits, the database keeps one row per message with a keyed hash of the visitor's IP address (`demo_ai_requests`), never the address or the message.
+- Nothing else a demo visitor does reaches the database, and demo visitors never see real places or real data.
+- How it is built: the list screens take their actions from a swappable "backend" (`src/components/lists/backend.tsx`): the server actions in the app, a browser store in the demo (`src/components/demo/`).
 
 ## Design
 
@@ -184,6 +189,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
   - `ai_requests`: one row per AI chat message, for the daily limits. *(Stage D)*
+  - `demo_ai_requests`: one row per demo AI message (a keyed hash of the visitor's IP), for the demo's limits. *(Stage H)*
   - `items.note`, and `attachments`: item, kind (`link` / `file`), the link's address or the file's Blob pathname, name, content type and size, added by. *(Stage F)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.
 - **Databases:** production uses the main Neon branch; local development uses a separate Neon branch named `dev`. Migrations are tested on `dev` first and run on production only when a stage is released.
@@ -210,14 +216,16 @@ We Need is also a portfolio project, so it includes a public demo.
 - [x] **Stage F, attachments:** a paperclip on an item opens its details: a note, links, and photos or files (private Vercel Blob storage).
   - Built and tested on the `dev` database (migration 0011). The Blob store was created on 2026-11-17 and connected to all environments.
   - Released to production on 2026-11-17: the database was backed up, then migration 0011 was run.
-- [ ] **Stage G, branding:** icon, name, slogan, share cover and home-screen install (see "Design").
+- [x] **Stage G, branding:** icon, name, slogan, share cover and home-screen install (see "Design").
   - Built on 2026-11-17, together with the wording change from "מטלות" to "משימות".
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
+  - English alongside Hebrew: built 2026-11-17.
+  - Public demo at `/demo`: built 2026-11-17 (migration 0012).
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
 
 ## Open questions
 
-- [ ] Demo: view-only, or editable in the browser without saving? Does the AI chat work in the demo, and with what limit?
+- [x] Demo: editable in the browser, with the AI chat limited (decided 2026-11-17, see "Demo").
 - [x] Language: Hebrew and English (decided 2026-11-17, see "Design").
 - [x] "Due soon": 24 hours before the due time (decided 2026-11-17; easy to change in `src/lib/due.ts`).
 - [ ] Chores: is there an assignee per chore?

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CalendarDays, Check, Clock, ListTodo } from "lucide-react";
-import { addChore, deleteItem, setItemDone, updateChore, type ChoreInput } from "@/app/actions";
+import type { ChoreInput } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
@@ -60,6 +61,7 @@ export function ChoresList({
   people: Person[];
 }) {
   const t = useTranslations("Chores");
+  const { addChore, deleteItem, setItemDone, updateChore } = useBackend();
   const { items: chores, run, error } = useListItems(items);
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("date");

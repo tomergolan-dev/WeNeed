@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUpDown, Check, CheckCheck, ListChecks, RotateCcw } from "lucide-react";
-import { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
@@ -19,6 +19,7 @@ import { SortableItems } from "./sortable-items";
 /** A permanent list: items are checked, and all unchecked again for next time. */
 export function Checklist({ listId, header, items }: { listId: string; header: React.ReactNode; items: Item[] }) {
   const t = useTranslations("Checklist");
+  const { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } = useBackend();
   const tItem = useTranslations("ItemForm");
   const { items: optimistic, run, error } = useListItems(items);
   const [editing, setEditing] = useState<Item | null>(null);

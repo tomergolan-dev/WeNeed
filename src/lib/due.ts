@@ -6,6 +6,9 @@ export const TIME_ZONE = "Asia/Jerusalem";
 /** How long before the due time a chore counts as "due soon". */
 export const SOON_MS = 24 * 60 * 60 * 1000;
 
+/** Done tasks stay visible under "done recently" for a week. */
+export const DONE_TASKS_VISIBLE_MS = 7 * 24 * 60 * 60 * 1000;
+
 const parts = new Intl.DateTimeFormat("en-CA", {
   timeZone: TIME_ZONE,
   year: "numeric",
@@ -59,4 +62,16 @@ export function dueStatus(
   const at = dueAt(chore.dueDate, chore.dueTime);
   if (at < now) return "overdue";
   return at - now <= SOON_MS ? "soon" : "later";
+}
+
+/** Today's date, weekday and time in Israel, for dates like "tomorrow at 5". */
+export function israelNow() {
+  const now = new Date();
+  const part = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, ...options }).format(now);
+  return {
+    date: part({ year: "numeric", month: "2-digit", day: "2-digit" }),
+    weekday: part({ weekday: "long" }),
+    time: part({ hour: "2-digit", minute: "2-digit", hourCycle: "h23" }),
+  };
 }

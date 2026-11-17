@@ -237,6 +237,21 @@ export const aiRequests = pgTable(
   (t) => [index("ai_requests_user_idx").on(t.userId, t.createdAt), index("ai_requests_created_idx").on(t.createdAt)],
 );
 
+// AI chat messages sent from the public demo, for its daily limits. Holds no
+// message text, only a keyed hash of the visitor's IP address.
+export const demoAiRequests = pgTable(
+  "demo_ai_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    visitor: text("visitor").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("demo_ai_requests_visitor_idx").on(t.visitor, t.createdAt),
+    index("demo_ai_requests_created_idx").on(t.createdAt),
+  ],
+);
+
 // Paused WhatsApp bot: Meta may deliver a message more than once.
 export const processedMessages = pgTable("processed_messages", {
   waMessageId: text("wa_message_id").primaryKey(),

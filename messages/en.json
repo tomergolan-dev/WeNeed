@@ -277,6 +277,10 @@
         "title": "Cookies",
         "body": "One cookie keeps you signed in, one remembers which place you chose, and one remembers your language. There are no advertising or tracking cookies."
       },
+      "demo": {
+        "title": "The demo",
+        "body": "The demo needs no sign-up. Its lists are kept only in your browser and are not sent to us. Messages you write to the demo's AI chat are sent to Claude to understand them, and are not stored. To limit the number of messages, only a hashed value derived from your IP address is kept, never the address itself."
+      },
       "delete": {
         "title": "Deleting information",
         "body": "You can ask at any time to see or delete your account and all your information by writing to the email below. Deletion is done within 30 days."
@@ -418,5 +422,175 @@
     "remove": "Remove {name}",
     "uploading": "Uploading…",
     "tooBig": "The file is too big. Up to 15MB."
+  },
+  "Demo": {
+    "banner": "This is a demo. Try anything: changes are saved only in your browser.",
+    "reset": "Start over",
+    "signIn": "Sign in",
+    "try": "Want to try it first? Open the demo",
+    "aiNote": "The demo allows up to 10 AI messages a day.",
+    "seed": {
+      "place": "Sample home",
+      "me": "Me",
+      "noa": "Noa",
+      "dan": "Dan",
+      "shopping": {
+        "name": "Groceries",
+        "items": [
+          [
+            "Milk",
+            2,
+            "cartons",
+            "dairy",
+            "noa",
+            false
+          ],
+          [
+            "Eggs",
+            12,
+            null,
+            "dairy",
+            "me",
+            false
+          ],
+          [
+            "Whole wheat bread",
+            null,
+            null,
+            "bakery",
+            "dan",
+            false
+          ],
+          [
+            "Tomatoes",
+            1,
+            "kg",
+            "produce",
+            "me",
+            false
+          ],
+          [
+            "Bananas",
+            6,
+            null,
+            "produce",
+            "noa",
+            false
+          ],
+          [
+            "Pasta",
+            2,
+            null,
+            "pantry",
+            "me",
+            false
+          ],
+          [
+            "Toilet paper",
+            null,
+            null,
+            "home",
+            "dan",
+            false
+          ],
+          [
+            "Laundry detergent",
+            null,
+            null,
+            "cleaning",
+            "noa",
+            false
+          ],
+          [
+            "Dark chocolate",
+            2,
+            null,
+            "snacks",
+            "me",
+            true
+          ],
+          [
+            "Coffee",
+            null,
+            null,
+            "pantry",
+            "dan",
+            true
+          ]
+        ]
+      },
+      "tasks": {
+        "name": "House chores",
+        "items": [
+          [
+            "Pay the electricity bill",
+            -1,
+            "18:00",
+            "noa"
+          ],
+          [
+            "Take out the trash",
+            0,
+            "21:00",
+            "dan"
+          ],
+          [
+            "Book an AC technician",
+            3,
+            "10:00",
+            "me"
+          ],
+          [
+            "Make a vet appointment",
+            null,
+            null,
+            null
+          ],
+          [
+            "Hang the living room shelf",
+            null,
+            null,
+            "dan"
+          ]
+        ],
+        "done": "Wash the car",
+        "note": "Customer number: 4471820. The technician needs access to the balcony.",
+        "link": "https://www.example.com",
+        "linkName": "Service page"
+      },
+      "checklist": {
+        "name": "Beach bag",
+        "items": [
+          [
+            "Towels",
+            true
+          ],
+          [
+            "Sunscreen",
+            true
+          ],
+          [
+            "Hat",
+            false
+          ],
+          [
+            "Cooler",
+            false
+          ],
+          [
+            "Paddle ball",
+            false
+          ],
+          [
+            "Swimsuits",
+            true
+          ],
+          [
+            "Sunglasses",
+            false
+          ]
+        ]
+      }
+    }
   }
 }

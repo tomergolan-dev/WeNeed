@@ -4,14 +4,12 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUp, Check, LoaderCircle, Sparkles, X } from "lucide-react";
 import {
-  askAssistant,
-  removeAdded,
-  setItemQuantity,
   type AddedItem,
   type AssistantReply,
   type Duplicate,
-} from "@/app/assistant-actions";
+} from "@/lib/assistant-plan";
 import type { ActionResult } from "@/app/actions";
+import { useBackend } from "@/components/lists/backend";
 import { useDueText } from "@/components/chores/chore-due";
 import { formatQuantity } from "@/lib/items";
 import { cn } from "@/lib/utils";
@@ -52,6 +50,7 @@ export function AssistantBar({
 }) {
   const t = useTranslations("Assistant");
   const tErrors = useTranslations("Errors");
+  const { askAssistant, removeAdded, setItemQuantity } = useBackend();
   const [text, setText] = useState("");
   const [exchange, setExchange] = useState<Exchange | null>(null);
   const [pending, startTransition] = useTransition();
