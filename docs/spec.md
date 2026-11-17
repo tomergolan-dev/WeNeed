@@ -221,7 +221,8 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - English alongside Hebrew: built 2026-11-17.
   - Public demo at `/demo`: built 2026-11-17 (migration 0012).
-  - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
+  - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com).
+  - Google sign-in is open to everyone: the Google app's branding is filled in and it is published ("In production", external users), done 2026-11-17. It asks only for basic scopes (openid, email, profile), so it needs no Google verification and the 100-user cap does not apply. No logo was uploaded, since a logo would require brand verification.
 
 ## Open questions
 
