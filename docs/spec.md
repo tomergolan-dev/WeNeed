@@ -24,7 +24,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - **Member (חבר):** sees the lists open to them, edits them, and can create lists.
 - Who sees a list ("מי רואה", admins only, from the list menu): **the whole place** (every member, also future ones) or **selected people** (admins always see it). The owner of a personal area is its admin.
 - Someone invited **to some lists only** joins the place as a member who sees just those lists, plus lists they create. A list such a member creates starts as "selected people", with them on it.
-- Only admins invite, for now. Regular members inviting to lists they see is an open question.
+- Only admins invite (decided 2026-11-17).
 - First real places:
   - "הדירה של תומר ותמיר": Tomer, Tamir and Nurit (Tomer's mom).
   - "בית משפחת גולן": Nurit.
@@ -198,7 +198,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [x] "Due soon": 24 hours before the due time (decided 2026-11-17; easy to change in `src/lib/due.ts`).
 - [ ] Chores: is there an assignee per chore?
 - [x] Permissions (Stage E): decided 2026-11-17, see "Users and places".
-- [ ] Can regular members invite people to lists they see? For now only admins invite.
+- [x] Can regular members invite people to lists they see? No, only admins invite (decided 2026-11-17).
 - [ ] Leaving a place, and deleting a place: not built yet.
 
 ## Future
