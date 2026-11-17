@@ -173,6 +173,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - Released to production on 2026-11-17: the database was backed up, then migrations 0004–0008 were run.
 - [ ] **Stage D, AI chat:** chat in every list, reusing the bot's parsing.
   - Built and tested on the `dev` database, with adding by hand moved to the top of the list.
+  - Released to production on 2026-11-17: the database was backed up, then migration 0009 was run.
 - [ ] **Stage E, invites and permissions:** invite by email, accept or decline in the app; manage members (roles, removing a member).
 - [ ] **Stage H, demo and launch:** public demo, `weneed.tomergolan.dev`, real places for Tomer, Tamir and Nurit.
   - Privacy policy page at `/privacy` (done 2026-11-17, contact tomergolan01@gmail.com). Next: complete Branding in Google Auth Platform and publish the Google app. Until then Google sign-in works only for test users added there (up to 100); the email code works for everyone.
