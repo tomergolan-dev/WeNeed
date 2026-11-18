@@ -42,12 +42,14 @@ export function ListAccessForm({
   const seeing = members.filter((p) => locked(p) || selected.has(p.id)).length;
 
   function toggle(id: string) {
-    setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+    // Everyone in the place checked is the same as "the whole place": switch to it.
+    if (!access.personal && visibility === "selected" && members.every((p) => p.role === "owner" || next.has(p.id))) {
+      setVisibility("place");
+    }
   }
 
   function invite(event: React.FormEvent) {

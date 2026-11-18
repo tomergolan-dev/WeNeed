@@ -22,7 +22,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - Roles in a shared place (decided 2026-11-17):
   - **Admin (מנהל, stored as `owner`):** sees every list, invites and removes members, changes roles, decides who sees each list, renames the place, deletes lists. The creator is an admin; a place keeps at least one.
   - **Member (חבר):** sees the lists open to them, edits them, and can create lists.
-- Who sees a list ("מי רואה", admins only, from the list menu): **the whole place** (every member, also future ones) or **selected people** (admins always see it). The owner of a personal area is its admin.
+- Who sees a list ("מי רואה", admins only, from the list menu): **the whole place** (every member, also future ones) or **selected people** (admins always see it). Checking everyone in the place under "selected people" switches the choice to "the whole place" (decided 2026-11-18); people invited to some lists only stay on the list. The owner of a personal area is its admin.
 - Someone invited **to some lists only** joins the place as a member who sees just those lists, plus lists they create. A list such a member creates starts as "selected people", with them on it.
 - Only admins invite (decided 2026-11-17).
 - First real places:
