@@ -155,7 +155,9 @@ export function AssistantBar({
             <Sparkles className="size-[18px]" aria-hidden />
           </span>
           {/* Grows with the text, up to a few lines. Enter adds a line on phones
-              (the arrow sends) and sends on a computer (Shift+Enter adds a line). */}
+              (the arrow sends) and sends on a computer (Shift+Enter adds a line).
+              While empty it is exactly one line tall (margin instead of padding),
+              so a long example on a narrow phone never peeks a second line. */}
           <textarea
             ref={inputRef}
             value={text}
@@ -175,7 +177,7 @@ export function AssistantBar({
             placeholder={placeholder}
             aria-label={t("label")}
             maxLength={500}
-            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-base leading-6 outline-none placeholder:text-muted-foreground"
+            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-base leading-6 outline-none placeholder:text-muted-foreground placeholder-shown:my-2 placeholder-shown:h-6 placeholder-shown:overflow-hidden placeholder-shown:py-0"
           />
           <button
             type="submit"
