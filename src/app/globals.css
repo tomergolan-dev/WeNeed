@@ -89,6 +89,8 @@
   html,
   body {
     overflow-x: clip;
+    /* No rubber-band pull past the top or bottom of the screen. */
+    overscroll-behavior-y: none;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]) {

@@ -24,7 +24,7 @@ export function DemoHome() {
 
   return (
     <>
-      <header className="flex items-center justify-between px-5 pt-[18px] lg:px-8 lg:pt-6">
+      <header className="sticky top-0 z-20 flex items-center justify-between bg-background px-5 pt-[18px] pb-2 lg:static lg:px-8 lg:pt-6">
         <span className="lg:invisible">
           <Brand />
         </span>

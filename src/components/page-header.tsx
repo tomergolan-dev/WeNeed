@@ -17,7 +17,7 @@ export function PageHeader({
 }) {
   const t = useTranslations("Nav");
   return (
-    <header className="flex items-center gap-3 px-5 pt-4 pb-1 lg:px-8 lg:pt-6">
+    <header className="sticky top-0 z-20 flex items-center gap-3 bg-background px-5 pt-4 pb-1 lg:static lg:px-8 lg:pt-6">
       <Link
         href={back}
         aria-label={t("back")}

@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/[locale]/l
   return (
     <div className="flex w-full flex-1">
       <main className="flex w-full flex-col px-5 py-[18px] lg:w-1/2 lg:px-12 lg:py-8">
-        <header className="mx-auto flex w-full max-w-md items-center justify-between lg:max-w-none">
+        <header className="sticky top-0 z-20 mx-auto flex w-full max-w-md items-center justify-between bg-background py-2 lg:static lg:max-w-none lg:py-0">
           <Brand />
           <div className="flex items-center gap-2">
             <Link
