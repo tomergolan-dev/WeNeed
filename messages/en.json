@@ -1,8 +1,8 @@
 {
   "Metadata": {
     "title": "WeNeed",
-    "description": "Everything you need. Together. Shared lists for shopping, tasks and checklists.",
-    "ogAlt": "WeNeed: Everything you need. Together. Shared lists for shopping, tasks and checklists, with an AI chat in every list."
+    "description": "Everything you need. Organized in one place. Shared lists for shopping, tasks and checklists.",
+    "ogAlt": "WeNeed: Everything you need. Organized in one place. Shared lists for shopping, tasks and checklists, with an AI chat in every list."
   },
   "Nav": {
     "back": "Back",
@@ -163,7 +163,7 @@
   },
   "Login": {
     "title": "Sign in",
-    "subtitle": "Everything you need. Together.",
+    "subtitle": "Everything you need. Organized in one place.",
     "pitch": "Shared lists for shopping, tasks and checklists, with an AI chat in every list. For a home, a flat or an office.",
     "google": "Sign in with Google",
     "or": "or",

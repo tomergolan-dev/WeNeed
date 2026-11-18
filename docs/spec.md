@@ -173,9 +173,9 @@ We Need is also a portfolio project, so it includes a public demo.
   - The paused WhatsApp bot stays Hebrew only.
 - Branding (decided 2026-11-17):
   - Name: **WeNeed**, in English only, everywhere (browser tab, home screen, emails).
-  - Slogan: "כל מה שצריך. ביחד."
+  - Slogan: "כל מה שצריך. מסודר במקום אחד." (English: "Everything you need. Organized in one place."; changed 2026-11-19 from "כל מה שצריך. ביחד."). It appears on the sign-in screen, in the site description and on the share cover.
   - Icon: a green tile with three list rows, the first two checked (`src/app/icon.svg`; PNGs for phones in `public/` and `src/app/apple-icon.png`).
-  - Share cover (`public/og.png`, `public/og-en.png`, 1200×630), redesigned 2026-11-19 after the wide sign-in panel: brand green with soft circles, the icon and name, the slogan as the headline, the one-line pitch and the address, beside three cards for the kinds of lists. The image URL carries `?v=` so apps that cached an old cover fetch the new one.
+  - Share cover (`public/og.png`, `public/og-en.png`, 1200×630), redesigned 2026-11-19: minimal, in brand green with soft circles; centered, the icon and name, the slogan as the headline, three small icons for the kinds of lists, and the address at the bottom. The image URL carries `?v=` so apps that cached an old cover fetch the new one.
   - Each kind of list has its own icon: a cart for shopping, a calendar with a check for tasks (they have dates), a checked list for checklists.
 
 ## Domain and hosting
