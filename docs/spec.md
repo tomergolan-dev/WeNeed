@@ -79,6 +79,8 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ### Checklists
 
+- In Hebrew this kind is called "רשימות" (decided 2026-11-19: Tomer prefers a Hebrew word to "צ׳קליסט"); in English it stays "Checklist". Hebrew copy that names all three kinds says "לקניות, למשימות ולכל דבר אחר" rather than "צ׳קליסטים".
+
 - A list to check off, without dates: not necessarily fixed, it changes as needed and can be kept for next time. For example "Weekend up north" or "Gym bag".
 - Items can be added, edited and removed at any time; the list itself stays.
 - **Check all** and **Uncheck all**, mainly to reset the list before the next use.
