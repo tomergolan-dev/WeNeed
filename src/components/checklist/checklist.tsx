@@ -9,6 +9,7 @@ import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListProgress } from "@/components/lists/list-progress";
+import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
 import { QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
@@ -35,7 +36,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
   const all = (value: boolean) => run({ type: "all", done: value }, () => setAllDone(listId, value));
 
   return (
-    <>
+    <ListScreen>
       <ListTop header={header}>
         <QuickAdd
           placeholder={t("quickAddPlaceholder")}
@@ -50,7 +51,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
           }}
         />
       </ListTop>
-      <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
+      <div data-list-body className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
           <div className="flex items-center gap-3">
             <ListProgress done={done} total={total} label={`${done}/${total}`} bar="bg-[#c9962a]" />
@@ -168,7 +169,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
           </div>
         )}
       </BottomSheet>
-    </>
+    </ListScreen>
   );
 }
 

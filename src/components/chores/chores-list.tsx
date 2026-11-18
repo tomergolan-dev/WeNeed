@@ -9,6 +9,7 @@ import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
 import { chipClass, OptionChip, PickerChip, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
@@ -111,7 +112,7 @@ export function ChoresList({
   const quickInput = toChoreInput(draft);
 
   return (
-    <>
+    <ListScreen>
       <ListTop header={header}>
         <QuickAdd
           placeholder={t("quickAddPlaceholder")}
@@ -178,75 +179,77 @@ export function ChoresList({
           }
         />
       </ListTop>
-      <div className="flex gap-1.5 overflow-x-auto px-5 pt-3 lg:px-8 [scrollbar-width:none]">
-        <Chip on={filter === "all"} onClick={() => setFilter("all")}>
-          {t("all")}
-        </Chip>
-        <Chip on={filter === "overdue"} onClick={() => setFilter("overdue")} dot="bg-[#d9452f]">
-          {t("filterOverdue", { count: counts.overdue })}
-        </Chip>
-        <Chip on={filter === "soon"} onClick={() => setFilter("soon")} dot="bg-[#e0a21b]">
-          {t("filterSoon", { count: counts.soon })}
-        </Chip>
-        <Chip on={filter === "noDate"} onClick={() => setFilter("noDate")}>
-          {t("noDate")}
-        </Chip>
-      </div>
+      <div data-list-body>
+        <div className="flex gap-1.5 overflow-x-auto px-5 pt-3 lg:px-8 [scrollbar-width:none]">
+          <Chip on={filter === "all"} onClick={() => setFilter("all")}>
+            {t("all")}
+          </Chip>
+          <Chip on={filter === "overdue"} onClick={() => setFilter("overdue")} dot="bg-[#d9452f]">
+            {t("filterOverdue", { count: counts.overdue })}
+          </Chip>
+          <Chip on={filter === "soon"} onClick={() => setFilter("soon")} dot="bg-[#e0a21b]">
+            {t("filterSoon", { count: counts.soon })}
+          </Chip>
+          <Chip on={filter === "noDate"} onClick={() => setFilter("noDate")}>
+            {t("noDate")}
+          </Chip>
+        </div>
 
-      <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-        {chores.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
-            <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
-              <ListTodo className="size-6" aria-hidden />
-            </span>
-            {t("empty")}
-          </div>
-        )}
-
-        {shown.length > 0 && (
-          <section>
-            <div className="mb-2 flex items-center justify-between gap-3 px-1">
-              <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
-              <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
-                {(["date", "added"] as const).map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    aria-pressed={sort === option}
-                    onClick={() => setSort(option)}
-                    className={cn(
-                      "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
-                      sort === option && "bg-card text-foreground shadow-sm",
-                    )}
-                  >
-                    {option === "date" ? t("sortDate") : t("sortAdded")}
-                  </button>
-                ))}
-              </div>
+          {chores.length === 0 && (
+            <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+              <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
+                <ListTodo className="size-6" aria-hidden />
+              </span>
+              {t("empty")}
             </div>
-            <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
-              {shown.map(({ chore, status }) => (
-                <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
-              ))}
-            </ul>
-          </section>
-        )}
-        {chores.length > 0 && shown.length === 0 && (
-          <p className="py-8 text-center text-muted-foreground">{t("nothingHere")}</p>
-        )}
+          )}
 
-        {done.length > 0 && filter === "all" && (
-          <section>
-            <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("done")}</h2>
-            <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
-              {done.map(({ chore, status }) => (
-                <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
-              ))}
-            </ul>
-          </section>
-        )}
+          {shown.length > 0 && (
+            <section>
+              <div className="mb-2 flex items-center justify-between gap-3 px-1">
+                <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
+                <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
+                  {(["date", "added"] as const).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      aria-pressed={sort === option}
+                      onClick={() => setSort(option)}
+                      className={cn(
+                        "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
+                        sort === option && "bg-card text-foreground shadow-sm",
+                      )}
+                    >
+                      {option === "date" ? t("sortDate") : t("sortAdded")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                {shown.map(({ chore, status }) => (
+                  <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
+                ))}
+              </ul>
+            </section>
+          )}
+          {chores.length > 0 && shown.length === 0 && (
+            <p className="py-8 text-center text-muted-foreground">{t("nothingHere")}</p>
+          )}
+
+          {done.length > 0 && filter === "all" && (
+            <section>
+              <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("done")}</h2>
+              <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                {done.map(({ chore, status }) => (
+                  <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
       </div>
 
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
@@ -278,7 +281,7 @@ export function ChoresList({
           </div>
         )}
       </BottomSheet>
-    </>
+    </ListScreen>
   );
 }
 

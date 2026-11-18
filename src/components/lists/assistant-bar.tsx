@@ -9,7 +9,6 @@ import {
   type Duplicate,
 } from "@/lib/assistant-plan";
 import type { ActionResult } from "@/app/actions";
-import { usePinToVisualViewport } from "@/lib/visual-viewport";
 import { useBackend } from "@/components/lists/backend";
 import { useDueText } from "@/components/chores/chore-due";
 import { formatQuantity } from "@/lib/items";
@@ -59,8 +58,6 @@ export function AssistantBar({
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const barRef = usePinToVisualViewport<HTMLDivElement>("bottom");
-  const otherField = useOtherFieldFocused(barRef);
 
   // Short replies close on their own; a reply with a question waits for the answer.
   useEffect(() => {
@@ -106,13 +103,7 @@ export function AssistantBar({
   };
 
   return (
-    <div
-      ref={barRef}
-      className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-0 z-30 transition-opacity lg:ps-72",
-        otherField && "invisible opacity-0",
-      )}
-    >
+    <div data-chat className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
       <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 lg:max-w-3xl lg:px-7 xl:max-w-4xl pb-[max(1rem,env(safe-area-inset-bottom))]">
         {exchange && !isOpenQuestion(exchange) && (
           <Note
@@ -391,28 +382,4 @@ function AddedRow({ item, now, unitsLabel }: { item: AddedItem; now: number; uni
       {detail && <span className="shrink-0 text-sm text-muted-foreground">{detail}</span>}
     </li>
   );
-}
-
-/**
- * Whether the user is typing in another field on the screen (quick add, a
- * rename): the chat box then steps aside instead of riding up on the keyboard.
- */
-function useOtherFieldFocused(bar: React.RefObject<HTMLElement | null>) {
-  const [focused, setFocused] = useState(false);
-  useEffect(() => {
-    const check = () => {
-      const el = document.activeElement;
-      const field = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
-      setFocused(field && !bar.current?.contains(el));
-    };
-    // After focus leaves, the next field (if any) has it by the next frame.
-    const later = () => requestAnimationFrame(check);
-    document.addEventListener("focusin", check);
-    document.addEventListener("focusout", later);
-    return () => {
-      document.removeEventListener("focusin", check);
-      document.removeEventListener("focusout", later);
-    };
-  }, [bar]);
-  return focused;
 }

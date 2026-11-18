@@ -97,3 +97,41 @@
     cursor: pointer;
   }
 }
+/*
+ * A list screen while the phone keyboard is open (see list-screen.tsx): a
+ * frame the size of what is on screen, with the top bar, the list scrolling
+ * inside, and the chat box above the keyboard. Hidden while typing in quick add.
+ */
+[data-list-screen][data-keyboard] {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--frame-top, 0px);
+  height: var(--frame-h, 100dvh);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--background);
+}
+[data-list-screen][data-keyboard] > [data-list-top],
+[data-list-screen][data-keyboard] > [data-chat] {
+  position: static;
+  flex: none;
+}
+[data-list-screen][data-keyboard] > [data-list-body] {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+[data-list-screen][data-keyboard] [data-list-body],
+[data-list-screen][data-keyboard] [data-list-body] > .pb-40 {
+  padding-bottom: 0.75rem;
+}
+[data-list-screen][data-keyboard] > [data-chat] > div {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+[data-list-screen][data-keyboard="field"] > [data-chat] {
+  display: none;
+}

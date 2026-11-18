@@ -8,6 +8,7 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListProgress } from "@/components/lists/list-progress";
+import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
 import { chipClass, QuantityStepper, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, useListItems } from "@/components/lists/use-list-items";
@@ -97,7 +98,7 @@ export function ShoppingList({
   const total = optimisticItems.length;
 
   return (
-    <>
+    <ListScreen>
       <ListTop header={header}>
         <QuickAdd
           placeholder={t("quickAddPlaceholder")}
@@ -137,7 +138,7 @@ export function ShoppingList({
           }
         />
       </ListTop>
-      <div className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
+      <div data-list-body className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
           <div className="flex min-h-9 items-center ps-1">
             <ListProgress done={bought.length} total={total} label={t("progress", { done: bought.length, total })} bar="bg-primary" />
@@ -181,7 +182,7 @@ export function ShoppingList({
         </div>
       </div>
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
-    </>
+    </ListScreen>
   );
 }
 
