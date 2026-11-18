@@ -90,7 +90,7 @@
     "progress": "{done} of {total} in the cart",
     "quickAddPlaceholder": "Add by hand, e.g. \"apples\"",
     "autoCategory": "Automatic section",
-    "aiPlaceholder": "E.g. milk, 6 eggs and bread",
+    "aiPlaceholder": "What's missing? E.g. milk, 6 eggs",
     "merged": "{name} was already on the list, updated to {quantity}.",
     "alreadyListed": "{name} is already on the list."
   },
@@ -121,7 +121,7 @@
     "sortDate": "By date",
     "sortAdded": "By order added",
     "quickAddPlaceholder": "Add a task by hand",
-    "aiPlaceholder": "E.g. fix the tap tomorrow at 5",
+    "aiPlaceholder": "What needs doing? E.g. fix the tap",
     "otherDate": "Date"
   },
   "Checklist": {
@@ -139,7 +139,7 @@
     "dragEnd": "{name} dropped in position {place}",
     "dragCancel": "Move canceled",
     "quickAddPlaceholder": "Add by hand, e.g. \"flashlight\"",
-    "aiPlaceholder": "E.g. a flashlight and a hat"
+    "aiPlaceholder": "What to add? E.g. a hat, a towel"
   },
   "ItemForm": {
     "add": "Add",

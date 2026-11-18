@@ -90,7 +90,7 @@
     "progress": "{done} מתוך {total} בעגלה",
     "quickAddPlaceholder": "הוספה ידנית, למשל ״תפוחים״",
     "autoCategory": "מחלקה אוטומטית",
-    "aiPlaceholder": "למשל: 2 חלב, 6 ביצים ולחם",
+    "aiPlaceholder": "מה חסר? למשל: 2 חלב, ביצים ולחם",
     "merged": "{name} כבר ברשימה, עדכנתי ל-{quantity}.",
     "alreadyListed": "{name} כבר ברשימה."
   },
@@ -121,7 +121,7 @@
     "sortDate": "לפי תאריך",
     "sortAdded": "לפי הוספה",
     "quickAddPlaceholder": "הוספה ידנית של משימה",
-    "aiPlaceholder": "למשל: לתקן את הברז מחר ב-5",
+    "aiPlaceholder": "מה צריך לעשות? למשל: כביסה מחר",
     "otherDate": "תאריך"
   },
   "Checklist": {
@@ -139,7 +139,7 @@
     "dragEnd": "{name} הונח במקום {place}",
     "dragCancel": "ההזזה בוטלה",
     "quickAddPlaceholder": "הוספה ידנית, למשל ״פנס״",
-    "aiPlaceholder": "למשל: פנס, כובע וקרם הגנה"
+    "aiPlaceholder": "מה להוסיף? למשל: פנס, כובע ומגבת"
   },
   "ItemForm": {
     "add": "הוספה",
