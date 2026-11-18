@@ -1,9 +1,9 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Check, ChevronDown, Plus, X } from "lucide-react";
+import { Check, ChevronDown, Plus, Settings, X } from "lucide-react";
 import { cn } from "cn";
 import { switchPlace } from "@/app/actions";
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
@@ -31,6 +31,7 @@ export function PlaceSwitcher({
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(current);
+  const router = useRouter();
   const personal = places.find((p) => p.personal);
   const shared = places.filter((p) => !p.personal);
 
@@ -40,6 +41,18 @@ export function PlaceSwitcher({
     startTransition(async () => {
       setShown(place);
       await switchPlace(place.id);
+    });
+  }
+
+  // A shared place's settings: they act on the current place, so switch first.
+  function openSettings(place: PlaceSummary) {
+    setOpen(false);
+    startTransition(async () => {
+      if (place.id !== shown.id) {
+        setShown(place);
+        await switchPlace(place.id);
+      }
+      router.push("/settings");
     });
   }
 
@@ -53,14 +66,20 @@ export function PlaceSwitcher({
         ? t("placeMeta", { members: place.memberCount, lists: place.listCount })
         : t("placeMetaLimited", { members: place.memberCount, visible: place.visibleCount, lists: place.listCount });
     return (
-      <li key={place.id}>
+      <li
+        key={place.id}
+        className={cn(
+          "flex items-center rounded-[18px] border bg-card transition-colors",
+          selected && "border-2 border-primary",
+        )}
+      >
         <button
           type="button"
           onClick={() => choose(place)}
           aria-current={selected ? "true" : undefined}
           className={cn(
-            "flex w-full items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 text-start transition-colors active:bg-muted",
-            selected && "border-2 border-primary px-[13px] py-[11px]",
+            "flex min-w-0 flex-1 items-center gap-3 rounded-[18px] py-3 ps-3.5 text-start active:bg-muted",
+            selected && "py-[11px] ps-[13px]",
           )}
         >
           <PlaceBadge icon={place.icon} />
@@ -81,11 +100,24 @@ export function PlaceSwitcher({
             <span className="text-[13px] text-muted-foreground">{meta}</span>
           </span>
           {selected && (
-            <span className="flex size-6.5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <span className="flex size-6.5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <Check className="size-4" strokeWidth={3} aria-hidden />
             </span>
           )}
         </button>
+        {!place.personal ? (
+          <button
+            type="button"
+            onClick={() => openSettings(place)}
+            aria-label={t("settingsFor", { place: place.name })}
+            title={t("settingsFor", { place: place.name })}
+            className="me-2.5 ms-1.5 flex size-9 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted"
+          >
+            <Settings className="size-[18px]" aria-hidden />
+          </button>
+        ) : (
+          <span className="w-3.5 shrink-0" aria-hidden />
+        )}
       </li>
     );
   }

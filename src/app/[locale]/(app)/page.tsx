@@ -1,42 +1,26 @@
 import { Suspense } from "react";
-import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
-import { LogOut, Settings } from "lucide-react";
-import { logOut } from "@/app/actions";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Brand } from "@/components/brand";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceSwitcher } from "@/components/places/place-switcher";
-import { requirePlace } from "@/lib/auth";
+import { getCurrentUser, requirePlace } from "@/lib/auth";
 import { getInvitesFor } from "@/lib/invites";
 import { getPlaceLists, getSharedWithMe } from "@/lib/lists";
 import { ListCard } from "@/components/lists/list-card";
 import { InviteBanner } from "@/components/places/invite-banner";
-import { LanguageSwitch } from "@/components/language-switch";
-
-const iconButton =
-  "flex size-10 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted";
+import { AccountMenu } from "@/components/account-menu";
 
 export default async function HomePage() {
-  const t = await getTranslations("Nav");
-
   return (
     <>
       <header className="sticky top-0 z-20 flex items-center justify-between bg-background px-5 pt-[18px] pb-2 lg:static lg:px-8 lg:pt-6">
         <span className="lg:invisible">
           <Brand />
         </span>
-        <div className="flex items-center gap-2">
-          <LanguageSwitch className="lg:hidden" />
-          <Suspense>
-            <SettingsLink label={t("settings")} />
-          </Suspense>
-          <form action={logOut}>
-            <button type="submit" aria-label={t("logOut")} className={iconButton}>
-              <LogOut className="size-5 rtl:-scale-x-100" aria-hidden />
-            </button>
-          </form>
-        </div>
+        <Suspense fallback={<span className="size-10 rounded-full border bg-card" />}>
+          <Account />
+        </Suspense>
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
         <Suspense fallback={<HomeSkeleton />}>
@@ -47,15 +31,9 @@ export default async function HomePage() {
   );
 }
 
-/** Settings belong to a shared place; the personal area has none. */
-async function SettingsLink({ label }: { label: string }) {
-  const { place } = await requirePlace();
-  if (place.personal) return null;
-  return (
-    <Link href="/settings" aria-label={label} className={iconButton}>
-      <Settings className="size-5" aria-hidden />
-    </Link>
-  );
+async function Account() {
+  const user = await getCurrentUser();
+  return <AccountMenu user={user && { name: user.name, email: user.email }} className="lg:hidden" />;
 }
 
 async function Home() {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Brand } from "@/components/brand";
-import { LanguageSwitch } from "@/components/language-switch";
+import { AccountMenu } from "@/components/account-menu";
 import { ListCard } from "@/components/lists/list-card";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceBadge } from "@/components/places/place-badge";
@@ -29,13 +29,13 @@ export function DemoHome() {
           <Brand />
         </span>
         <div className="flex items-center gap-2">
-          <LanguageSwitch className="lg:hidden" />
           <Link
             href="/login"
             className="flex h-11 items-center rounded-[14px] bg-primary px-3.5 text-sm font-semibold text-primary-foreground"
           >
             {tDemo("signIn")}
           </Link>
+          <AccountMenu user={null} className="lg:hidden" />
         </div>
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">

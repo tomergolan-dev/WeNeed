@@ -6,12 +6,19 @@
   },
   "Nav": {
     "back": "חזרה",
-    "settings": "הגדרות",
-    "logOut": "יציאה",
     "switchPlace": "החלפת מקום",
     "yourPlace": "המקום שלך",
     "personalArea": "אזור אישי",
     "languageLabel": "Switch to English"
+  },
+  "Account": {
+    "title": "החשבון שלי",
+    "open": "החשבון וההגדרות",
+    "language": "שפה",
+    "he": "עברית",
+    "en": "English",
+    "logOut": "התנתקות",
+    "signIn": "כניסה"
   },
   "Home": {
     "title": "מה צריך היום?",
@@ -274,7 +281,8 @@
     "placeMeta": "{members, plural, one {חבר אחד} other {# חברים}} · {lists, plural, =0 {אין רשימות} one {רשימה אחת} other {# רשימות}}",
     "placeMetaLimited": "{members, plural, one {חבר אחד} other {# חברים}} · רואה {visible} מתוך {lists}",
     "admin": "מנהל",
-    "member": "חבר"
+    "member": "חבר",
+    "settingsFor": "הגדרות {place}"
   },
   "SignInEmail": {
     "subject": "{code} הוא קוד הכניסה שלכם ל-WeNeed",

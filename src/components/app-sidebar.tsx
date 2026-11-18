@@ -19,5 +19,5 @@ export async function AppSidebar() {
     lists: lists[i],
     shared: p.personal ? shared : undefined,
   }));
-  return <Sidebar groups={groups} currentId={place.id} />;
+  return <Sidebar groups={groups} currentId={place.id} user={{ name: user.name, email: user.email }} />;
 }

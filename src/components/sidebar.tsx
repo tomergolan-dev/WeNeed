@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { switchPlace } from "@/app/actions";
 import { Brand } from "@/components/brand";
-import { LanguageSwitch } from "@/components/language-switch";
+import { AccountMenu } from "@/components/account-menu";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceBadge } from "@/components/places/place-badge";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -33,6 +33,7 @@ export function Sidebar({
   currentId,
   base = "",
   switchable = true,
+  user = null,
   footer,
 }: {
   groups: SidebarGroup[];
@@ -42,6 +43,8 @@ export function Sidebar({
   base?: string;
   /** False in the demo, which has one place. */
   switchable?: boolean;
+  /** For the account menu; null in the demo. */
+  user?: { name: string; email: string | null } | null;
   footer?: React.ReactNode;
 }) {
   const t = useTranslations("Home");
@@ -87,7 +90,7 @@ export function Sidebar({
         <Link href={home} aria-label="WeNeed">
           <Brand />
         </Link>
-        <LanguageSwitch />
+        <AccountMenu user={user} />
       </div>
       <nav className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-3 pb-4">
         {groups.map((group) => {

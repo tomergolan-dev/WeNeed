@@ -6,12 +6,19 @@
   },
   "Nav": {
     "back": "Back",
-    "settings": "Settings",
-    "logOut": "Log out",
     "switchPlace": "Switch place",
     "yourPlace": "Your place",
     "personalArea": "Personal area",
     "languageLabel": "Switch to Hebrew"
+  },
+  "Account": {
+    "title": "My account",
+    "open": "Account and settings",
+    "language": "Language",
+    "he": "עברית",
+    "en": "English",
+    "logOut": "Sign out",
+    "signIn": "Sign in"
   },
   "Home": {
     "title": "What do we need today?",
@@ -247,7 +254,8 @@
     "placeMeta": "{members, plural, one {One member} other {# members}} · {lists, plural, =0 {No lists} one {One list} other {# lists}}",
     "placeMetaLimited": "{members, plural, one {One member} other {# members}} · sees {visible} of {lists}",
     "admin": "Admin",
-    "member": "Member"
+    "member": "Member",
+    "settingsFor": "{place} settings"
   },
   "SignInEmail": {
     "subject": "{code} is your WeNeed sign-in code",
