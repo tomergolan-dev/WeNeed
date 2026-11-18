@@ -96,7 +96,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Attachments
 
-- Any item can have a note, links, and photos or documents. On the row, a paperclip with the number of attachments (or a note mark), right after the item's name, opens the item's details; items without any reach them from their edit sheet ("פרטים וצירופים").
+- Any item can have a note, links, and photos or documents. On the row, a small paperclip when it has attachments, without a count (or a note mark), right after the item's name, opens the item's details; items without any reach them from their edit sheet ("פרטים וצירופים").
 - The details sheet: the note (saved when leaving the field), links (opened in a new tab), and thumbnails of photos and documents, with buttons to add a link, take a photo, or pick a file.
 - Files: photos (JPEG, PNG, WebP, GIF, HEIC), PDF, Word, Excel and plain text, up to 15MB each and 20 attachments per item.
 - Storage: a private Vercel Blob store (`weneed-attachments`, Frankfurt). The browser uploads straight to it with a one-time token that only someone who can edit the item gets, under `items/<itemId>/`. Files are served only through `/api/attachments/[id]`, to people who see the list; they never get a public address. Deleting an attachment, an item or a list deletes its files.

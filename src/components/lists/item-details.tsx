@@ -97,16 +97,9 @@ export function ClipChip({
         open(item, onEdit);
       }}
       aria-label={t("openFor", { name: item.name, count: n })}
-      className="flex h-6 shrink-0 items-center gap-0.5 rounded-full bg-[#eceff0] px-2 text-xs font-semibold text-[#4c5853] active:bg-[#dfe3e1]"
+      className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853] active:bg-[#dfe3e1]"
     >
-      {n > 0 ? (
-        <>
-          <Paperclip className="size-3.5" aria-hidden />
-          {n}
-        </>
-      ) : (
-        <StickyNote className="size-3.5" aria-hidden />
-      )}
+      {n > 0 ? <Paperclip className="size-3.5" aria-hidden /> : <StickyNote className="size-3.5" aria-hidden />}
     </button>
   );
 }
