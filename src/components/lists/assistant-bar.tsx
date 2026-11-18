@@ -58,6 +58,7 @@ export function AssistantBar({
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const barRef = useKeepAboveKeyboard();
 
   // Short replies close on their own; a reply with a question waits for the answer.
   useEffect(() => {
@@ -103,7 +104,7 @@ export function AssistantBar({
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
+    <div ref={barRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
       <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 lg:max-w-3xl lg:px-7 xl:max-w-4xl pb-[max(1rem,env(safe-area-inset-bottom))]">
         {exchange && !isOpenQuestion(exchange) && (
           <Note
@@ -382,4 +383,38 @@ function AddedRow({ item, now, unitsLabel }: { item: AddedItem; now: number; uni
       {detail && <span className="shrink-0 text-sm text-muted-foreground">{detail}</span>}
     </li>
   );
+}
+
+/**
+ * iOS Safari keeps a fixed bar at the bottom of the page, not of what is on
+ * screen: with the keyboard open, scrolling the list moves the bar out of
+ * sight, so you can't see what you type. This follows the visible part of
+ * the page (the visual viewport) and lifts the bar to sit right above the
+ * keyboard. Where the page shrinks for the keyboard instead, the lift is 0.
+ */
+function useKeepAboveKeyboard() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let frame = 0;
+    const place = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const bar = ref.current;
+        if (!bar) return;
+        const hidden = window.innerHeight - viewport.height - viewport.offsetTop;
+        bar.style.transform = hidden > 1 ? `translateY(${-hidden}px)` : "";
+      });
+    };
+    viewport.addEventListener("resize", place);
+    viewport.addEventListener("scroll", place);
+    place();
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport.removeEventListener("resize", place);
+      viewport.removeEventListener("scroll", place);
+    };
+  }, []);
+  return ref;
 }
