@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarDays, Check, Clock, ListTodo } from "lucide-react";
+import { CalendarCheck, CalendarDays, Check, Clock } from "lucide-react";
 import type { ChoreInput } from "@/app/actions";
 import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
@@ -201,7 +201,7 @@ export function ChoresList({
           {chores.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
               <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
-                <ListTodo className="size-6" aria-hidden />
+                <CalendarCheck className="size-6" aria-hidden />
               </span>
               {t("empty")}
             </div>

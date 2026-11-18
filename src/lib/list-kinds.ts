@@ -1,4 +1,4 @@
-import { ListChecks, ListTodo, ShoppingCart, type LucideIcon } from "lucide-react";
+import { CalendarCheck, ListChecks, ShoppingCart, type LucideIcon } from "lucide-react";
 import type { List } from "@/db/schema";
 
 export type ListType = List["type"];
@@ -8,7 +8,7 @@ export const LIST_TYPES: ListType[] = ["shopping", "tasks", "checklist"];
 /** Each kind's icon and soft tone. Hebrew names live under "ListKinds" in the messages. */
 export const LIST_KINDS: Record<ListType, { icon: LucideIcon; tone: string }> = {
   shopping: { icon: ShoppingCart, tone: "bg-[#e4f3ec] text-[#11684b]" },
-  tasks: { icon: ListTodo, tone: "bg-[#f0ecf7] text-[#6a5794]" },
+  tasks: { icon: CalendarCheck, tone: "bg-[#f0ecf7] text-[#6a5794]" },
   checklist: { icon: ListChecks, tone: "bg-[#faf1de] text-[#8f6814]" },
 };
 

@@ -27,7 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
   const locale = await rootLocale();
   // The cover shown when a link to the app is shared (WhatsApp, iMessage, etc.).
-  const cover = { url: locale === "en" ? "/og-en.png" : "/og.png", width: 1200, height: 630, alt: t("ogAlt") };
+  // Bump ?v= when the image changes, so apps that cached the old one fetch it again.
+  const cover = { url: locale === "en" ? "/og-en.png?v=2" : "/og.png?v=2", width: 1200, height: 630, alt: t("ogAlt") };
   return {
     metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
     title: t("title"),

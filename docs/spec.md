@@ -175,7 +175,8 @@ We Need is also a portfolio project, so it includes a public demo.
   - Name: **WeNeed**, in English only, everywhere (browser tab, home screen, emails).
   - Slogan: "כל מה שצריך. ביחד."
   - Icon: a green tile with three list rows, the first two checked (`src/app/icon.svg`; PNGs for phones in `public/` and `src/app/apple-icon.png`).
-  - Share cover (`public/og.png`, 1200×630): "צריך לקנות… / צריך לעשות… / צריך לארוז…", the slogan, the icon and the name.
+  - Share cover (`public/og.png`, `public/og-en.png`, 1200×630), redesigned 2026-11-19 after the wide sign-in panel: brand green with soft circles, the icon and name, the slogan as the headline, the one-line pitch and the address, beside three cards for the kinds of lists. The image URL carries `?v=` so apps that cached an old cover fetch the new one.
+  - Each kind of list has its own icon: a cart for shopping, a calendar with a check for tasks (they have dates), a checked list for checklists.
 
 ## Domain and hosting
 
