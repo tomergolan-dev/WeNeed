@@ -52,18 +52,21 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
       </ListTop>
       <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
-          <div className="flex items-center gap-3 ps-1">
-            <ListProgress done={done} total={total} label={t("progress", { done, total })} bar="bg-[#c9962a]" />
-            <div className="flex shrink-0 items-center gap-0.5">
-              <ToolButton label={t("checkAll")} onClick={() => all(true)} disabled={done === total}>
-                <CheckCheck className="size-[18px]" aria-hidden />
+          <div className="flex items-center gap-3">
+            <ListProgress done={done} total={total} label={`${done}/${total}`} bar="bg-[#c9962a]" />
+            <div className="flex shrink-0 items-center gap-1.5">
+              <ToolButton onClick={() => all(true)} disabled={done === total}>
+                <CheckCheck className="size-4" aria-hidden />
+                {t("checkAll")}
               </ToolButton>
-              <ToolButton label={t("uncheckAll")} onClick={() => all(false)} disabled={done === 0}>
-                <RotateCcw className="size-4" aria-hidden />
+              <ToolButton onClick={() => all(false)} disabled={done === 0}>
+                <RotateCcw className="size-3.5" aria-hidden />
+                {t("uncheckAll")}
               </ToolButton>
               {total > 1 && (
-                <ToolButton label={t("reorder")} pressed={reordering} onClick={() => setReordering((r) => !r)}>
-                  <ArrowUpDown className="size-4" aria-hidden />
+                <ToolButton pressed={reordering} onClick={() => setReordering((r) => !r)}>
+                  <ArrowUpDown className="size-3.5" aria-hidden />
+                  {t("reorder")}
                 </ToolButton>
               )}
             </div>
@@ -81,18 +84,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {reordering && (
-              <div className="flex min-h-9 items-center justify-between gap-3 px-1">
-                <span className="text-[13px] text-muted-foreground">{t("reorderHint")}</span>
-                <button
-                  type="button"
-                  onClick={() => setReordering(false)}
-                  className="h-8 shrink-0 rounded-full bg-foreground px-3.5 text-sm font-semibold text-background"
-                >
-                  {t("reorderDone")}
-                </button>
-              </div>
-            )}
+            {reordering && <p className="px-1 text-[13px] text-muted-foreground">{t("reorderHint")}</p>}
             {reordering ? (
               <SortableItems
                 items={optimistic.filter((item) => !isDraft(item))}
@@ -180,22 +172,19 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
   );
 }
 
-/** A small round icon button beside the progress, named for screen readers and on hover. */
-function ToolButton({
-  label,
-  pressed,
-  ...props
-}: React.ComponentProps<"button"> & { label: string; pressed?: boolean }) {
+/**
+ * A small pill beside the progress. Dimmed when there is nothing to do;
+ * filled green while it is on (reordering), and tapping it again turns it off.
+ */
+function ToolButton({ pressed, ...props }: React.ComponentProps<"button"> & { pressed?: boolean }) {
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
       aria-pressed={pressed}
       {...props}
       className={cn(
-        "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted active:bg-muted disabled:opacity-35",
-        pressed && "bg-foreground text-background hover:bg-foreground",
+        "flex h-8 items-center gap-1 rounded-full border bg-card px-2.5 text-xs font-medium transition-colors active:bg-muted disabled:opacity-40",
+        pressed && "border-primary bg-primary text-primary-foreground active:bg-primary",
       )}
     />
   );
