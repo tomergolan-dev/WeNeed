@@ -7,6 +7,7 @@ import { createPlace, updatePlace } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { focusOnOpen } from "@/lib/focus";
 import { PLACE_ICON_KEYS, PLACE_ICONS, type PlaceIcon } from "@/lib/place-icons";
 
 type Props =
@@ -54,7 +55,7 @@ export function PlaceForm(props: Props) {
           }}
           placeholder={t("namePlaceholder")}
           maxLength={60}
-          autoFocus={props.mode === "create"}
+          autoFocus={props.mode === "create" && focusOnOpen()}
           className="h-12 rounded-2xl bg-card px-4 text-base"
         />
       </div>

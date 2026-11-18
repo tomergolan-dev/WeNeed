@@ -7,6 +7,7 @@ import { useBackend } from "@/components/lists/backend";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { focusOnOpen } from "@/lib/focus";
 import { guessListType, type ListType } from "@/lib/list-kinds";
 import { ListTypePicker } from "./list-type-picker";
 
@@ -66,7 +67,7 @@ function NewListForm() {
         onChange={(e) => setName(e.target.value)}
         placeholder={t("namePlaceholder")}
         maxLength={40}
-        autoFocus
+        autoFocus={focusOnOpen()}
         className="h-12 rounded-2xl bg-card text-base"
       />
       <p className="mt-1 text-sm font-semibold">{t("typeLabel")}</p>
