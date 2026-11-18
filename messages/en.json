@@ -39,6 +39,7 @@
   "Lists": {
     "new": "New list",
     "newTitle": "New list",
+    "newIn": "New list · {place}",
     "nameLabel": "List name",
     "namePlaceholder": "For example: groceries, house chores, camping gear",
     "create": "Create list",

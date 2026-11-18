@@ -40,16 +40,23 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
       list.sharedWith.length === 0 ? (
         <>
           <Lock className="size-3.5" aria-hidden />
-          {t("onlyMe")} ·
+          {t("onlyMe")}
+          <Dot />
         </>
       ) : (
         <>
           <MiniInitials names={list.sharedWith} />
-          {t("sharedWith", { names: list.sharedWith.join(", ") })} ·
+          {t("sharedWith", { names: list.sharedWith.join(", ") })}
+          <Dot />
         </>
       );
   } else if (list.ownerName) {
-    access = <>{t("from", { name: list.ownerName })} ·</>;
+    access = (
+      <>
+        {t("from", { name: list.ownerName })}
+        <Dot />
+      </>
+    );
   } else if (list.visibility === "selected") {
     access = <Lock className="size-3.5" aria-label={t("onlySome")} />;
   }
@@ -82,6 +89,15 @@ function Pill({ className, children }: { className: string; children: React.Reac
   return (
     <span className={cn("inline-flex h-[22px] items-center rounded-full px-2 text-xs font-semibold", className)}>
       {children}
+    </span>
+  );
+}
+
+/** The separator between the parts of a card's line, as its own item so the gaps on both sides match. */
+function Dot() {
+  return (
+    <span aria-hidden className="text-[#b9c0bd]">
+      ·
     </span>
   );
 }

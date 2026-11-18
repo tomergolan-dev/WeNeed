@@ -11,8 +11,15 @@ import { focusOnOpen } from "@/lib/focus";
 import { guessListType, type ListType } from "@/lib/list-kinds";
 import { ListTypePicker } from "./list-type-picker";
 
-/** "New list": a name and a kind. The kind follows the name until the user picks one. */
-export function NewListButton() {
+/**
+ * "New list": a name and a kind. The kind follows the name until the user picks one.
+ * In the sidebar it is a small "+" beside each place; `place` then names that
+ * place, and `beforeCreate` makes it the current one, where new lists go.
+ */
+export function NewListButton({
+  place,
+  beforeCreate,
+}: { place?: string; beforeCreate?: () => Promise<void> } = {}) {
   const t = useTranslations("Lists");
   const [open, setOpen] = useState(false);
   // Creating a list moves to it, and Next keeps this screen in the background
@@ -21,22 +28,34 @@ export function NewListButton() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-1 text-sm font-semibold text-accent-foreground"
-      >
-        <Plus className="size-4" aria-hidden />
-        {t("new")}
-      </button>
-      <BottomSheet open={open} onOpenChange={setOpen} title={t("newTitle")}>
-        {open && <NewListForm />}
+      {place ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={t("newIn", { place })}
+          title={t("newIn", { place })}
+          className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <Plus className="size-4" aria-hidden />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-8 items-center gap-1 text-sm font-semibold text-accent-foreground"
+        >
+          <Plus className="size-4" aria-hidden />
+          {t("new")}
+        </button>
+      )}
+      <BottomSheet open={open} onOpenChange={setOpen} title={place ? t("newIn", { place }) : t("newTitle")}>
+        {open && <NewListForm beforeCreate={beforeCreate} />}
       </BottomSheet>
     </>
   );
 }
 
-function NewListForm() {
+function NewListForm({ beforeCreate }: { beforeCreate?: () => Promise<void> }) {
   const t = useTranslations("Lists");
   const { createList } = useBackend();
   const tErrors = useTranslations("Errors");
@@ -53,6 +72,7 @@ function NewListForm() {
         e.preventDefault();
         startTransition(async () => {
           setError(null);
+          await beforeCreate?.();
           const result = await createList(name, type);
           if (!result.ok) setError(tErrors(result.error));
         });

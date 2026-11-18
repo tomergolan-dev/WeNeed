@@ -95,29 +95,30 @@ export function Sidebar({
           const atHome = current && pathname === home;
           return (
             <section key={group.id} className="flex flex-col gap-0.5">
-              <button
-                type="button"
-                onClick={() => openPlace(group.id)}
-                aria-current={atHome ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl px-2 py-1.5 text-start text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-muted",
-                  atHome && "text-foreground",
-                )}
-              >
-                <PlaceBadge icon={group.icon} className="size-6 [&>svg]:size-3.5" />
-                <span className="truncate">{group.name}</span>
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => openPlace(group.id)}
+                  aria-current={atHome ? "page" : undefined}
+                  className={cn(
+                    "flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-1.5 text-start text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-muted",
+                    atHome && "text-foreground",
+                  )}
+                >
+                  <PlaceBadge icon={group.icon} className="size-6 [&>svg]:size-3.5" />
+                  <span className="truncate">{group.name}</span>
+                </button>
+                <NewListButton
+                  place={group.name}
+                  beforeCreate={switchable && !current ? () => switchPlace(group.id).then(() => {}) : undefined}
+                />
+              </div>
               <ul className="flex flex-col gap-0.5">{group.lists.map(row)}</ul>
               {group.shared && group.shared.length > 0 && (
                 <>
                   <p className="px-2 pt-2 pb-1 text-xs text-muted-foreground">{t("sharedWithMe")}</p>
                   <ul className="flex flex-col gap-0.5">{group.shared.map(row)}</ul>
                 </>
-              )}
-              {current && (
-                <div className="px-2 pt-1">
-                  <NewListButton />
-                </div>
               )}
             </section>
           );
