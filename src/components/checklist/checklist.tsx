@@ -8,6 +8,7 @@ import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListProgress } from "@/components/lists/list-progress";
 import { ListTop } from "@/components/lists/list-top";
 import { QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, isDraft, useListItems } from "@/components/lists/use-list-items";
@@ -51,28 +52,20 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
       </ListTop>
       <div className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
-          <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[15px] font-bold">{t("progress", { done, total })}</span>
-              {done < total && (
-                <span className="text-[13px] text-muted-foreground">{t("left", { count: total - done })}</span>
-              )}
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#f3eedf]">
-              <div
-                className="h-full rounded-full bg-[#c9962a] transition-[width]"
-                style={{ width: `${(done / total) * 100}%` }}
-              />
-            </div>
-            <div className="mt-3.5 flex gap-2">
-              <ToolButton onClick={() => all(true)} disabled={done === total}>
-                <CheckCheck className="size-4" aria-hidden />
-                {t("checkAll")}
+          <div className="flex items-center gap-3 ps-1">
+            <ListProgress done={done} total={total} label={t("progress", { done, total })} bar="bg-[#c9962a]" />
+            <div className="flex shrink-0 items-center gap-0.5">
+              <ToolButton label={t("checkAll")} onClick={() => all(true)} disabled={done === total}>
+                <CheckCheck className="size-[18px]" aria-hidden />
               </ToolButton>
-              <ToolButton onClick={() => all(false)} disabled={done === 0}>
+              <ToolButton label={t("uncheckAll")} onClick={() => all(false)} disabled={done === 0}>
                 <RotateCcw className="size-4" aria-hidden />
-                {t("uncheckAll")}
               </ToolButton>
+              {total > 1 && (
+                <ToolButton label={t("reorder")} pressed={reordering} onClick={() => setReordering((r) => !r)}>
+                  <ArrowUpDown className="size-4" aria-hidden />
+                </ToolButton>
+              )}
             </div>
           </div>
         )}
@@ -88,20 +81,15 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {total > 1 && (
+            {reordering && (
               <div className="flex min-h-9 items-center justify-between gap-3 px-1">
-                <span className="text-[13px] text-muted-foreground">{reordering && t("reorderHint")}</span>
+                <span className="text-[13px] text-muted-foreground">{t("reorderHint")}</span>
                 <button
                   type="button"
-                  aria-pressed={reordering}
-                  onClick={() => setReordering((r) => !r)}
-                  className={cn(
-                    "flex h-9 shrink-0 items-center gap-1.5 rounded-full border bg-card px-3.5 text-sm font-semibold transition-colors",
-                    reordering && "border-foreground bg-foreground text-background",
-                  )}
+                  onClick={() => setReordering(false)}
+                  className="h-8 shrink-0 rounded-full bg-foreground px-3.5 text-sm font-semibold text-background"
                 >
-                  {!reordering && <ArrowUpDown className="size-4" aria-hidden />}
-                  {reordering ? t("reorderDone") : t("reorder")}
+                  {t("reorderDone")}
                 </button>
               </div>
             )}
@@ -129,11 +117,11 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
                         )
                       }
                       className={cn(
-                        "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-white transition-colors",
+                        "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-white transition-colors",
                         item.done && "border-[#c9962a] bg-[#c9962a]",
                       )}
                     >
-                      {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+                      {item.done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
                     </button>
                     <div
                       onClick={() => !isDraft(item) && setEditing(item)}
@@ -192,12 +180,23 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
   );
 }
 
-function ToolButton(props: React.ComponentProps<"button">) {
+/** A small round icon button beside the progress, named for screen readers and on hover. */
+function ToolButton({
+  label,
+  pressed,
+  ...props
+}: React.ComponentProps<"button"> & { label: string; pressed?: boolean }) {
   return (
     <button
       type="button"
+      aria-label={label}
+      title={label}
+      aria-pressed={pressed}
       {...props}
-      className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border bg-card text-sm font-semibold transition-colors active:bg-muted disabled:opacity-50"
+      className={cn(
+        "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted active:bg-muted disabled:opacity-35",
+        pressed && "bg-foreground text-background hover:bg-foreground",
+      )}
     />
   );
 }

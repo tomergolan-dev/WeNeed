@@ -22,7 +22,7 @@ export function PageHeader({
         href={back}
         aria-label={t("back")}
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-[14px] border bg-card transition-colors active:bg-muted",
+          "flex size-10 shrink-0 items-center justify-center rounded-full border bg-card transition-colors active:bg-muted",
           // On a wide screen the sidebar leads home.
           (back === "/" || back === "/demo") && "lg:hidden",
         )}

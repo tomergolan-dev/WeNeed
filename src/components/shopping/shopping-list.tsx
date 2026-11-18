@@ -7,6 +7,7 @@ import type { ItemInput } from "@/app/actions";
 import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { AssistantBar } from "@/components/lists/assistant-bar";
+import { ListProgress } from "@/components/lists/list-progress";
 import { ListTop } from "@/components/lists/list-top";
 import { chipClass, QuantityStepper, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, useListItems } from "@/components/lists/use-list-items";
@@ -138,14 +139,8 @@ export function ShoppingList({
       </ListTop>
       <div className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
         {total > 0 && (
-          <div className="rounded-[18px] border bg-card px-4 py-3.5 shadow-soft">
-            <p className="text-sm font-semibold">{t("progress", { done: bought.length, total })}</p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eef1f0]">
-              <div
-                className="h-full rounded-full bg-primary transition-[width]"
-                style={{ width: `${(bought.length / total) * 100}%` }}
-              />
-            </div>
+          <div className="flex min-h-9 items-center ps-1">
+            <ListProgress done={bought.length} total={total} label={t("progress", { done: bought.length, total })} bar="bg-primary" />
           </div>
         )}
 

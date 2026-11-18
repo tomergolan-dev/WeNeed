@@ -41,7 +41,7 @@ export function QuickAdd({
         inputRef.current?.focus();
       }}
     >
-      <div className="flex h-12 items-center gap-2 rounded-2xl border bg-card ps-3.5 pe-1.5 shadow-soft transition-colors focus-within:border-primary">
+      <div className="flex h-11 items-center gap-2 rounded-full border bg-card ps-4 pe-1.5 transition-colors focus-within:border-primary">
         <Plus className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
         <input
           ref={inputRef}
@@ -56,7 +56,7 @@ export function QuickAdd({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="h-9 shrink-0 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
+          className="h-8 shrink-0 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
         >
           {t("add")}
         </button>

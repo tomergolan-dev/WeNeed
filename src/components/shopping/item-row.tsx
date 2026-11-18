@@ -38,11 +38,11 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
         disabled={draft}
         onClick={() => onToggle(item.id, !item.done)}
         className={cn(
-          "flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+          "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
           item.done && "border-primary bg-primary",
         )}
       >
-        {item.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+        {item.done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
       </button>
       {/* The whole row opens the edit sheet; the name is the keyboard target,
           and the paperclip sits right after it. */}
@@ -58,7 +58,7 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
             setEditing(true);
           }}
           className={cn(
-            "min-w-0 truncate py-3 text-start text-base font-medium",
+            "min-w-0 truncate py-3 text-start text-base",
             item.done && "text-muted-foreground line-through",
           )}
         >

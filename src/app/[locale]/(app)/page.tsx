@@ -15,7 +15,7 @@ import { InviteBanner } from "@/components/places/invite-banner";
 import { LanguageSwitch } from "@/components/language-switch";
 
 const iconButton =
-  "flex size-11 items-center justify-center rounded-[14px] border bg-card text-muted-foreground transition-colors active:bg-muted";
+  "flex size-10 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted";
 
 export default async function HomePage() {
   const t = await getTranslations("Nav");

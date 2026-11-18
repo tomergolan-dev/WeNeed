@@ -38,8 +38,6 @@ export function DemoList() {
   const subtitle =
     list.type === "tasks"
       ? `${where} · ${t("tasks.open", { count: open })}`
-      : list.type === "checklist"
-        ? `${where} · ${t("checklist.subtitle")}`
         : where;
   const counts = Object.fromEntries(
     items.map((item) => [item.id, (state.attachments[item.id] ?? []).length]),

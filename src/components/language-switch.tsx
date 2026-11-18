@@ -23,7 +23,7 @@ export function LanguageSwitch({ className }: { className?: string }) {
       disabled={pending}
       onClick={() => startTransition(() => router.replace(pathname, { locale: other }))}
       className={cn(
-        "flex size-11 items-center justify-center rounded-[14px] border bg-card text-muted-foreground transition-colors active:bg-muted disabled:opacity-60",
+        "flex size-10 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted disabled:opacity-60",
         className,
       )}
     >

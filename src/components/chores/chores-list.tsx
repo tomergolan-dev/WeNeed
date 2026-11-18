@@ -178,7 +178,7 @@ export function ChoresList({
           }
         />
       </ListTop>
-      <div className="flex gap-2 overflow-x-auto px-5 pt-3.5 lg:px-8 [scrollbar-width:none]">
+      <div className="flex gap-1.5 overflow-x-auto px-5 pt-3 lg:px-8 [scrollbar-width:none]">
         <Chip on={filter === "all"} onClick={() => setFilter("all")}>
           {t("all")}
         </Chip>
@@ -217,7 +217,7 @@ export function ChoresList({
                     aria-pressed={sort === option}
                     onClick={() => setSort(option)}
                     className={cn(
-                      "h-8 rounded-full px-3 text-[13px] font-medium text-muted-foreground transition-colors",
+                      "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
                       sort === option && "bg-card text-foreground shadow-sm",
                     )}
                   >
@@ -299,7 +299,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "flex h-9 shrink-0 items-center gap-1.5 rounded-full border bg-card px-3.5 text-sm font-medium transition-colors",
+        "flex h-8 shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 text-[13px] transition-colors",
         on && "border-foreground bg-foreground text-background",
       )}
     >
@@ -344,7 +344,7 @@ function ChoreRow({
         disabled={draft}
         onClick={() => onToggle(chore)}
         className={cn(
-          "mt-px flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+          "mt-px flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
           chore.done && "border-primary bg-primary",
         )}
       >

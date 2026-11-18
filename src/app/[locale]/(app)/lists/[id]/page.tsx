@@ -58,8 +58,6 @@ async function List({ params }: Pick<PageProps<"/[locale]/lists/[id]">, "params"
   const subtitle =
     list.type === "tasks"
       ? `${whereText} · ${t("tasks.open", { count: open })}`
-      : list.type === "checklist"
-        ? `${whereText} · ${t("checklist.subtitle")}`
         : where;
 
   const header = (
