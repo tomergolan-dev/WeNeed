@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A list screen. On a phone, while the keyboard is open, it becomes a frame
+ * A list screen. On a phone, while typing to the AI chat, it becomes a frame
  * the size of what is on screen, like a search screen in Instagram: the
  * list's top bar at the top, the chat box right above the keyboard, and the
- * list scrolling between them. Typing in another field (quick add) hides the
- * chat box. With the keyboard closed, the page scrolls as usual.
+ * list scrolling between them. Otherwise (keyboard closed, or typing in quick
+ * add) the page scrolls as usual and the chat box stays at the bottom.
  *
  * iOS Safari doesn't shrink the page for the keyboard; it shows part of it
  * (the visual viewport) and pans that part around. So the frame takes the
@@ -26,8 +26,10 @@ export function ListScreen({ children }: { children: React.ReactNode }) {
     if (!root || !viewport || !window.matchMedia("(pointer: coarse)").matches) return;
 
     const body = () => root.querySelector<HTMLElement>("[data-list-body]");
-    const field = (el: Element | null) =>
-      (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && root.contains(el) ? el : null;
+    const typingToChat = () => {
+      const el = document.activeElement;
+      return el instanceof HTMLTextAreaElement && root.contains(el) && el.closest("[data-chat]") !== null;
+    };
 
     const size = () => {
       root.style.setProperty("--frame-h", `${viewport.height}px`);
@@ -35,19 +37,15 @@ export function ListScreen({ children }: { children: React.ReactNode }) {
     };
 
     const update = () => {
-      const el = field(document.activeElement);
-      const was = root.dataset.keyboard;
-      if (el) {
-        const mode = el.closest("[data-chat]") ? "chat" : "field";
+      const was = root.dataset.keyboard !== undefined;
+      if (typingToChat()) {
         if (!was) {
           // Keep the list where it was: the page's scroll becomes the list's.
           const scrolled = window.scrollY;
           size();
-          root.dataset.keyboard = mode;
+          root.dataset.keyboard = "";
           const list = body();
           if (list) list.scrollTop = scrolled;
-        } else if (was !== mode) {
-          root.dataset.keyboard = mode;
         }
       } else if (was) {
         const scrolled = body()?.scrollTop ?? 0;
@@ -59,7 +57,11 @@ export function ListScreen({ children }: { children: React.ReactNode }) {
     const onFocusIn = () => update();
     // When focus leaves a field, the next one (if any) has it by the next frame.
     const onFocusOut = () => requestAnimationFrame(update);
-    const onViewport = () => root.dataset.keyboard && size();
+    // Also a safety net: if focus left without a focusout, the frame closes here.
+    const onViewport = () => {
+      update();
+      if (root.dataset.keyboard !== undefined) size();
+    };
 
     document.addEventListener("focusin", onFocusIn);
     document.addEventListener("focusout", onFocusOut);

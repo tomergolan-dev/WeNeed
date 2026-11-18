@@ -98,9 +98,9 @@
   }
 }
 /*
- * A list screen while the phone keyboard is open (see list-screen.tsx): a
- * frame the size of what is on screen, with the top bar, the list scrolling
- * inside, and the chat box above the keyboard. Hidden while typing in quick add.
+ * A list screen while typing to the AI chat on a phone (see list-screen.tsx):
+ * a frame the size of what is on screen, with the top bar, the list scrolling
+ * inside, and the chat box above the keyboard.
  */
 [data-list-screen][data-keyboard] {
   position: fixed;
@@ -131,7 +131,4 @@
 [data-list-screen][data-keyboard] > [data-chat] > div {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-}
-[data-list-screen][data-keyboard="field"] > [data-chat] {
-  display: none;
 }

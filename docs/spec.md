@@ -105,7 +105,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ## AI chat
 
 - The chat is a bar at the bottom of every list, with an AI mark and an example ("מה צריך? למשל: 8 מעדני שוקולד, 4 בננות"). The reply shows above the bar, so the list stays in view. A plain reply is one short line ("הוספתי: ביצים, עגבניות" with "undo") that disappears after 3 seconds (errors after 5). A question about an item already on the list ("להוסיף עוד 2?") opens a card that stays until answered. Decided 2026-11-17, at Tomer's request.
-- The message box takes several lines and grows up to about four, then scrolls. On a phone Enter adds a line and the arrow sends; on a computer Enter sends and Shift+Enter adds a line (decided 2026-11-17). With the keyboard open on a phone, the screen works like a search screen in Instagram (decided 2026-11-19): the list's top bar stays at the top, the box sits right above the keyboard, and the list scrolls between them. While typing in quick add (or any other field) the box steps aside.
+- The message box takes several lines and grows up to about four, then scrolls. On a phone Enter adds a line and the arrow sends; on a computer Enter sends and Shift+Enter adds a line (decided 2026-11-17). With the keyboard open on a phone, the screen works like a search screen in Instagram (decided 2026-11-19): the list's top bar stays at the top, the box sits right above the keyboard, and the list scrolls between them. While typing in quick add the page scrolls as usual and the box stays at the bottom of the screen (behind the keyboard), not riding up on it.
 - Each message is read once; there is no chat history yet.
 - Limits against abuse: at most 100 messages per user and 2,000 in total in 24 hours.
 
