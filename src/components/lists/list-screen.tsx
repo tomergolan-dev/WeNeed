@@ -3,75 +3,57 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A list screen. On a phone, while typing to the AI chat, it becomes a frame
- * the size of what is on screen, like a search screen in Instagram: the
- * list's top bar at the top, the chat box right above the keyboard, and the
- * list scrolling between them. Otherwise (keyboard closed, or typing in quick
- * add) the page scrolls as usual and the chat box stays at the bottom.
+ * A list screen. On a phone (a touch screen narrower than the sidebar layout) it is a frame the size of
+ * what is on screen, like a chat or a search screen in an app:
+ * - the top bar (the list's name and quick add) never moves;
+ * - the list scrolls inside, beneath it;
+ * - the AI chat box sits at the bottom, and while typing to it, right above
+ *   the keyboard. While typing in quick add it stays at the bottom of the
+ *   screen, behind the keyboard, and the list still scrolls under the top bar.
  *
  * iOS Safari doesn't shrink the page for the keyboard; it shows part of it
- * (the visual viewport) and pans that part around. So the frame takes the
- * visual viewport's size and place, measured only when the keyboard opens,
- * closes or iOS pans, not on every scroll: the list scrolls inside the frame.
+ * (the visual viewport) and may pan that part. So the frame takes the visual
+ * viewport's size and place. Those change only when the keyboard opens or
+ * closes or iOS pans, never while the list scrolls (it scrolls inside the
+ * frame), so nothing jitters.
  *
- * The parts: the top bar ([data-list-top]), the list ([data-list-body]) and
- * the chat box ([data-chat]); the styles are in globals.css.
+ * The layout is in globals.css (on touch screens only), with the parts marked
+ * [data-list-top], [data-list-body] and [data-chat]. On a computer the page
+ * scrolls as usual with a sticky top bar.
  */
+/** Matches the media query in globals.css: touch screens narrower than the sidebar layout. */
+const PHONE = "(pointer: coarse) and (max-width: 1023px)";
+
 export function ListScreen({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = ref.current;
     const viewport = window.visualViewport;
-    if (!root || !viewport || !window.matchMedia("(pointer: coarse)").matches) return;
-
-    const body = () => root.querySelector<HTMLElement>("[data-list-body]");
-    const typingToChat = () => {
-      const el = document.activeElement;
-      return el instanceof HTMLTextAreaElement && root.contains(el) && el.closest("[data-chat]") !== null;
-    };
-
-    const size = () => {
-      root.style.setProperty("--frame-h", `${viewport.height}px`);
-      root.style.setProperty("--frame-top", `${viewport.offsetTop}px`);
-    };
+    if (!root || !viewport || !window.matchMedia(PHONE).matches) return;
 
     const update = () => {
-      const was = root.dataset.keyboard !== undefined;
-      if (typingToChat()) {
-        if (!was) {
-          // Keep the list where it was: the page's scroll becomes the list's.
-          const scrolled = window.scrollY;
-          size();
-          root.dataset.keyboard = "";
-          const list = body();
-          if (list) list.scrollTop = scrolled;
-        }
-      } else if (was) {
-        const scrolled = body()?.scrollTop ?? 0;
-        delete root.dataset.keyboard;
-        window.scrollTo(0, scrolled);
-      }
+      root.style.setProperty("--frame-h", `${viewport.height}px`);
+      root.style.setProperty("--frame-top", `${viewport.offsetTop}px`);
+      const el = document.activeElement;
+      const typing = (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && root.contains(el);
+      const mode = !typing ? null : el.closest("[data-chat]") ? "chat" : "field";
+      if (mode) root.dataset.keyboard = mode;
+      else delete root.dataset.keyboard;
     };
 
-    const onFocusIn = () => update();
     // When focus leaves a field, the next one (if any) has it by the next frame.
-    const onFocusOut = () => requestAnimationFrame(update);
-    // Also a safety net: if focus left without a focusout, the frame closes here.
-    const onViewport = () => {
-      update();
-      if (root.dataset.keyboard !== undefined) size();
-    };
-
-    document.addEventListener("focusin", onFocusIn);
-    document.addEventListener("focusout", onFocusOut);
-    viewport.addEventListener("resize", onViewport);
-    viewport.addEventListener("scroll", onViewport);
+    const later = () => requestAnimationFrame(update);
+    update();
+    document.addEventListener("focusin", update);
+    document.addEventListener("focusout", later);
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
     return () => {
-      document.removeEventListener("focusin", onFocusIn);
-      document.removeEventListener("focusout", onFocusOut);
-      viewport.removeEventListener("resize", onViewport);
-      viewport.removeEventListener("scroll", onViewport);
+      document.removeEventListener("focusin", update);
+      document.removeEventListener("focusout", later);
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
     };
   }, []);
 
