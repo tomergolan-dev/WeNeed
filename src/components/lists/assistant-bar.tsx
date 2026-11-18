@@ -9,6 +9,7 @@ import {
   type Duplicate,
 } from "@/lib/assistant-plan";
 import type { ActionResult } from "@/app/actions";
+import { usePinToVisualViewport } from "@/lib/visual-viewport";
 import { useBackend } from "@/components/lists/backend";
 import { useDueText } from "@/components/chores/chore-due";
 import { formatQuantity } from "@/lib/items";
@@ -58,7 +59,8 @@ export function AssistantBar({
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const barRef = useKeepAboveKeyboard();
+  const barRef = usePinToVisualViewport<HTMLDivElement>("bottom");
+  const otherField = useOtherFieldFocused(barRef);
 
   // Short replies close on their own; a reply with a question waits for the answer.
   useEffect(() => {
@@ -104,7 +106,13 @@ export function AssistantBar({
   };
 
   return (
-    <div ref={barRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
+    <div
+      ref={barRef}
+      className={cn(
+        "pointer-events-none fixed inset-x-0 bottom-0 z-30 transition-opacity lg:ps-72",
+        otherField && "invisible opacity-0",
+      )}
+    >
       <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 lg:max-w-3xl lg:px-7 xl:max-w-4xl pb-[max(1rem,env(safe-area-inset-bottom))]">
         {exchange && !isOpenQuestion(exchange) && (
           <Note
@@ -386,35 +394,25 @@ function AddedRow({ item, now, unitsLabel }: { item: AddedItem; now: number; uni
 }
 
 /**
- * iOS Safari keeps a fixed bar at the bottom of the page, not of what is on
- * screen: with the keyboard open, scrolling the list moves the bar out of
- * sight, so you can't see what you type. This follows the visible part of
- * the page (the visual viewport) and lifts the bar to sit right above the
- * keyboard. Where the page shrinks for the keyboard instead, the lift is 0.
+ * Whether the user is typing in another field on the screen (quick add, a
+ * rename): the chat box then steps aside instead of riding up on the keyboard.
  */
-function useKeepAboveKeyboard() {
-  const ref = useRef<HTMLDivElement>(null);
+function useOtherFieldFocused(bar: React.RefObject<HTMLElement | null>) {
+  const [focused, setFocused] = useState(false);
   useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-    let frame = 0;
-    const place = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const bar = ref.current;
-        if (!bar) return;
-        const hidden = window.innerHeight - viewport.height - viewport.offsetTop;
-        bar.style.transform = hidden > 1 ? `translateY(${-hidden}px)` : "";
-      });
+    const check = () => {
+      const el = document.activeElement;
+      const field = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement;
+      setFocused(field && !bar.current?.contains(el));
     };
-    viewport.addEventListener("resize", place);
-    viewport.addEventListener("scroll", place);
-    place();
+    // After focus leaves, the next field (if any) has it by the next frame.
+    const later = () => requestAnimationFrame(check);
+    document.addEventListener("focusin", check);
+    document.addEventListener("focusout", later);
     return () => {
-      cancelAnimationFrame(frame);
-      viewport.removeEventListener("resize", place);
-      viewport.removeEventListener("scroll", place);
+      document.removeEventListener("focusin", check);
+      document.removeEventListener("focusout", later);
     };
-  }, []);
-  return ref;
+  }, [bar]);
+  return focused;
 }
