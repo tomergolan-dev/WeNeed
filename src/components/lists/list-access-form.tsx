@@ -26,30 +26,58 @@ export function ListAccessForm({
 }) {
   const t = useTranslations("Access");
   const tErrors = useTranslations("Errors");
-  const [visibility, setVisibility] = useState(access.visibility);
+  const members = access.people.filter((p) => p.role !== null);
+  // The members "the whole place" covers: everyone but the admins (who always
+  // see every list) and people invited to some lists only.
+  const full = members.filter((p) => p.role !== "owner" && p.allLists);
+  const covers = (ids: Set<string>) => full.length > 0 && full.every((p) => ids.has(p.id));
+
   const [selected, setSelected] = useState(() => new Set(access.people.filter((p) => p.added).map((p) => p.id)));
+  // "Selected people" with every member on it is the whole place; show it as that.
+  const [visibility, setVisibility] = useState(() =>
+    access.visibility === "selected" && covers(new Set(access.people.filter((p) => p.added).map((p) => p.id)))
+      ? "place"
+      : access.visibility,
+  );
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState<{ text: string; error?: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Who sees the list no matter what is checked here.
   const locked = (person: ListAccess["people"][number]) =>
-    access.personal
-      ? person.id === userId
-      : person.role === "owner" || (visibility === "place" && person.allLists);
+    access.personal ? person.id === userId : person.role === "owner";
+  const isChecked = (person: ListAccess["people"][number]) =>
+    locked(person) || (visibility === "place" && person.allLists) || selected.has(person.id);
 
-  const members = access.people.filter((p) => p.role !== null);
-  const seeing = members.filter((p) => locked(p) || selected.has(p.id)).length;
+  const seeing = members.filter(isChecked).length;
 
-  function toggle(id: string) {
-    const next = new Set(selected);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelected(next);
-    // Everyone in the place checked is the same as "the whole place": switch to it.
-    if (!access.personal && visibility === "selected" && members.every((p) => p.role === "owner" || next.has(p.id))) {
-      setVisibility("place");
+  /*
+   * The two choices and the checks are one picture, never at odds:
+   * - "Whole place": every member is checked. Unchecking someone moves to
+   *   "selected people" with everyone else still checked.
+   * - "Selected people": choosing it starts from no one (admins always see),
+   *   and checking every member moves back to "whole place".
+   * People invited to some lists only are checked one by one in both.
+   */
+  function toggle(person: ListAccess["people"][number]) {
+    if (!access.personal && visibility === "place" && person.allLists) {
+      setSelected(new Set([...selected, ...full.map((p) => p.id)].filter((id) => id !== person.id)));
+      setVisibility("selected");
+      return;
     }
+    const next = new Set(selected);
+    if (next.has(person.id)) next.delete(person.id);
+    else next.add(person.id);
+    setSelected(next);
+    if (!access.personal && visibility === "selected" && covers(next)) setVisibility("place");
+  }
+
+  function choose(value: "place" | "selected") {
+    if (value === "selected" && visibility === "place") {
+      const fullIds = new Set(full.map((p) => p.id));
+      setSelected(new Set([...selected].filter((id) => !fullIds.has(id))));
+    }
+    setVisibility(value);
   }
 
   function invite(event: React.FormEvent) {
@@ -96,7 +124,7 @@ export function ListAccessForm({
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  onClick={() => setVisibility(value)}
+                  onClick={() => choose(value)}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl border bg-card px-3.5 py-3 text-start transition-colors",
                     on && "border-primary bg-[#f3faf6]",
@@ -128,7 +156,7 @@ export function ListAccessForm({
         <ul className="flex flex-col rounded-[18px] border bg-card px-3.5">
           {access.people.map((person) => {
             const isLocked = locked(person);
-            const checked = isLocked || selected.has(person.id);
+            const checked = isChecked(person);
             const hint = sub(person);
             return (
               <li key={person.id} className="flex min-h-15 items-center gap-3 border-b py-2 last:border-b-0">
@@ -153,7 +181,7 @@ export function ListAccessForm({
                     role="checkbox"
                     aria-checked={checked}
                     aria-label={person.name}
-                    onClick={() => toggle(person.id)}
+                    onClick={() => toggle(person)}
                     className={cn(
                       "flex size-7 items-center justify-center rounded-lg border-2 border-[#c9cfcc] bg-card",
                       checked && "border-primary bg-primary text-primary-foreground",
