@@ -22,18 +22,15 @@
   },
   "Home": {
     "title": "מה צריך היום?",
-    "count": "{count, plural, =0 {עוד אין רשימות} one {רשימה אחת} other {# רשימות}}",
     "lists": "הרשימות",
     "empty": "עוד אין רשימות. אפשר ליצור כמה שרוצים: קניות, משימות או צ׳קליסט.",
     "listEmpty": "הרשימה ריקה",
     "items": "{count, plural, one {פריט אחד} other {# פריטים}}",
     "itemsInCart": "{count, plural, one {פריט אחד} other {# פריטים}} · {done} בעגלה",
     "choresOpen": "{count, plural, =0 {אין משימות פתוחות} one {משימה פתוחה אחת} other {# פתוחות}}",
-    "attention": "{count, plural, one {משימה אחת דורשת תשומת לב} other {# משימות דורשות תשומת לב}}",
     "overdue": "{count} באיחור",
     "soon": "{count} בקרוב",
     "checked": "{done} מתוך {total} מסומנים",
-    "personalSubtitle": "רשימות שלא שייכות לשום מקום",
     "myLists": "הרשימות שלי",
     "sharedWithMe": "משותפות איתי",
     "onlyMe": "רק אני",
@@ -41,7 +38,8 @@
     "from": "מ{name}",
     "invite": "<b>הזמנה חדשה:</b> {name} הזמין/ה אותך {what}",
     "inviteOpen": "לצפייה",
-    "onlySome": "פתוחה לאנשים מסוימים"
+    "onlySome": "פתוחה לאנשים מסוימים",
+    "placeSettings": "הגדרות המקום"
   },
   "Lists": {
     "new": "רשימה חדשה",
@@ -281,8 +279,7 @@
     "placeMeta": "{members, plural, one {חבר אחד} other {# חברים}} · {lists, plural, =0 {אין רשימות} one {רשימה אחת} other {# רשימות}}",
     "placeMetaLimited": "{members, plural, one {חבר אחד} other {# חברים}} · רואה {visible} מתוך {lists}",
     "admin": "מנהל",
-    "member": "חבר",
-    "settingsFor": "הגדרות {place}"
+    "member": "חבר"
   },
   "SignInEmail": {
     "subject": "{code} הוא קוד הכניסה שלכם ל-WeNeed",

@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { Settings } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Brand } from "@/components/brand";
@@ -45,7 +47,6 @@ async function Home() {
     user.email ? getInvitesFor(user.email) : Promise.resolve([]),
   ]);
   const sharedCount = place.personal ? shared.length : (await getSharedWithMe(user.id)).length;
-  const attention = [...lists, ...shared].reduce((sum, list) => sum + list.overdue + list.soon, 0);
   const banners = invites.map((invite) => <InviteBanner key={invite.id} invite={invite} />);
 
   return (
@@ -58,12 +59,19 @@ async function Home() {
         invites={banners.length > 0 ? banners : undefined}
       />
       {banners.length > 0 && <div className="mt-3 flex flex-col gap-2.5">{banners}</div>}
-      <div className="pt-6 pb-1">
+      <div className="flex items-center justify-between gap-3 pt-6 pb-1">
         <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {place.personal ? t("personalSubtitle") : t("count", { count: lists.length })}
-          {attention > 0 && ` · ${t("attention", { count: attention })}`}
-        </p>
+        {/* A shared place's settings; the personal area has none. */}
+        {!place.personal && (
+          <Link
+            href="/settings"
+            aria-label={t("placeSettings")}
+            title={t("placeSettings")}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted"
+          >
+            <Settings className="size-5" aria-hidden />
+          </Link>
+        )}
       </div>
       <div className="flex items-center justify-between px-1 pt-4 pb-2.5">
         <h2 className="text-[13px] font-semibold text-muted-foreground">{place.personal ? t("myLists") : t("lists")}</h2>

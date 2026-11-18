@@ -22,18 +22,15 @@
   },
   "Home": {
     "title": "What do we need today?",
-    "count": "{count, plural, =0 {No lists yet} one {One list} other {# lists}}",
     "lists": "Lists",
     "empty": "No lists yet. Create as many as you like: shopping, tasks or a checklist.",
     "listEmpty": "The list is empty",
     "items": "{count, plural, one {One item} other {# items}}",
     "itemsInCart": "{count, plural, one {One item} other {# items}} · {done} in the cart",
     "choresOpen": "{count, plural, =0 {No open tasks} one {One open task} other {# open}}",
-    "attention": "{count, plural, one {One task needs attention} other {# tasks need attention}}",
     "overdue": "{count} overdue",
     "soon": "{count} due soon",
     "checked": "{done} of {total} checked",
-    "personalSubtitle": "Lists that don't belong to any place",
     "myLists": "My lists",
     "sharedWithMe": "Shared with me",
     "onlyMe": "Only me",
@@ -41,7 +38,8 @@
     "from": "From {name}",
     "invite": "<b>New invite:</b> {name} invited you {what}",
     "inviteOpen": "View",
-    "onlySome": "Open to some people"
+    "onlySome": "Open to some people",
+    "placeSettings": "Place settings"
   },
   "Lists": {
     "new": "New list",
@@ -254,8 +252,7 @@
     "placeMeta": "{members, plural, one {One member} other {# members}} · {lists, plural, =0 {No lists} one {One list} other {# lists}}",
     "placeMetaLimited": "{members, plural, one {One member} other {# members}} · sees {visible} of {lists}",
     "admin": "Admin",
-    "member": "Member",
-    "settingsFor": "{place} settings"
+    "member": "Member"
   },
   "SignInEmail": {
     "subject": "{code} is your WeNeed sign-in code",

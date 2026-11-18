@@ -20,7 +20,6 @@ export function DemoHome() {
   // Due-soon counts as of opening the screen.
   const [now] = useState(() => Date.now());
   const lists = summarizeLists(state, now);
-  const attention = lists.reduce((sum, list) => sum + list.overdue + list.soon, 0);
 
   return (
     <>
@@ -48,10 +47,6 @@ export function DemoHome() {
         </div>
         <div className="pt-6 pb-1">
           <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("count", { count: lists.length })}
-            {attention > 0 && ` · ${t("attention", { count: attention })}`}
-          </p>
         </div>
         <div className="flex items-center justify-between px-1 pt-4 pb-2.5">
           <h2 className="text-[13px] font-semibold text-muted-foreground">{t("lists")}</h2>
