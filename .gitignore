@@ -35,3 +35,6 @@ yarn-error.log*
 # misc
 *.pem
 .pnpm-debug.log*
+
+# Numbered copies made by iCloud sync of Documents (e.g. "sidebar 2.tsx")
+* [0-9].*
