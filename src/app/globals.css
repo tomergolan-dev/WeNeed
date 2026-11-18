@@ -128,6 +128,11 @@
   [data-list-screen] > [data-chat] {
     position: absolute;
   }
+  /* Room at the end of the list for the chat box (about 5rem tall), not more. */
+  [data-list-screen] [data-list-body].pb-40,
+  [data-list-screen] [data-list-body] > .pb-40 {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
   [data-list-screen][data-keyboard="field"] > [data-chat] {
     position: fixed;
   }
