@@ -112,6 +112,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - Limits against abuse: at most 100 messages per user and 2,000 in total in 24 hours.
 
 - Every list has a chat where the user writes what they need, and the AI updates the list.
+- What the AI adds stays in the language it was written in: an English message gives English names, units and tasks, a Hebrew one Hebrew; it never translates (decided 2026-11-19, after the English demo got Hebrew names for an English message).
 - Shopping: extracts name, quantity, unit and section per item. For an item already on the list it asks whether to update the quantity (for example "כן, 24 יח׳" or "להשאיר").
   - "Already on the list" means the same product: singular/plural, spelling, another language, or a plain name for a listed item with a brand or percentage ("חלב" for "חלב 3%"). A related product is not the same ("גבינה לבנה" vs "גבנצ 15%"). Besides the AI's judgement, the two names must share a word (allowing singular/plural), unless they are in different languages (decided 2026-11-17).
   - Asking again with no amount adds one more of what is on the list ("2 חבילות" -> "כן, 3 חבילות"); a bare number uses the unit already on the list.
