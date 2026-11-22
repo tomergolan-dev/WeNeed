@@ -158,6 +158,7 @@ function CalendarRow() {
       </button>
       {open && (
         <div className="mt-2.5 flex flex-col gap-2 pb-1">
+          <p className="text-sm leading-5">{t("calendarStep")}</p>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="grid grid-cols-2 gap-2">
             <a

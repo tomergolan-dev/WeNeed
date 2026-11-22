@@ -21,14 +21,15 @@
     "signIn": "Sign in",
     "taskEmails": "Task emails",
     "taskEmailsHint": "When a task is assigned to you, and a reminder before it's due",
-    "calendar": "Tasks in my calendar",
-    "calendarHint": "Your tasks with a date, in your phone's calendar",
+    "calendar": "Add my tasks to my calendar",
+    "calendarHint": "Tasks with a date show up in your phone's calendar and update on their own",
     "calendarGoogle": "Google Calendar",
     "calendarApple": "iPhone calendar",
     "calendarCopy": "Copy link",
     "calendarCopied": "Copied",
-    "calendarPrivate": "The link is private: anyone who has it sees the tasks. The calendar updates on its own, sometimes a few hours late.",
-    "calendarNew": "New link"
+    "calendarPrivate": "Changes to tasks reach the calendar on their own, sometimes a few hours later. The link is personal; don't share it. If you did by mistake:",
+    "calendarNew": "New link",
+    "calendarStep": "Pick the calendar you use, and confirm adding it on the screen that opens. You only do this once."
   },
   "Home": {
     "title": "What do we need today?",
