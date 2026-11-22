@@ -18,7 +18,9 @@
     "he": "עברית",
     "en": "English",
     "logOut": "התנתקות",
-    "signIn": "כניסה"
+    "signIn": "כניסה",
+    "taskEmails": "מיילים על משימות",
+    "taskEmailsHint": "כשמשייכים לך משימה, ותזכורת לפני שהיא מגיעה"
   },
   "Home": {
     "title": "מה צריך היום?",
@@ -108,8 +110,6 @@
     "assignee": "אחראי/ת",
     "unassigned": "לא משויך",
     "all": "הכל",
-    "filterOverdue": "באיחור {count}",
-    "filterSoon": "בקרוב {count}",
     "noDate": "בלי תאריך",
     "open": "לטיפול",
     "done": "בוצעו לאחרונה",
@@ -125,7 +125,12 @@
     "sortAdded": "לפי הוספה",
     "quickAddPlaceholder": "הוספה ידנית של משימה",
     "aiPlaceholder": "מה צריך לעשות? למשל: כביסה מחר",
-    "otherDate": "תאריך"
+    "otherDate": "תאריך",
+    "soon": "בקרוב",
+    "filterMine": "שלי",
+    "filters": "סינון",
+    "remind": "שליחת תזכורת במייל ל{name}",
+    "reminded": "נשלחה תזכורת ל{name}"
   },
   "Checklist": {
     "progress": "{done} מתוך {total} מסומנים",
@@ -206,7 +211,10 @@
     "lastAdmin": "צריך להשאיר לפחות מנהל אחד במקום.",
     "deliveryFailed": "ההזמנה נשמרה, אבל המייל לא נשלח. נסו שוב בעוד רגע.",
     "tooManyAttachments": "אפשר עד 20 צירופים לפריט.",
-    "uploadFailed": "ההעלאה נכשלה. נסו שוב."
+    "uploadFailed": "ההעלאה נכשלה. נסו שוב.",
+    "remindTooSoon": "כבר נשלחה תזכורת. אפשר לשלוח שוב בעוד כמה דקות.",
+    "emailsOff": "המיילים על משימות כבויים אצל מי שהמשימה משויכת אליו/ה.",
+    "emailLimit": "נשלחו היום הרבה מיילים. נסו שוב מחר."
   },
   "Categories": {
     "produce": "פירות וירקות",
@@ -629,5 +637,17 @@
         ]
       }
     }
+  },
+  "TaskEmail": {
+    "assigned": "{name} שייך/ה לך משימה: {task}",
+    "manual": "{name} מזכיר/ה לך: {task}",
+    "hourBefore": "בעוד שעה: {task}",
+    "morning": "להיום: {task}",
+    "evening": "עוד פתוח להיום: {task}",
+    "someone": "מישהו",
+    "today": "היום",
+    "tomorrow": "מחר",
+    "button": "לצפייה במשימה",
+    "footer": "קיבלת את המייל כי המשימה משויכת אליך. אפשר לכבות מיילים על משימות בתפריט החשבון ב-WeNeed."
   }
 }

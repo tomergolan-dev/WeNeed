@@ -14,6 +14,7 @@ import {
   setAllDone,
   setItemDone,
   setListType,
+  remindAssignee,
   updateChore,
   updateItem,
 } from "@/app/actions";
@@ -49,6 +50,8 @@ export type Backend = {
   reorderItems: typeof reorderItems;
   addChore: typeof addChore;
   updateChore: typeof updateChore;
+  /** Emails a task's assignee a reminder; null in the demo, which sends no email. */
+  remindAssignee: typeof remindAssignee | null;
   finishRound: typeof finishRound;
   createList: typeof createList;
   renameList: typeof renameList;
@@ -97,6 +100,7 @@ const serverBackend: Backend = {
   reorderItems,
   addChore,
   updateChore,
+  remindAssignee,
   finishRound,
   createList,
   renameList,

@@ -35,7 +35,7 @@ export default async function HomePage() {
 
 async function Account() {
   const user = await getCurrentUser();
-  return <AccountMenu user={user && { name: user.name, email: user.email }} className="lg:hidden" />;
+  return <AccountMenu user={user && { name: user.name, email: user.email, taskEmails: user.taskEmails }} className="lg:hidden" />;
 }
 
 async function Home() {

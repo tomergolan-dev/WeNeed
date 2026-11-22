@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/page-header";
 import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { Link } from "@/i18n/navigation";
-import { MeProvider } from "@/components/lists/added-by";
+import { MeProvider } from "@/components/lists/me";
 import { itemsOf, ME, useDemo } from "./demo-store";
 
 /** A list in the demo: the app's own list screens, on the browser's copy. */

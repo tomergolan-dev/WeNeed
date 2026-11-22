@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { redirectTo } from "@/i18n/navigation";
 import { db } from "@/db";
 import { lists, placeMembers, places, users } from "@/db/schema";
@@ -8,7 +9,7 @@ import { canSeeListSql } from "./list-access";
 import { PERSONAL_ICON } from "./place-icons";
 import { getSessionUserId } from "./session";
 
-export type CurrentUser = { id: string; name: string; email: string | null };
+export type CurrentUser = { id: string; name: string; email: string | null; locale: string; taskEmails: boolean };
 
 export type PlaceSummary = {
   id: string;
@@ -33,7 +34,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!userId) return null;
 
   const [user] = await db
-    .select({ id: users.id, name: users.name, email: users.email })
+    .select({ id: users.id, name: users.name, email: users.email, locale: users.locale, taskEmails: users.taskEmails })
     .from(users)
     .where(eq(users.id, userId));
   return user ?? null;
@@ -43,6 +44,12 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) return redirectTo("/login");
+  // Task emails go out in the language the user last opened the app in.
+  const locale = await getLocale();
+  if (user.locale !== locale) {
+    await db.update(users).set({ locale }).where(eq(users.id, user.id));
+    user.locale = locale;
+  }
   return user;
 }
 

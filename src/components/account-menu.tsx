@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Globe, Menu } from "lucide-react";
-import { logOut } from "@/app/actions";
+import { Bell, Globe, Menu } from "lucide-react";
+import { logOut, setTaskEmails } from "@/app/actions";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ const LOCALES = ["he", "en"] as const;
 
 /**
  * The one button in the top row, the same in every place: it opens the
- * user's own settings (the language) and signing out. A place's settings
+ * user's own settings (the language, task emails) and signing out. A place's settings
  * are not here; they open from the place picker.
  */
 export function AccountMenu({
@@ -20,7 +20,7 @@ export function AccountMenu({
   className,
 }: {
   /** Null in the demo: no account, and "Sign in" instead of signing out. */
-  user: { name: string; email: string | null } | null;
+  user: { name: string; email: string | null; taskEmails: boolean } | null;
   className?: string;
 }) {
   const t = useTranslations("Account");
@@ -54,6 +54,7 @@ export function AccountMenu({
             <span className="flex-1">{t("language")}</span>
             <LanguagePicker />
           </div>
+          {user && <TaskEmailsRow initial={user.taskEmails} />}
         </div>
         {user ? (
           <form action={logOut} className="mt-5 text-center">
@@ -103,5 +104,40 @@ function LanguagePicker() {
         );
       })}
     </div>
+  );
+}
+
+/** Emails about my tasks (assigned to me, reminders), on or off. */
+function TaskEmailsRow({ initial }: { initial: boolean }) {
+  const t = useTranslations("Account");
+  const [on, setOn] = useState(initial);
+  return (
+    <label className="flex min-h-15 cursor-pointer items-center gap-3 border-t px-4 py-2.5">
+      <Bell className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="flex flex-1 flex-col">
+        <span>{t("taskEmails")}</span>
+        <span className="text-xs text-muted-foreground">{t("taskEmailsHint")}</span>
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        checked={on}
+        onChange={(e) => {
+          const next = e.target.checked;
+          setOn(next);
+          setTaskEmails(next).then((result) => !result.ok && setOn(!next));
+        }}
+        className="peer sr-only"
+      />
+      <span
+        aria-hidden
+        className={cn(
+          "relative h-7 w-12 shrink-0 rounded-full bg-[#d5dad8] transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+          on && "bg-primary",
+          "after:absolute after:start-0.5 after:top-0.5 after:size-6 after:rounded-full after:bg-white after:shadow-sm after:transition-transform",
+          on && "after:translate-x-5 rtl:after:-translate-x-5",
+        )}
+      />
+    </label>
   );
 }

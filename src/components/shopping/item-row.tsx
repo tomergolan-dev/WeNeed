@@ -16,14 +16,13 @@ import { ItemFields, toItemInput, type ItemDraft } from "./item-fields";
 
 type Props = {
   item: Item;
-  who: { initial: string; tone: string } | null;
   people: { id: string; name: string }[];
   onToggle: (id: string, done: boolean) => void;
   onUpdate: (id: string, input: ItemInput) => void;
   onDelete: (id: string) => void;
 };
 
-export function ItemRow({ item, who, people, onToggle, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, people, onToggle, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   // Items added a moment ago only exist on this screen until the server confirms.
   const draft = isDraft(item);
@@ -69,14 +68,6 @@ export function ItemRow({ item, who, people, onToggle, onUpdate, onDelete }: Pro
         {!draft && <ClipChip item={item} onEdit={() => setEditing(true)} />}
         <span className="flex-1" />
         {quantity && <span className="shrink-0 text-sm text-muted-foreground">{quantity}</span>}
-        {who && (
-          <span
-            aria-hidden
-            className={cn("flex size-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold", who.tone)}
-          >
-            {who.initial}
-          </span>
-        )}
       </div>
       {editing && (
         <EditItemSheet

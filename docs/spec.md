@@ -49,7 +49,7 @@ We Need is also a portfolio project, so it includes a public demo.
 ### Shopping lists
 
 - Items have a name, quantity, unit and store section (category), and are grouped by section in store walking order.
-- Each item shows the initial of the member who added it.
+- Who added an item is shown only in its edit sheet, not on the row (decided 2026-11-22: the initial beside each row was dropped, at Tomer's request).
 - Check-off while shopping; checked items move to an "in the cart" section, and a progress bar shows how much is in the cart.
 - Adding by hand: see "List screens". When the section is left on automatic, the item gets the section it had the last time it was bought in this place, otherwise the AI guesses it.
 - **Finish shopping:** locks the current round and moves it to the list's history, and the list starts a new round. Unbought items stay on the list by default (the user can choose to drop them).
@@ -74,8 +74,16 @@ We Need is also a portfolio project, so it includes a public demo.
 - Open chores have two sorts, switched above the list:
   - **By date** (the default): overdue, due soon, later by date, then those without a date in the order they were added.
   - **By order added.**
-- Filters: all, overdue, due soon, no date.
+- Filters: all, mine (assigned to me; only when the list has more than one person), overdue, due soon, no date. They sit in one quiet row styled like the sort switch, with a count beside overdue and due soon only when there is something to count (decided 2026-11-22, at Tomer's request).
 - Check-off marks a chore as done; done chores stay visible for a week under "done recently".
+- **Task emails** (decided 2026-11-22, at Tomer's request), only to the person a task is assigned to:
+  - **Assigned:** when someone assigns a task to someone else (by hand or through the AI chat), the assignee gets an email right away. Assigning a task to yourself sends nothing.
+  - **Send a reminder:** the task's edit sheet has "שליחת תזכורת במייל ל…" for a task assigned to someone else. One per task every 10 minutes. Not in the demo.
+  - **Automatic reminders:** an hour before a task with a time; at 8:00 and at 17:00 on the day of a task with a date only (not an hour before midnight, which is too late). Each goes out once per due time, so moving the date sends them again. None when the assignee was emailed about the task in the last hour.
+  - Nothing is sent for done tasks, to people who no longer see the list, or to people who turned "מיילים על משימות" off in the account menu (on by default).
+  - The email is in the language the assignee last opened the app in, with the task, its due time, the list, and a button to the list.
+  - Limits: at most 12 task emails a day per person, and no task emails once 90 emails (sign-in codes, invites and task emails together) went out in a day, under Resend's free 100.
+  - Schedule: a GitHub Actions workflow (`.github/workflows/task-reminders.yml`) calls `/api/cron/reminders` every 10 minutes with `CRON_SECRET`; Vercel's Hobby plan runs its own cron jobs only once a day. GitHub may run it a few minutes late, so the reminder windows are wide.
 - Later: calendar integration (see "Future").
 
 ### Checklists
@@ -202,6 +210,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `rounds`: each round of a list (status `active` / `completed`, finished at and by). At most one active round per list; items belong to a round. A chores list keeps one ongoing round. *(Stage C)*
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
   - `ai_requests`: one row per AI chat message, for the daily limits. *(Stage D)*
+  - `task_emails`: one row per task email (item, recipient, kind, due key, sent by), for sending each automatic reminder once and for the limits; `users.locale` and `users.task_emails` for the email's language and the on/off switch. *(Migration 0013)*
   - `demo_ai_requests`: one row per demo AI message (a keyed hash of the visitor's IP), for the demo's limits. *(Stage H)*
   - `items.note`, and `attachments`: item, kind (`link` / `file`), the link's address or the file's Blob pathname, name, content type and size, added by. *(Stage F)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.

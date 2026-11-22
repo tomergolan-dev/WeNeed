@@ -39,6 +39,10 @@ export const users = pgTable("users", {
   phone: text("phone").unique(),
   // Paused WhatsApp bot: a question it asked and is waiting for an answer to.
   pendingAction: jsonb("pending_action"),
+  // The language of the app when the user last opened it; task emails are sent in it.
+  locale: text("locale").notNull().default("he"),
+  // Emails about tasks assigned to the user (assignments and reminders). Turned off from the account menu.
+  taskEmails: boolean("task_emails").notNull().default(true),
   createdAt: createdAt(),
 });
 
@@ -249,6 +253,38 @@ export const demoAiRequests = pgTable(
   (t) => [
     index("demo_ai_requests_visitor_idx").on(t.visitor, t.createdAt),
     index("demo_ai_requests_created_idx").on(t.createdAt),
+  ],
+);
+
+// Why a task email was sent: assigned to someone, a reminder someone sent by
+// hand, or an automatic reminder (an hour before a timed task; the morning and
+// the evening of a task with a date only).
+export const taskEmailKind = pgEnum("task_email_kind", ["assigned", "manual", "hour_before", "morning", "evening"]);
+
+// One row per task email, written before it is sent. Automatic reminders are
+// sent once per due time (due_key), so moving a task's date sends them again.
+export const taskEmails = pgTable(
+  "task_emails",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: taskEmailKind("kind").notNull(),
+    // "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" for automatic reminders; empty otherwise.
+    dueKey: text("due_key").notNull().default(""),
+    sentBy: uuid("sent_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("task_emails_once_idx")
+      .on(t.itemId, t.userId, t.kind, t.dueKey)
+      .where(sql`${t.kind} in ('hour_before', 'morning', 'evening')`),
+    index("task_emails_item_idx").on(t.itemId, t.createdAt),
+    index("task_emails_created_idx").on(t.createdAt),
   ],
 );
 

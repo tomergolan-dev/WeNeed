@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { attachments, items, listMembers, lists, placeMembers, places, rounds } from "@/db/schema";
+import { attachments, items, listMembers, lists, placeMembers, places, rounds, users } from "@/db/schema";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, openPersonalArea, setCurrentPlace } from "@/lib/auth";
 import { deleteStoredFiles } from "@/lib/attachments";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
@@ -17,9 +17,14 @@ import { isPlaceIcon } from "@/lib/place-icons";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
+import { lastManualReminder, MANUAL_GAP_MS, notifyAssigned, sendTaskEmail } from "@/lib/task-emails";
 
 // Error codes map to messages under "Errors" in messages/he.json.
 export type ActionError =
+  | "generic"
+  | "remindTooSoon"
+  | "emailsOff"
+  | "emailLimit"
   | "unauthorized"
   | "invalid"
   | "notFound"
@@ -334,12 +339,16 @@ export async function addChore(listId: string, input: ChoreInput): Promise<Actio
   if (!(await isValidAssignee(parsed.data.assigneeId, list.id))) return fail("invalid");
 
   const round = await ensureActiveRound(list.id);
-  await db.insert(items).values({
-    ...choreFields(parsed.data),
-    roundId: round.id,
-    addedBy: user.id,
-    position: nextPosition(round.id),
-  });
+  const [added] = await db
+    .insert(items)
+    .values({
+      ...choreFields(parsed.data),
+      roundId: round.id,
+      addedBy: user.id,
+      position: nextPosition(round.id),
+    })
+    .returning({ id: items.id });
+  notifyAssigned(added.id, parsed.data.assigneeId, user.id);
   refresh();
   return ok;
 }
@@ -356,8 +365,42 @@ export async function updateChore(itemId: string, input: ChoreInput): Promise<Ac
   if (item.status !== "active") return fail("listLocked");
   if (!(await isValidAssignee(parsed.data.assigneeId, item.listId))) return fail("invalid");
 
+  const [before] = await db.select({ assigneeId: items.assigneeId }).from(items).where(eq(items.id, itemId));
   await db.update(items).set(choreFields(parsed.data)).where(eq(items.id, itemId));
+  // Only a new assignee hears about it.
+  if (before?.assigneeId !== parsed.data.assigneeId) notifyAssigned(itemId, parsed.data.assigneeId, user.id);
   refresh();
+  return ok;
+}
+
+/** "Send a reminder": emails the task's assignee now. */
+export async function remindAssignee(itemId: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const item = await findEditableItem(itemId, user.id);
+  if (!item) return fail("notFound");
+  const [task] = await db
+    .select({ assigneeId: items.assigneeId, done: items.done })
+    .from(items)
+    .where(eq(items.id, item.id));
+  if (!task?.assigneeId || task.assigneeId === user.id || task.done || item.status !== "active") return fail("invalid");
+
+  const last = await lastManualReminder(item.id);
+  if (last && Date.now() - last < MANUAL_GAP_MS) return fail("remindTooSoon");
+
+  const result = await sendTaskEmail({ itemId: item.id, userId: task.assigneeId, kind: "manual", sentBy: user.id });
+  if (result === "sent") return ok;
+  if (result === "off") return fail("emailsOff");
+  if (result === "limit") return fail("emailLimit");
+  return fail(result === "skipped" ? "invalid" : "generic");
+}
+
+/** Turns emails about my tasks (assignments and reminders) on or off. */
+export async function setTaskEmails(enabled: boolean): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  await db.update(users).set({ taskEmails: enabled === true }).where(eq(users.id, user.id));
   return ok;
 }
 

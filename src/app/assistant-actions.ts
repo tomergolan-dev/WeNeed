@@ -12,6 +12,7 @@ import { planChecklist, planChores, planShopping, type AssistantReply, type Plan
 import { israelNow } from "@/lib/due";
 import { findEditableItem, findList, getListPeople } from "@/lib/list-access";
 import { ensureActiveRound } from "@/lib/lists";
+import { notifyAssigned } from "@/lib/task-emails";
 
 // Limits on AI chat messages, so open sign-up can't run up the API bill.
 const DAILY_LIMIT_PER_USER = 100;
@@ -105,6 +106,7 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
         dueTime: item.dueTime ? `${item.dueTime}:00` : null,
         assigneeId: item.assigneeId,
       });
+      notifyAssigned(id, item.assigneeId, user.id);
       reply.added.push({
         id,
         name: item.name,

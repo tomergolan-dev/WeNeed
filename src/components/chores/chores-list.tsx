@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarCheck, CalendarDays, Check, Clock } from "lucide-react";
+import { BellRing, CalendarCheck, CalendarDays, Check, Clock } from "lucide-react";
 import type { ChoreInput } from "@/app/actions";
 import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { useAddedBy } from "@/components/lists/added-by";
+import { useMe } from "@/components/lists/me";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
@@ -21,7 +22,7 @@ import { ChoreFields, emptyChore, toChoreInput, type ChoreDraft } from "./chore-
 import { DuePill, useDueText } from "./chore-due";
 
 type Person = { id: string; name: string };
-type Filter = "all" | "overdue" | "soon" | "noDate";
+type Filter = "all" | "mine" | "overdue" | "soon" | "noDate";
 type Sort = "date" | "added";
 
 const RANK: Record<DueStatus, number> = { overdue: 0, soon: 1, later: 2, none: 3 };
@@ -99,8 +100,17 @@ export function ChoresList({
     overdue: open.filter((c) => c.status === "overdue").length,
     soon: open.filter((c) => c.status === "soon").length,
   };
+  const me = useMe();
+  // "Mine" only means something when there is someone else to assign tasks to.
+  const canFilterMine = people.length > 1 && people.some((person) => person.id === me);
   const shown = open.filter(({ chore, status }) =>
-    filter === "all" ? true : filter === "noDate" ? !chore.dueDate : status === filter,
+    filter === "all"
+      ? true
+      : filter === "mine"
+        ? chore.assigneeId === me
+        : filter === "noDate"
+          ? !chore.dueDate
+          : status === filter,
   );
 
   const rowProps = {
@@ -182,19 +192,36 @@ export function ChoresList({
         />
       </ListTop>
       <div data-list-body>
-        <div className="flex gap-1.5 overflow-x-auto px-5 pt-3 lg:px-8 [scrollbar-width:none]">
-          <Chip on={filter === "all"} onClick={() => setFilter("all")}>
-            {t("all")}
-          </Chip>
-          <Chip on={filter === "overdue"} onClick={() => setFilter("overdue")} dot="bg-[#d9452f]">
-            {t("filterOverdue", { count: counts.overdue })}
-          </Chip>
-          <Chip on={filter === "soon"} onClick={() => setFilter("soon")} dot="bg-[#e0a21b]">
-            {t("filterSoon", { count: counts.soon })}
-          </Chip>
-          <Chip on={filter === "noDate"} onClick={() => setFilter("noDate")}>
-            {t("noDate")}
-          </Chip>
+        {/* All filters in one quiet row, styled like the sort switch. */}
+        <div className="px-5 pt-3 lg:px-8">
+          <div
+            role="group"
+            aria-label={t("filters")}
+            className="flex gap-0.5 overflow-x-auto rounded-full bg-muted p-0.5 [scrollbar-width:none]"
+          >
+            <FilterButton on={filter === "all"} onClick={() => setFilter("all")}>
+              {t("all")}
+            </FilterButton>
+            {canFilterMine && (
+              <FilterButton on={filter === "mine"} onClick={() => setFilter("mine")}>
+                {t("filterMine")}
+              </FilterButton>
+            )}
+            <FilterButton
+              on={filter === "overdue"}
+              onClick={() => setFilter("overdue")}
+              dot="bg-[#d9452f]"
+              count={counts.overdue}
+            >
+              {t("overdue")}
+            </FilterButton>
+            <FilterButton on={filter === "soon"} onClick={() => setFilter("soon")} dot="bg-[#e0a21b]" count={counts.soon}>
+              {t("soon")}
+            </FilterButton>
+            <FilterButton on={filter === "noDate"} onClick={() => setFilter("noDate")}>
+              {t("noDate")}
+            </FilterButton>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
@@ -280,6 +307,7 @@ export function ChoresList({
               setEditing(null);
             }}
           />
+            <RemindButton chore={editing} people={people} />
           </div>
         )}
       </BottomSheet>
@@ -287,15 +315,18 @@ export function ChoresList({
   );
 }
 
-function Chip({
+function FilterButton({
   on,
   onClick,
   dot,
+  count,
   children,
 }: {
   on: boolean;
   onClick: () => void;
   dot?: string;
+  /** Shown only when there is something to count. */
+  count?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -304,12 +335,13 @@ function Chip({
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "flex h-8 shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 text-[13px] transition-colors",
-        on && "border-foreground bg-foreground text-background",
+        "flex h-7 flex-1 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs whitespace-nowrap text-muted-foreground transition-colors",
+        on && "bg-card font-semibold text-foreground shadow-sm",
       )}
     >
-      {dot && <span className={cn("size-2 rounded-full", dot)} aria-hidden />}
+      {dot && <span className={cn("size-1.5 rounded-full", dot)} aria-hidden />}
       {children}
+      {count ? <span className="tabular-nums">{count}</span> : null}
     </button>
   );
 }
@@ -421,5 +453,43 @@ function ChoreForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+/** "Email a reminder to Tamir", for a task assigned to someone else. Not in the demo. */
+function RemindButton({ chore, people }: { chore: Item; people: Person[] }) {
+  const t = useTranslations("Chores");
+  const tErrors = useTranslations("Errors");
+  const { remindAssignee } = useBackend();
+  const me = useMe();
+  const [state, setState] = useState<{ pending: boolean; note?: string; error?: boolean }>({ pending: false });
+  const assignee = people.find((person) => person.id === chore.assigneeId);
+  if (!remindAssignee || !assignee || assignee.id === me || chore.done || isDraft(chore)) return null;
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <button
+        type="button"
+        disabled={state.pending}
+        onClick={async () => {
+          setState({ pending: true });
+          const result = await remindAssignee(chore.id);
+          setState(
+            result.ok
+              ? { pending: false, note: t("reminded", { name: assignee.name }) }
+              : { pending: false, note: tErrors(result.error), error: true },
+          );
+        }}
+        className="flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-accent-foreground transition-colors active:bg-muted disabled:opacity-50"
+      >
+        <BellRing className="size-4" aria-hidden />
+        {t("remind", { name: assignee.name })}
+      </button>
+      {state.note && (
+        <p role="status" className={cn("text-center text-xs", state.error ? "text-destructive" : "text-muted-foreground")}>
+          {state.note}
+        </p>
+      )}
+    </div>
   );
 }

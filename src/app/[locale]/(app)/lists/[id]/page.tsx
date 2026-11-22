@@ -9,7 +9,7 @@ import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ListMenu } from "@/components/lists/list-menu";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { PageHeader } from "@/components/page-header";
-import { MeProvider } from "@/components/lists/added-by";
+import { MeProvider } from "@/components/lists/me";
 import { ItemDetailsProvider } from "@/components/lists/item-details";
 import { countAttachments } from "@/lib/attachments";
 import { requireUser } from "@/lib/auth";

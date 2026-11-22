@@ -13,7 +13,7 @@ import { ListTop } from "@/components/lists/list-top";
 import { chipClass, QuantityStepper, QuickAdd } from "@/components/lists/quick-add";
 import { draftItem, useListItems } from "@/components/lists/use-list-items";
 import { CATEGORIES, DEFAULT_CATEGORY, isCategory } from "@/lib/categories";
-import { CATEGORY_ICONS, TONES } from "@/lib/category-icons";
+import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { combineQuantities, findOpenItem, formatQuantity, groupByCategory } from "@/lib/items";
 import { cn } from "@/lib/utils";
 import { toItemInput, type ItemDraft } from "./item-fields";
@@ -87,11 +87,6 @@ export function ShoppingList({
     onDelete: (id: string) => run({ type: "delete", id }, () => deleteItem(id)),
   };
 
-  // Each person keeps one tone for their initial.
-  const who = (id: string | null) => {
-    const index = people.findIndex((person) => person.id === id);
-    return index === -1 ? null : { initial: people[index].name.slice(0, 1), tone: TONES[index % TONES.length] };
-  };
 
   const open = optimisticItems.filter((item) => !item.done);
   const bought = optimisticItems.filter((item) => item.done);
@@ -162,7 +157,7 @@ export function ShoppingList({
           return (
             <Section key={category} title={tCategories(category)} icon={<Icon className="size-3.5" />} tone={tone}>
               {items.map((item) => (
-                <ItemRow key={item.id} item={item} who={who(item.addedBy)} people={people} {...handlers} />
+                <ItemRow key={item.id} item={item} people={people} {...handlers} />
               ))}
             </Section>
           );
@@ -175,7 +170,7 @@ export function ShoppingList({
             tone="bg-[#e4f3ec] text-[#11684b]"
           >
             {bought.map((item) => (
-              <ItemRow key={item.id} item={item} who={null} people={people} {...handlers} />
+              <ItemRow key={item.id} item={item} people={people} {...handlers} />
             ))}
           </Section>
         )}

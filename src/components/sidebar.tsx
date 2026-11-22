@@ -44,7 +44,7 @@ export function Sidebar({
   /** False in the demo, which has one place. */
   switchable?: boolean;
   /** For the account menu; null in the demo. */
-  user?: { name: string; email: string | null } | null;
+  user?: { name: string; email: string | null; taskEmails: boolean } | null;
   footer?: React.ReactNode;
 }) {
   const t = useTranslations("Home");

@@ -274,6 +274,7 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
   return {
     base: "/demo",
     history: false,
+    remindAssignee: null,
 
     async addItem(listId, input) {
       const list = listOf(listId);
