@@ -27,7 +27,7 @@
     "calendarApple": "iPhone calendar",
     "calendarCopy": "Copy link",
     "calendarCopied": "Copied",
-    "calendarPrivate": "Changes to tasks reach the calendar on their own, sometimes a few hours later. The link is personal; don't share it. If you did by mistake:",
+    "calendarPrivate": "Changes to tasks reach the calendar on their own; sometimes they may take a little while to show up. The link is personal; don't share it. If you did by mistake:",
     "calendarNew": "New link",
     "calendarStep": "Pick the calendar you use, and confirm adding it on the screen that opens. You only do this once."
   },
