@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, Globe, Menu } from "lucide-react";
-import { logOut, setTaskEmails } from "@/app/actions";
+import { Bell, CalendarDays, Check, Copy, Globe, Menu } from "lucide-react";
+import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/app/actions";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ const LOCALES = ["he", "en"] as const;
 
 /**
  * The one button in the top row, the same in every place: it opens the
- * user's own settings (the language, task emails) and signing out. A place's settings
+ * user's own settings (the language, task emails, the calendar link) and signing out. A place's settings
  * are not here; they open from the place picker.
  */
 export function AccountMenu({
@@ -55,6 +55,7 @@ export function AccountMenu({
             <LanguagePicker />
           </div>
           {user && <TaskEmailsRow initial={user.taskEmails} />}
+          {user && <CalendarRow />}
         </div>
         {user ? (
           <form action={logOut} className="mt-5 text-center">
@@ -64,7 +65,10 @@ export function AccountMenu({
           </form>
         ) : (
           <div className="mt-5 text-center">
-            <Link href="/login" className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground">
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
+            >
               {t("signIn")}
             </Link>
           </div>
@@ -103,6 +107,104 @@ function LanguagePicker() {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * "Tasks in my calendar": opens to buttons that add the user's private feed
+ * to Google Calendar or the iPhone calendar, copy the link, or replace it.
+ */
+function CalendarRow() {
+  const t = useTranslations("Account");
+  const tErrors = useTranslations("Errors");
+  const [links, setLinks] = useState<Extract<CalendarLinks, { ok: true }> | null>(null);
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const load = (fresh = false) =>
+    startTransition(async () => {
+      setError(null);
+      try {
+        const result = await getCalendarLinks(fresh);
+        if (result.ok) setLinks(result);
+        else setError(tErrors(result.error));
+      } catch {
+        setError(tErrors("generic"));
+      }
+    });
+
+  const button =
+    "flex h-10 items-center justify-center gap-1.5 rounded-xl border bg-card px-3 text-sm font-semibold transition-colors active:bg-muted";
+
+  return (
+    <div className="border-t px-4 py-2.5">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((o) => !o);
+          if (!links) load();
+        }}
+        className="flex min-h-10 w-full items-center gap-3 text-start"
+      >
+        <CalendarDays className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="flex flex-1 flex-col">
+          <span>{t("calendar")}</span>
+          <span className="text-xs text-muted-foreground">{t("calendarHint")}</span>
+        </span>
+      </button>
+      {open && (
+        <div className="mt-2.5 flex flex-col gap-2 pb-1">
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={links?.google}
+              target="_blank"
+              rel="noreferrer"
+              aria-disabled={!links}
+              className={cn(button, !links && "pointer-events-none opacity-50")}
+            >
+              {t("calendarGoogle")}
+            </a>
+            <a
+              href={links?.webcal}
+              aria-disabled={!links}
+              className={cn(button, !links && "pointer-events-none opacity-50")}
+            >
+              {t("calendarApple")}
+            </a>
+          </div>
+          <button
+            type="button"
+            disabled={!links}
+            onClick={() =>
+              links &&
+              navigator.clipboard.writeText(links.https).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              })
+            }
+            className={cn(button, "disabled:opacity-50")}
+          >
+            {copied ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+            {copied ? t("calendarCopied") : t("calendarCopy")}
+          </button>
+          <p className="text-xs leading-5 text-muted-foreground">
+            {t("calendarPrivate")}{" "}
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => load(true)}
+              className="font-semibold text-accent-foreground underline-offset-2 active:underline"
+            >
+              {t("calendarNew")}
+            </button>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

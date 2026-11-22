@@ -20,7 +20,15 @@
     "logOut": "התנתקות",
     "signIn": "כניסה",
     "taskEmails": "מיילים על משימות",
-    "taskEmailsHint": "כשמשייכים לך משימה, ותזכורת לפני שהיא מגיעה"
+    "taskEmailsHint": "כשמשייכים לך משימה, ותזכורת לפני שהיא מגיעה",
+    "calendar": "משימות ביומן",
+    "calendarHint": "המשימות שלך עם תאריך, ביומן של הטלפון",
+    "calendarGoogle": "Google Calendar",
+    "calendarApple": "יומן האייפון",
+    "calendarCopy": "העתקת הקישור",
+    "calendarCopied": "הועתק",
+    "calendarPrivate": "הקישור פרטי: מי שמחזיק בו רואה את המשימות. היומן מתעדכן לבד, לפעמים באיחור של כמה שעות.",
+    "calendarNew": "קישור חדש"
   },
   "Home": {
     "title": "מה צריך היום?",

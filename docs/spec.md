@@ -88,7 +88,10 @@ We Need is also a portfolio project, so it includes a public demo.
   - The email is in the language the assignee last opened the app in, with the task, its due time, the list, and a button to the list.
   - Limits: at most 12 task emails a day per person, and no task emails once 90 emails (sign-in codes, invites and task emails together) went out in a day, under Resend's free 100.
   - Schedule: a GitHub Actions workflow (`.github/workflows/task-reminders.yml`) calls `/api/cron/reminders` every 10 minutes with `CRON_SECRET`; Vercel's Hobby plan runs its own cron jobs only once a day. GitHub may run it a few minutes late, so the reminder windows are wide.
-- Later: calendar integration (see "Future").
+- **Tasks in the calendar** (decided 2026-11-22): "משימות ביומן" in the account menu gives each user a private calendar link (`/api/calendar/<token>.ics`) to add once to Google Calendar or the iPhone calendar; after that the calendar updates on its own (Google every few hours, the iPhone as set on the phone).
+  - It holds open tasks with a date, assigned to the user or to no one, in lists the user can see; tasks assigned to others, done tasks and tasks without a date stay out. Tasks overdue by more than 60 days are left out too.
+  - A task with a time is a half-hour event at that time; a task with only a date is an all-day event. Each event links back to its list.
+  - The link is the only key (calendar apps fetch it without signing in), so "קישור חדש" replaces it and the old one stops working.
 
 ### Checklists
 
@@ -269,7 +272,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 ## Future
 
-- Calendar integration for chores.
+- Two-way calendar sync (changing a task from the calendar). Needs Google's calendar permission, which requires app verification.
 - Sign in with Facebook. Possible through the existing Meta app, but it needs a published privacy policy and a data deletion URL, and some Facebook accounts have no email address, so it waits for the launch stage.
 - The WhatsApp bot as an extra way to add items.
 

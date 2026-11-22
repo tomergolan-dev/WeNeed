@@ -20,7 +20,15 @@
     "logOut": "Sign out",
     "signIn": "Sign in",
     "taskEmails": "Task emails",
-    "taskEmailsHint": "When a task is assigned to you, and a reminder before it's due"
+    "taskEmailsHint": "When a task is assigned to you, and a reminder before it's due",
+    "calendar": "Tasks in my calendar",
+    "calendarHint": "Your tasks with a date, in your phone's calendar",
+    "calendarGoogle": "Google Calendar",
+    "calendarApple": "iPhone calendar",
+    "calendarCopy": "Copy link",
+    "calendarCopied": "Copied",
+    "calendarPrivate": "The link is private: anyone who has it sees the tasks. The calendar updates on its own, sometimes a few hours late.",
+    "calendarNew": "New link"
   },
   "Home": {
     "title": "What do we need today?",

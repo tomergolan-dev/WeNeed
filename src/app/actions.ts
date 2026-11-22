@@ -6,6 +6,7 @@ import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { attachments, items, listMembers, lists, placeMembers, places, rounds, users } from "@/db/schema";
+import { calendarToken, calendarUrls } from "@/lib/calendar";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, openPersonalArea, setCurrentPlace } from "@/lib/auth";
 import { deleteStoredFiles } from "@/lib/attachments";
 import { CATEGORIES, DEFAULT_CATEGORY } from "@/lib/categories";
@@ -421,6 +422,15 @@ export async function remindAssignee(itemId: string): Promise<ActionResult> {
 }
 
 /** Turns emails about my tasks (assignments and reminders) on or off. */
+export type CalendarLinks = { ok: true; https: string; webcal: string; google: string } | { ok: false; error: ActionError };
+
+/** The links to the user's calendar feed; `fresh` makes a new link and stops the old one. */
+export async function getCalendarLinks(fresh = false): Promise<CalendarLinks> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "unauthorized" };
+  return { ok: true, ...calendarUrls(await calendarToken(user.id, fresh === true)) };
+}
+
 export async function setTaskEmails(enabled: boolean): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return fail("unauthorized");

@@ -43,6 +43,8 @@ export const users = pgTable("users", {
   locale: text("locale").notNull().default("he"),
   // Emails about tasks assigned to the user (assignments and reminders). Turned off from the account menu.
   taskEmails: boolean("task_emails").notNull().default(true),
+  // The secret in the user's calendar feed link (/api/calendar/<token>.ics). Made on first use; a new one cuts off the old link.
+  calendarToken: text("calendar_token").unique(),
   createdAt: createdAt(),
 });
 
