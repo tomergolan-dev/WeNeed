@@ -7,6 +7,7 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
+import { useAddedBy } from "@/components/lists/added-by";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListProgress } from "@/components/lists/list-progress";
 import { ListScreen } from "@/components/lists/list-screen";
@@ -19,12 +20,23 @@ import { cn } from "@/lib/utils";
 import { SortableItems } from "./sortable-items";
 
 /** A permanent list: items are checked, and all unchecked again for next time. */
-export function Checklist({ listId, header, items }: { listId: string; header: React.ReactNode; items: Item[] }) {
+export function Checklist({
+  listId,
+  header,
+  items,
+  people,
+}: {
+  listId: string;
+  header: React.ReactNode;
+  items: Item[];
+  people: { id: string; name: string }[];
+}) {
   const t = useTranslations("Checklist");
   const { addItem, deleteItem, reorderItems, setAllDone, setItemDone, updateItem } = useBackend();
   const tItem = useTranslations("ItemForm");
   const { items: optimistic, run, error } = useListItems(items);
   const [editing, setEditing] = useState<Item | null>(null);
+  const addedBy = useAddedBy(editing, people);
   const [reordering, setReordering] = useState(false);
   const [name, setName] = useState("");
 
@@ -147,7 +159,7 @@ export function Checklist({ listId, header, items }: { listId: string; header: R
 
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
 
-      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={tItem("editTitle")}>
+      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={tItem("editTitle")} subtitle={addedBy}>
         {editing && (
           <div className="flex flex-col gap-4">
             <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />

@@ -22,6 +22,11 @@ export function toChoreInput(draft: ChoreDraft): ChoreInput | null {
   };
 }
 
+// iOS draws date and time fields natively, wider than their column and with the
+// value centered; this keeps them inside their half and aligned like other fields.
+const dateTimeClass =
+  "h-11 appearance-none bg-card px-3 text-start text-base [&::-webkit-date-and-time-value]:text-start [&::-webkit-date-and-time-value]:min-h-[1.5em]";
+
 export function ChoreFields({
   draft,
   onChange,
@@ -48,17 +53,17 @@ export function ChoreFields({
           className="h-11 bg-card text-base"
         />
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-1.5">
         <Label htmlFor={`${id}-date`}>{t("date")}</Label>
         <Input
           id={`${id}-date`}
           type="date"
           value={draft.dueDate}
           onChange={(e) => set({ dueDate: e.target.value, dueTime: e.target.value ? draft.dueTime : "" })}
-          className="h-11 bg-card text-base"
+          className={dateTimeClass}
         />
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-col gap-1.5">
         <Label htmlFor={`${id}-time`}>{t("time")}</Label>
         <Input
           id={`${id}-time`}
@@ -66,7 +71,7 @@ export function ChoreFields({
           value={draft.dueTime}
           disabled={!draft.dueDate}
           onChange={(e) => set({ dueTime: e.target.value })}
-          className="h-11 bg-card text-base"
+          className={dateTimeClass}
         />
       </div>
       <div className="col-span-2 flex flex-col gap-1.5">

@@ -41,6 +41,7 @@ We Need is also a portfolio project, so it includes a public demo.
 | ✅ Chores | Things to do, optionally by a date and time | Ongoing; done chores fade out |
 | 📋 Checklist | A reusable list, e.g. "Weekend up north" | Permanent; items are checked and unchecked again and again |
 
+- Tapping an item opens its edit sheet. Under the sheet's title, a small line says who added the item and when ("נוסף ע״י תומר · 22 בנוב׳, 13:06", or "נוסף על ידך" for one's own), in every kind of list (decided 2026-11-22, at Tomer's request).
 - Lists can be renamed and deleted by members (deleting removes the list's history too, after a confirmation).
 - The home screen shows the place's lists as cards (item counts, progress, and for chores the overdue and due-soon counts), and a "New list" button.
 - **Choosing the kind:** a new list gets a name and a kind, shown as three cards, each with a line on what it is for. The kind is guessed from the name ("קניות סופר" → shopping, "מטלות הבית" → chores, "ציוד לטיול" → checklist; shopping when nothing hints) until the user picks one. The kind can be changed later from the list's menu. Decided 2026-11-17: an explicit kind keeps each list's actions clear (finish, due dates, check all), and the guess keeps it effortless. The AI chat may later guess less obvious names.
@@ -65,7 +66,7 @@ We Need is also a portfolio project, so it includes a public demo.
 
 - Shown in the app as **"משימות"** (tasks), the more general word; "מטלות הבית" is just an example (decided 2026-11-17).
 - A place can have several chores lists.
-- A chore has a title, an optional **due date** and **due time** (Israel time), and an optional assignee.
+- A chore has a title, an optional **due date** and **due time** (Israel time), and an optional assignee. In the edit sheet, date and time sit side by side, each inside its own half (iOS draws these fields wider than their column unless told not to).
 - Status signs, like traffic signs:
   - **Due soon** (within 24 hours): a yellow mark and a pill ("בעוד 3 שעות", "היום").
   - **Overdue:** a red mark and a pill ("באיחור של יום").

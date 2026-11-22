@@ -162,7 +162,7 @@ export function ShoppingList({
           return (
             <Section key={category} title={tCategories(category)} icon={<Icon className="size-3.5" />} tone={tone}>
               {items.map((item) => (
-                <ItemRow key={item.id} item={item} who={who(item.addedBy)} {...handlers} />
+                <ItemRow key={item.id} item={item} who={who(item.addedBy)} people={people} {...handlers} />
               ))}
             </Section>
           );
@@ -175,7 +175,7 @@ export function ShoppingList({
             tone="bg-[#e4f3ec] text-[#11684b]"
           >
             {bought.map((item) => (
-              <ItemRow key={item.id} item={item} who={null} {...handlers} />
+              <ItemRow key={item.id} item={item} who={null} people={people} {...handlers} />
             ))}
           </Section>
         )}

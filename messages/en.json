@@ -97,6 +97,9 @@
   "Chores": {
     "empty": "No tasks. What needs doing?",
     "editTitle": "Edit task",
+    "addedBy": "Added by {name} · {date}",
+    "addedByMe": "Added by you · {date}",
+    "addedAt": "Added {date}",
     "save": "Save",
     "delete": "Delete",
     "titleLabel": "Task",
@@ -149,6 +152,9 @@
     "unitPlaceholder": "E.g. carton, kg",
     "category": "Section",
     "editTitle": "Edit item",
+    "addedBy": "Added by {name} · {date}",
+    "addedByMe": "Added by you · {date}",
+    "addedAt": "Added {date}",
     "save": "Save",
     "delete": "Delete",
     "units": "pcs"

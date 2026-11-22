@@ -9,6 +9,7 @@ import { FinishListButton } from "@/components/shopping/finish-list-button";
 import { ListMenu } from "@/components/lists/list-menu";
 import { ShoppingList } from "@/components/shopping/shopping-list";
 import { PageHeader } from "@/components/page-header";
+import { MeProvider } from "@/components/lists/added-by";
 import { ItemDetailsProvider } from "@/components/lists/item-details";
 import { countAttachments } from "@/lib/attachments";
 import { requireUser } from "@/lib/auth";
@@ -55,10 +56,7 @@ async function List({ params }: Pick<PageProps<"/[locale]/lists/[id]">, "params"
   const open = items.filter((item) => !item.done).length;
   // Isolated so a Hebrew place name keeps its place in an English line, and back.
   const whereText = `\u2068${where}\u2069`;
-  const subtitle =
-    list.type === "tasks"
-      ? `${whereText} · ${t("tasks.open", { count: open })}`
-        : where;
+  const subtitle = list.type === "tasks" ? `${whereText} · ${t("tasks.open", { count: open })}` : where;
 
   const header = (
     <PageHeader title={list.name} subtitle={subtitle}>
@@ -68,12 +66,14 @@ async function List({ params }: Pick<PageProps<"/[locale]/lists/[id]">, "params"
   );
 
   return (
-    <ItemDetailsProvider counts={counts}>
-      <AutoRefresh />
-      {list.type === "shopping" && <ShoppingList listId={list.id} header={header} items={items} people={people} />}
-      {list.type === "tasks" && <ChoresList listId={list.id} header={header} items={items} people={people} />}
-      {list.type === "checklist" && <Checklist listId={list.id} header={header} items={items} />}
-    </ItemDetailsProvider>
+    <MeProvider value={user.id}>
+      <ItemDetailsProvider counts={counts}>
+        <AutoRefresh />
+        {list.type === "shopping" && <ShoppingList listId={list.id} header={header} items={items} people={people} />}
+        {list.type === "tasks" && <ChoresList listId={list.id} header={header} items={items} people={people} />}
+        {list.type === "checklist" && <Checklist listId={list.id} header={header} items={items} people={people} />}
+      </ItemDetailsProvider>
+    </MeProvider>
   );
 }
 

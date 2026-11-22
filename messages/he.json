@@ -97,6 +97,9 @@
   "Chores": {
     "empty": "אין משימות. מה צריך לעשות?",
     "editTitle": "עריכת משימה",
+    "addedBy": "נוספה ע״י {name} · {date}",
+    "addedByMe": "נוספה על ידך · {date}",
+    "addedAt": "נוספה ב-{date}",
     "save": "שמירה",
     "delete": "מחיקה",
     "titleLabel": "משימה",
@@ -149,6 +152,9 @@
     "unitPlaceholder": "למשל: קרטון, ק״ג",
     "category": "מחלקה",
     "editTitle": "עריכת פריט",
+    "addedBy": "נוסף ע״י {name} · {date}",
+    "addedByMe": "נוסף על ידך · {date}",
+    "addedAt": "נוסף ב-{date}",
     "save": "שמירה",
     "delete": "מחיקה",
     "units": "יח׳"

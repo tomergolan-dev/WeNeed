@@ -8,6 +8,7 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
+import { useAddedBy } from "@/components/lists/added-by";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
@@ -67,6 +68,7 @@ export function ChoresList({
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("date");
   const [editing, setEditing] = useState<Item | null>(null);
+  const addedBy = useAddedBy(editing, people, true);
   const [draft, setDraft] = useState<ChoreDraft>(emptyChore);
   const setField = (patch: Partial<ChoreDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const now = useNow();
@@ -254,7 +256,7 @@ export function ChoresList({
 
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
 
-      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={t("editTitle")}>
+      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={t("editTitle")} subtitle={addedBy}>
         {editing && (
           <div className="flex flex-col gap-4">
             <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />

@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import type { ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { useAddedBy } from "@/components/lists/added-by";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { isDraft } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,13 @@ import { ItemFields, toItemInput, type ItemDraft } from "./item-fields";
 type Props = {
   item: Item;
   who: { initial: string; tone: string } | null;
+  people: { id: string; name: string }[];
   onToggle: (id: string, done: boolean) => void;
   onUpdate: (id: string, input: ItemInput) => void;
   onDelete: (id: string) => void;
 };
 
-export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, who, people, onToggle, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   // Items added a moment ago only exist on this screen until the server confirms.
   const draft = isDraft(item);
@@ -79,6 +81,7 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
       {editing && (
         <EditItemSheet
           item={item}
+          people={people}
           onClose={() => setEditing(false)}
           onReopen={() => setEditing(true)}
           onSave={(input) => onUpdate(item.id, input)}
@@ -91,12 +94,14 @@ export function ItemRow({ item, who, onToggle, onUpdate, onDelete }: Props) {
 
 function EditItemSheet({
   item,
+  people,
   onClose,
   onReopen,
   onSave,
   onDelete,
 }: {
   item: Item;
+  people: { id: string; name: string }[];
   onClose: () => void;
   onReopen: () => void;
   onSave: (input: ItemInput) => void;
@@ -110,9 +115,10 @@ function EditItemSheet({
     category: item.category,
   });
   const input = toItemInput(draft);
+  const addedBy = useAddedBy(item, people);
 
   return (
-    <BottomSheet open onOpenChange={(open) => !open && onClose()} title={t("editTitle")}>
+    <BottomSheet open onOpenChange={(open) => !open && onClose()} title={t("editTitle")} subtitle={addedBy}>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
