@@ -8,7 +8,16 @@ import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { useAddedBy } from "@/components/lists/added-by";
-import { SelectCircle, SelectionProvider, ToolButton, useSelection } from "@/components/lists/bulk-delete";
+import {
+  longPressRow,
+  SelectBar,
+  SelectCircle,
+  SelectionProvider,
+  ToolButton,
+  useLongPressPick,
+  useSelection,
+  type Selection,
+} from "@/components/lists/bulk-delete";
 import { AssistantBar } from "@/components/lists/assistant-bar";
 import { ListProgress } from "@/components/lists/list-progress";
 import { ListScreen } from "@/components/lists/list-screen";
@@ -51,9 +60,7 @@ export function Checklist({
   const { selecting } = selection;
 
   return (
-    <SelectionProvider
-      value={{ selection, onDelete: (ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids)) }}
-    >
+    <SelectionProvider value={{ selection }}>
       <ListScreen>
         <ListTop header={header}>
           <QuickAdd
@@ -72,10 +79,14 @@ export function Checklist({
         <div data-list-body className="flex flex-col gap-3.5 px-5 pt-3.5 pb-40 lg:px-8">
           {total > 0 && (
             <div className="flex flex-col gap-2.5">
-              {/* The progress on its own full-width row, like a shopping list; the tools under it (hidden while picking). */}
-              <div className="flex min-h-6 items-center ps-1">
+              {/* The progress with "בחירה" beside it; under it the tools, or the picking row while picking. */}
+              <div className="flex min-h-8 items-center gap-3 ps-1">
                 <ListProgress done={done} total={total} label={t("progress", { done, total })} bar="bg-[#c9962a]" />
               </div>
+              <SelectBar
+                selection={selection}
+                onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
+              />
               {!selecting && (
                 <div
                   role="group"
@@ -121,10 +132,7 @@ export function Checklist({
               ) : (
                 <ul className="rounded-[18px] border bg-card shadow-soft">
                   {sorted.map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0"
-                    >
+                    <PickableRow key={item.id} item={item} selection={selection}>
                       {selecting ? (
                         <SelectCircle item={item} selection={selection} />
                       ) : (
@@ -169,7 +177,7 @@ export function Checklist({
                         </button>
                         {!isDraft(item) && !selecting && <ClipChip item={item} onEdit={() => setEditing(item)} />}
                       </div>
-                    </li>
+                    </PickableRow>
                   ))}
                 </ul>
               )}
@@ -208,6 +216,22 @@ export function Checklist({
         </BottomSheet>
       </ListScreen>
     </SelectionProvider>
+  );
+}
+
+/** A checklist row: a long press on it starts picking. */
+function PickableRow({ item, selection, children }: { item: Item; selection: Selection; children: React.ReactNode }) {
+  const longPress = useLongPressPick(selection, item.id, isDraft(item));
+  return (
+    <li
+      {...longPress}
+      className={cn(
+        "flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0",
+        longPressRow,
+      )}
+    >
+      {children}
+    </li>
   );
 }
 

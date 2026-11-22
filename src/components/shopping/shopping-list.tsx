@@ -7,7 +7,7 @@ import type { ItemInput } from "@/app/actions";
 import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { AssistantBar } from "@/components/lists/assistant-bar";
-import { SelectionProvider, useSelection } from "@/components/lists/bulk-delete";
+import { SelectBar, SelectionProvider, useSelection } from "@/components/lists/bulk-delete";
 import { ListProgress } from "@/components/lists/list-progress";
 import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
@@ -92,9 +92,7 @@ export function ShoppingList({
   const total = optimisticItems.length;
 
   return (
-    <SelectionProvider
-      value={{ selection, onDelete: (ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids)) }}
-    >
+    <SelectionProvider value={{ selection }}>
       <ListScreen>
         <ListTop header={header}>
           <QuickAdd
@@ -137,12 +135,18 @@ export function ShoppingList({
         </ListTop>
         <div data-list-body className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
           {total > 0 && (
-            <div className="flex min-h-9 items-center ps-1">
-              <ListProgress
-                done={bought.length}
-                total={total}
-                label={t("progress", { done: bought.length, total })}
-                bar="bg-primary"
+            <div className="flex flex-col gap-2.5">
+              <div className="flex min-h-9 items-center gap-3 ps-1">
+                <ListProgress
+                  done={bought.length}
+                  total={total}
+                  label={t("progress", { done: bought.length, total })}
+                  bar="bg-primary"
+                />
+              </div>
+              <SelectBar
+                selection={selection}
+                onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
               />
             </div>
           )}

@@ -127,7 +127,7 @@
     "aiPlaceholder": "What needs doing? E.g. fix the tap",
     "otherDate": "Date",
     "soon": "Soon",
-    "filterMine": "Mine",
+    "filterMine": "For me",
     "filters": "Filter",
     "remind": "Email a reminder to {name}",
     "reminded": "Reminder sent to {name}"
@@ -625,13 +625,13 @@
     "footer": "You got this email because the task is assigned to you. You can turn task emails off in the account menu in WeNeed."
   },
   "BulkDelete": {
+    "menu": "Select items",
     "selectAll": "Select all",
     "cancel": "Cancel",
     "delete": "Delete ({count})",
     "title": "{count, plural, one {Delete one item?} other {Delete # items?}}",
     "description": "This can't be undone. Their notes and attachments are deleted too.",
     "confirm": "Yes, delete",
-    "menu": "Select items to delete",
     "chosen": "{count, plural, =0 {Select items} one {1 selected} other {# selected}}",
     "clearAll": "Clear"
   }

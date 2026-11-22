@@ -7,7 +7,7 @@ import type { ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { useAddedBy } from "@/components/lists/added-by";
-import { SelectCircle, type Selection } from "@/components/lists/bulk-delete";
+import { longPressRow, SelectCircle, type Selection, useLongPressPick } from "@/components/lists/bulk-delete";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { isDraft } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
@@ -33,9 +33,16 @@ export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete 
   const quantity = formatQuantity(item, tItem("units"));
   const { selecting } = selection;
   const open = () => (selecting ? selection.toggle(item.id) : setEditing(true));
+  const longPress = useLongPressPick(selection, item.id, draft);
 
   return (
-    <li className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0">
+    <li
+      {...longPress}
+      className={cn(
+        "flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0",
+        longPressRow,
+      )}
+    >
       {selecting ? (
         <SelectCircle item={item} selection={selection} />
       ) : (

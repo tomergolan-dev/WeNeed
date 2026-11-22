@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Trash2 } from "lucide-react";
 import type { Item } from "@/db/schema";
@@ -18,11 +18,11 @@ import {
 import { cn } from "@/lib/utils";
 import { isDraft } from "./use-list-items";
 
-// Deleting several items at once, the same in every kind of list: "בחירת
-// פריטים למחיקה" in the list's menu switches it to picking. The top bar then
-// says how many are picked, with "בחר הכל"; each row gets a circle that turns
-// red when picked; and the bottom bar, in place of the AI chat, has "ביטול"
-// and "מחיקה (N)", which asks for a confirmation.
+// Deleting several items at once, the same in every kind of list: a long
+// press on an item (or "בחירת פריטים" in the list's menu) switches it to
+// picking. Each row then gets a circle that turns red when picked, and a row
+// under the progress (or "לטיפול") has "בחר הכל", "ביטול" and "מחיקה (N)",
+// which asks for a confirmation. The rest of the screen stays as it is.
 
 /** Which items are picked; null when the list is not in picking mode. */
 export function useSelection(items: Item[]) {
@@ -37,6 +37,8 @@ export function useSelection(items: Item[]) {
     ids: () => [...(selected ?? [])],
     has: (id: string) => selected?.has(id) ?? false,
     start: () => setSelected(new Set()),
+    /** Starts picking with this item already picked (a long press on it). */
+    startWith: (id: string) => setSelected(new Set([id])),
     stop: () => setSelected(null),
     toggle: (id: string) =>
       setSelected((current) => {
@@ -72,74 +74,106 @@ export function ToolButton({ pressed, ...props }: React.ComponentProps<"button">
   );
 }
 
-const SelectionContext = createContext<{ selection: Selection; onDelete: (ids: string[]) => void } | null>(null);
+const SelectionContext = createContext<{ selection: Selection } | null>(null);
 
-/**
- * Wraps a list screen, so the list's menu can start picking, and its top and
- * bottom bars turn into the picking bars while it is on.
- */
+/** Wraps a list screen, so "בחירת פריטים" in the list's menu can start picking. */
 export const SelectionProvider = SelectionContext.Provider;
 
 export function useListSelection() {
   return useContext(SelectionContext);
 }
 
-/** The top bar while picking, in place of the title and quick add: "2 נבחרו" and "בחר הכל". */
-export function SelectTopBar({ selection }: { selection: Selection }) {
-  const t = useTranslations("BulkDelete");
-  return (
-    <div className="flex min-h-[60px] items-center gap-3 px-5 pt-4 pb-1 lg:px-8 lg:pt-6">
-      <h1 aria-live="polite" className="min-w-0 flex-1 truncate text-xl font-extrabold">
-        {t("chosen", { count: selection.count })}
-      </h1>
-      <ToolButton onClick={selection.toggleAll}>{selection.all ? t("clearAll") : t("selectAll")}</ToolButton>
-    </div>
-  );
+const LONG_PRESS_MS = 450;
+const MOVE_SLOP = 10;
+
+/**
+ * Props for a row: a long press on it starts picking with it picked. A press
+ * that moves (a scroll) doesn't count, and the tap that ends a long press
+ * doesn't also open or check the item. Off while picking (a tap picks then).
+ */
+export function useLongPressPick(selection: Selection, id: string, disabled = false) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const fired = useRef(false);
+  const cancel = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+  };
+  const off = disabled || selection.selecting;
+  return {
+    onPointerDown: (e: React.PointerEvent) => {
+      fired.current = false;
+      if (off || (e.pointerType === "mouse" && e.button !== 0)) return;
+      start.current = { x: e.clientX, y: e.clientY };
+      cancel();
+      timer.current = setTimeout(() => {
+        fired.current = true;
+        navigator.vibrate?.(15);
+        selection.startWith(id);
+      }, LONG_PRESS_MS);
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      if (!timer.current || !start.current) return;
+      if (Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > MOVE_SLOP) cancel();
+    },
+    onPointerUp: cancel,
+    onPointerCancel: cancel,
+    onPointerLeave: cancel,
+    onContextMenu: (e: React.MouseEvent) => {
+      if (!off) e.preventDefault();
+    },
+    onClickCapture: (e: React.MouseEvent) => {
+      if (fired.current) {
+        fired.current = false;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+  };
 }
 
-/** The bottom bar while picking, in place of the AI chat: "ביטול" and "מחיקה (N)" with a confirmation. */
-export function SelectActionBar({ selection, onDelete }: { selection: Selection; onDelete: (ids: string[]) => void }) {
+/** Classes for a row with a long press: no text selection or iOS callout. */
+export const longPressRow = "select-none [-webkit-touch-callout:none]";
+
+/**
+ * The picking row, under the progress (or "לטיפול") while picking: "בחר הכל",
+ * "ביטול" and "מחיקה (N)", which asks for a confirmation. The rest of the
+ * screen stays as it is.
+ */
+export function SelectBar({ selection, onDelete }: { selection: Selection; onDelete: (ids: string[]) => void }) {
   const t = useTranslations("BulkDelete");
+  if (!selection.selecting) return null;
   return (
-    <div data-chat className="pointer-events-none fixed inset-x-0 bottom-0 z-30 lg:ps-72">
-      <div className="pointer-events-auto mx-auto max-w-xl bg-gradient-to-t from-background from-60% to-transparent px-4 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))] lg:max-w-3xl lg:px-7 xl:max-w-4xl">
-        <div className="flex gap-2 rounded-[22px] border bg-card p-2 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)]">
-          <button
-            type="button"
-            onClick={selection.stop}
-            className="h-11 flex-1 rounded-full border text-[15px] font-semibold transition-colors active:bg-muted"
-          >
-            {t("cancel")}
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger
-              disabled={selection.count === 0}
-              className="flex h-11 flex-[1.4] items-center justify-center gap-1.5 rounded-full bg-destructive text-[15px] font-semibold text-white transition-opacity disabled:opacity-40"
+    <div role="group" aria-label={t("chosen", { count: selection.count })} className="flex items-center gap-1.5">
+      <ToolButton onClick={selection.toggleAll}>{selection.all ? t("clearAll") : t("selectAll")}</ToolButton>
+      <ToolButton onClick={selection.stop}>{t("cancel")}</ToolButton>
+      <AlertDialog>
+        <AlertDialogTrigger
+          disabled={selection.count === 0}
+          className="ms-auto flex h-8 shrink-0 items-center gap-1 rounded-full bg-destructive px-3 text-xs font-semibold text-white transition-opacity disabled:opacity-40"
+        >
+          <Trash2 className="size-3.5" aria-hidden />
+          {t("delete", { count: selection.count })}
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("title", { count: selection.count })}</AlertDialogTitle>
+            <AlertDialogDescription>{t("description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete(selection.ids());
+                selection.stop();
+              }}
+              className="bg-destructive text-white hover:bg-destructive/90"
             >
-              <Trash2 className="size-4" aria-hidden />
-              {t("delete", { count: selection.count })}
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t("title", { count: selection.count })}</AlertDialogTitle>
-                <AlertDialogDescription>{t("description")}</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    onDelete(selection.ids());
-                    selection.stop();
-                  }}
-                  className="bg-destructive text-white hover:bg-destructive/90"
-                >
-                  {t("confirm")}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+              {t("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

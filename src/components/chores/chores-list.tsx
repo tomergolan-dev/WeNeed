@@ -8,7 +8,15 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
-import { SelectCircle, SelectionProvider, useSelection, type Selection } from "@/components/lists/bulk-delete";
+import {
+  longPressRow,
+  SelectBar,
+  SelectCircle,
+  SelectionProvider,
+  useLongPressPick,
+  useSelection,
+  type Selection,
+} from "@/components/lists/bulk-delete";
 import { useAddedBy } from "@/components/lists/added-by";
 import { useMe } from "@/components/lists/me";
 import { AssistantBar } from "@/components/lists/assistant-bar";
@@ -23,7 +31,7 @@ import { ChoreFields, emptyChore, toChoreInput, type ChoreDraft } from "./chore-
 import { DuePill, useDueText } from "./chore-due";
 
 type Person = { id: string; name: string };
-type Filter = "all" | "mine" | "overdue" | "soon" | "noDate";
+type Filter = "all" | "mine" | "soon" | "overdue";
 type Sort = "date" | "added";
 
 const RANK: Record<DueStatus, number> = { overdue: 0, soon: 1, later: 2, none: 3 };
@@ -106,13 +114,7 @@ export function ChoresList({
   // "Mine" only means something when there is someone else to assign tasks to.
   const canFilterMine = people.length > 1 && people.some((person) => person.id === me);
   const shown = open.filter(({ chore, status }) =>
-    filter === "all"
-      ? true
-      : filter === "mine"
-        ? chore.assigneeId === me
-        : filter === "noDate"
-          ? !chore.dueDate
-          : status === filter,
+    filter === "all" ? true : filter === "mine" ? chore.assigneeId === me : status === filter,
   );
 
   const rowProps = {
@@ -127,9 +129,7 @@ export function ChoresList({
   const quickInput = toChoreInput(draft);
 
   return (
-    <SelectionProvider
-      value={{ selection, onDelete: (ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids)) }}
-    >
+    <SelectionProvider value={{ selection }}>
       <ListScreen>
         <ListTop header={header}>
           <QuickAdd
@@ -198,7 +198,7 @@ export function ChoresList({
           />
         </ListTop>
         <div data-list-body>
-          {/* All filters in one quiet row, styled like the sort switch. */}
+          {/* The main filters in one quiet row, styled like the sort switch. */}
           <div className="px-5 pt-3 lg:px-8">
             <div
               role="group"
@@ -214,14 +214,6 @@ export function ChoresList({
                 </FilterButton>
               )}
               <FilterButton
-                on={filter === "overdue"}
-                onClick={() => setFilter("overdue")}
-                dot="bg-[#d9452f]"
-                count={counts.overdue}
-              >
-                {t("overdue")}
-              </FilterButton>
-              <FilterButton
                 on={filter === "soon"}
                 onClick={() => setFilter("soon")}
                 dot="bg-[#e0a21b]"
@@ -229,8 +221,13 @@ export function ChoresList({
               >
                 {t("soon")}
               </FilterButton>
-              <FilterButton on={filter === "noDate"} onClick={() => setFilter("noDate")}>
-                {t("noDate")}
+              <FilterButton
+                on={filter === "overdue"}
+                onClick={() => setFilter("overdue")}
+                dot="bg-[#d9452f]"
+                count={counts.overdue}
+              >
+                {t("overdue")}
               </FilterButton>
             </div>
           </div>
@@ -249,26 +246,32 @@ export function ChoresList({
 
             {shown.length > 0 && (
               <section>
-                <div className="mb-2 flex items-center justify-between gap-3 px-1">
-                  <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
-                  <div className="flex items-center gap-1.5">
-                    <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
-                      {(["date", "added"] as const).map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          aria-pressed={sort === option}
-                          onClick={() => setSort(option)}
-                          className={cn(
-                            "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
-                            sort === option && "bg-card text-foreground shadow-sm",
-                          )}
-                        >
-                          {option === "date" ? t("sortDate") : t("sortAdded")}
-                        </button>
-                      ))}
+                <div className="mb-2 flex flex-col gap-2 px-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
+                    <div className="flex items-center gap-1.5">
+                      <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
+                        {(["date", "added"] as const).map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            aria-pressed={sort === option}
+                            onClick={() => setSort(option)}
+                            className={cn(
+                              "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
+                              sort === option && "bg-card text-foreground shadow-sm",
+                            )}
+                          >
+                            {option === "date" ? t("sortDate") : t("sortAdded")}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  <SelectBar
+                    selection={selection}
+                    onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
+                  />
                 </div>
                 <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
                   {shown.map(({ chore, status }) => (
@@ -387,11 +390,14 @@ function ChoreRow({
   const assignee = people.find((p) => p.id === chore.assigneeId)?.name;
   const draft = isDraft(chore);
   const open = () => (selection.selecting ? selection.toggle(chore.id) : onEdit(chore));
+  const longPress = useLongPressPick(selection, chore.id, draft);
 
   return (
     <li
+      {...longPress}
       className={cn(
         "flex items-start gap-3 border-b border-[#f0f2f1] px-3.5 py-3 last:border-b-0",
+        longPressRow,
         status === "overdue" && "shadow-[inset_-4px_0_0_#d9452f] ltr:shadow-[inset_4px_0_0_#d9452f]",
         status === "soon" && "shadow-[inset_-4px_0_0_#e0a21b] ltr:shadow-[inset_4px_0_0_#e0a21b]",
       )}
