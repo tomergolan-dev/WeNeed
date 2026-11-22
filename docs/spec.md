@@ -25,6 +25,9 @@ We Need is also a portfolio project, so it includes a public demo.
 - Who sees a list ("מי רואה", admins only, from the list menu): **the whole place** (every member, also future ones) or **selected people** (admins always see it). The choice and the checks are one picture (decided 2026-11-18): under "the whole place" every member is checked, and unchecking someone moves to "selected people" with the rest still checked; choosing "selected people" starts from no one (admins always see); checking every member moves back to "the whole place". People invited to some lists only are checked one by one in both and stay on the list. The owner of a personal area is its admin.
 - Someone invited **to some lists only** joins the place as a member who sees just those lists, plus lists they create. A list such a member creates starts as "selected people", with them on it.
 - Only admins invite (decided 2026-11-17).
+- **Leaving and deleting a place** (decided 2026-11-22), at the bottom of the place's settings:
+  - "יציאה מהמקום", for anyone when someone else is in the place: the user leaves the place and its lists (the lists stay with the others) and lands on their personal area. The only admin is asked to make someone else an admin first, with a link to the members page.
+  - "מחיקת המקום", admins only: deletes the place for everyone with its lists, history, notes, attachments (and their stored files) and pending invites. It asks for the place's name to be typed first. Members who had it open land on another place next time.
 - First real places:
   - "הדירה של תומר ותמיר": Tomer, Tamir and Nurit (Tomer's mom).
   - "בית משפחת גולן": Nurit.
@@ -262,7 +265,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - [ ] Chores: is there an assignee per chore?
 - [x] Permissions (Stage E): decided 2026-11-17, see "Users and places".
 - [x] Can regular members invite people to lists they see? No, only admins invite (decided 2026-11-17).
-- [ ] Leaving a place, and deleting a place: not built yet.
+- [x] Leaving a place, and deleting a place: built 2026-11-22, see "Users and places".
 
 ## Future
 

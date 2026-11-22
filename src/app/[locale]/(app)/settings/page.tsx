@@ -5,6 +5,7 @@ import { redirectTo } from "@/i18n/navigation";
 import { ChevronLeft, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
+import { PlaceDanger } from "@/components/places/place-danger";
 import { PlaceForm } from "@/components/places/place-form";
 import { requirePlace } from "@/lib/auth";
 import { getPlace } from "@/lib/lists";
@@ -36,12 +37,7 @@ async function PlaceSettings() {
     <div className="flex flex-col gap-8">
       {current.role === "owner" && (
         // Keyed by place, so switching places resets the form.
-        <PlaceForm
-          key={place.id}
-          mode="edit"
-          name={place.name}
-          icon={isPlaceIcon(place.icon) ? place.icon : "home"}
-        />
+        <PlaceForm key={place.id} mode="edit" name={place.name} icon={isPlaceIcon(place.icon) ? place.icon : "home"} />
       )}
       <Link
         href="/members"
@@ -52,10 +48,18 @@ async function PlaceSettings() {
         </span>
         <span className="flex flex-1 flex-col">
           <span className="font-semibold">{t("membersLink")}</span>
-          <span className="text-[13px] text-muted-foreground">{t("membersCount", { count: place.members.length })}</span>
+          <span className="text-[13px] text-muted-foreground">
+            {t("membersCount", { count: place.members.length })}
+          </span>
         </span>
         <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
       </Link>
+      <PlaceDanger
+        name={place.name}
+        admin={current.role === "owner"}
+        alone={place.members.length <= 1}
+        lastAdmin={place.members.filter((m) => m.role === "owner").length <= 1}
+      />
     </div>
   );
 }

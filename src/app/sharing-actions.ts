@@ -8,12 +8,14 @@ import { z } from "zod";
 import { db } from "@/db";
 import { invites, listMembers, lists, placeMembers, places, users } from "@/db/schema";
 import type { ActionError } from "@/app/actions";
-import { getCurrentPlace, getCurrentUser, setCurrentPlace } from "@/lib/auth";
+import { getCurrentPlace, getCurrentUser, openPersonalArea, setCurrentPlace } from "@/lib/auth";
+import { deleteStoredFiles } from "@/lib/attachments";
 import { normalizeEmail } from "@/lib/email";
 import { canSendInvite, getInvite, sendInviteEmail } from "@/lib/invites";
 import { findList, isPlaceAdmin } from "@/lib/list-access";
 
-export type SharingError = ActionError | "invalidEmail" | "alreadyMember" | "tooMany" | "lastAdmin" | "deliveryFailed";
+export type SharingError =
+  ActionError | "invalidEmail" | "alreadyMember" | "tooMany" | "lastAdmin" | "leaveLastAdmin" | "deliveryFailed";
 export type SharingResult = { ok: true; added?: boolean } | { ok: false; error: SharingError };
 
 const ok = { ok: true } as const;
@@ -25,7 +27,12 @@ const uuid = z.uuid();
  * invite. Someone already in a shared place is added to the lists right away;
  * everyone else gets an email and accepts in the app.
  */
-async function invite(userId: string, placeId: string, emailInput: string, listIds: string[] | null): Promise<SharingResult> {
+async function invite(
+  userId: string,
+  placeId: string,
+  emailInput: string,
+  listIds: string[] | null,
+): Promise<SharingResult> {
   const email = normalizeEmail(emailInput);
   if (!email) return fail("invalidEmail");
   if (!(await isPlaceAdmin(userId, placeId))) return fail("unauthorized");
@@ -82,9 +89,7 @@ async function invite(userId: string, placeId: string, emailInput: string, listI
   const [t, [me], named] = await Promise.all([
     getTranslations("InviteEmail"),
     db.select({ name: users.name }).from(users).where(eq(users.id, userId)),
-    listIds
-      ? db.select({ name: lists.name }).from(lists).where(inArray(lists.id, listIds))
-      : Promise.resolve([]),
+    listIds ? db.select({ name: lists.name }).from(lists).where(inArray(lists.id, listIds)) : Promise.resolve([]),
   ]);
   const what =
     listIds === null
@@ -193,7 +198,10 @@ export async function setListAccess(
   if (!(await isPlaceAdmin(user.id, list.placeId))) return fail("unauthorized");
 
   const [place] = await db.select({ personal: places.personalOwnerId }).from(places).where(eq(places.id, list.placeId));
-  await db.update(lists).set({ visibility: place?.personal ? "place" : visibility }).where(eq(lists.id, list.id));
+  await db
+    .update(lists)
+    .set({ visibility: place?.personal ? "place" : visibility })
+    .where(eq(lists.id, list.id));
   // Only people already on the list or in the place can be added here; new people are invited.
   const allowed = userIds.length
     ? await db
@@ -268,9 +276,54 @@ export async function removeMember(userId: string): Promise<SharingResult> {
         inArray(listMembers.listId, db.select({ id: lists.id }).from(lists).where(eq(lists.placeId, context.place.id))),
       ),
     );
-  await db
-    .delete(placeMembers)
-    .where(and(eq(placeMembers.placeId, context.place.id), eq(placeMembers.userId, userId)));
+  await db.delete(placeMembers).where(and(eq(placeMembers.placeId, context.place.id), eq(placeMembers.userId, userId)));
   refresh();
   return ok;
+}
+
+/**
+ * Leaves the current shared place: the user's lists stay with the place.
+ * The last admin first makes someone else an admin; a place with no one
+ * else in it is deleted instead.
+ */
+export async function leavePlace(): Promise<SharingResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  const { place } = await getCurrentPlace(user.id);
+  if (place.personal) return fail("invalid");
+
+  const [{ others }] = await db
+    .select({ others: sql<number>`count(*)::int` })
+    .from(placeMembers)
+    .where(and(eq(placeMembers.placeId, place.id), ne(placeMembers.userId, user.id)));
+  if (others === 0) return fail("invalid");
+  if (place.role === "owner" && (await otherAdmins(place.id, user.id)) === 0) return fail("leaveLastAdmin");
+
+  await db
+    .delete(listMembers)
+    .where(
+      and(
+        eq(listMembers.userId, user.id),
+        inArray(listMembers.listId, db.select({ id: lists.id }).from(lists).where(eq(lists.placeId, place.id))),
+      ),
+    );
+  await db.delete(placeMembers).where(and(eq(placeMembers.placeId, place.id), eq(placeMembers.userId, user.id)));
+  await openPersonalArea(user.id);
+  return redirectTo("/");
+}
+
+/**
+ * Deletes the current shared place for everyone: its lists, history, notes,
+ * attachments and pending invites. Admins only, after typing its name.
+ */
+export async function deletePlace(confirmName: string): Promise<SharingResult> {
+  const context = await adminContext();
+  if (!context) return fail("unauthorized");
+  const [place] = await db.select({ name: places.name }).from(places).where(eq(places.id, context.place.id));
+  if (!place || confirmName.trim() !== place.name.trim()) return fail("invalid");
+
+  await deleteStoredFiles({ placeId: context.place.id });
+  await db.delete(places).where(eq(places.id, context.place.id));
+  await openPersonalArea(context.user.id);
+  return redirectTo("/");
 }

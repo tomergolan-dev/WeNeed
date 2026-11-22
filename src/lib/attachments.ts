@@ -57,7 +57,12 @@ export async function findFileFor(userId: string, attachmentId: string) {
  * Deletes the stored files of items or a whole list. Called before deleting
  * them, since the database rows go with a cascade but the files would stay.
  */
-export async function deleteStoredFiles(scope: { itemIds: string[] } | { listId: string }) {
+export async function deleteStoredFiles(scope: { itemIds: string[] } | { listId: string } | { placeId: string }) {
+  if ("placeId" in scope) {
+    const placeLists = await db.select({ id: lists.id }).from(lists).where(eq(lists.placeId, scope.placeId));
+    for (const list of placeLists) await deleteStoredFiles({ listId: list.id });
+    return;
+  }
   const rows =
     "itemIds" in scope
       ? scope.itemIds.length === 0

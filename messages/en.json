@@ -215,7 +215,8 @@
     "uploadFailed": "The upload failed. Try again.",
     "remindTooSoon": "A reminder was just sent. You can send another in a few minutes.",
     "emailsOff": "The assignee has turned task emails off.",
-    "emailLimit": "Lots of emails went out today. Try again tomorrow."
+    "emailLimit": "Lots of emails went out today. Try again tomorrow.",
+    "leaveLastAdmin": "Make someone else an admin before you leave."
   },
   "Categories": {
     "produce": "Fruit & vegetables",
@@ -240,7 +241,19 @@
     "save": "Save",
     "saved": "Saved",
     "membersLink": "Members & invites",
-    "membersCount": "{count, plural, one {One member} other {# members}}"
+    "membersCount": "{count, plural, one {One member} other {# members}}",
+    "leave": "Leave this place",
+    "leaveTitle": "Leave {name}?",
+    "leaveDescription": "Its lists stay with the other members. You'll need a new invite to come back.",
+    "leaveConfirm": "Yes, leave",
+    "leaveLastAdmin": "You're the only admin. To leave, first make someone else an admin on the members page.",
+    "delete": "Delete this place",
+    "deleteTitle": "Delete {name}?",
+    "deleteDescription": "All its lists, history, notes and attachments will be deleted for every member. This can't be undone.",
+    "deleteType": "To confirm, type the place's name:",
+    "deleteConfirm": "Delete forever",
+    "cancel": "Cancel",
+    "danger": "Leave or delete"
   },
   "Places": {
     "title": "Where to?",
