@@ -8,13 +8,7 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
-import {
-  SelectCircle,
-  SelectToolbar,
-  StartSelectButton,
-  useSelection,
-  type Selection,
-} from "@/components/lists/bulk-delete";
+import { SelectCircle, SelectionProvider, useSelection, type Selection } from "@/components/lists/bulk-delete";
 import { useAddedBy } from "@/components/lists/added-by";
 import { useMe } from "@/components/lists/me";
 import { AssistantBar } from "@/components/lists/assistant-bar";
@@ -133,214 +127,210 @@ export function ChoresList({
   const quickInput = toChoreInput(draft);
 
   return (
-    <ListScreen>
-      <ListTop header={header}>
-        <QuickAdd
-          placeholder={t("quickAddPlaceholder")}
-          value={draft.title}
-          onChange={(title) => setField({ title })}
-          canSubmit={quickInput !== null}
-          onSubmit={() => {
-            if (!quickInput) return;
-            add(quickInput);
-            setDraft(emptyChore);
-          }}
-          options={
-            <>
-              <OptionChip on={draft.dueDate === today} onClick={() => pickDate(today)}>
-                {t("today")}
-              </OptionChip>
-              <OptionChip on={draft.dueDate === tomorrow} onClick={() => pickDate(tomorrow)}>
-                {t("tomorrow")}
-              </OptionChip>
-              <PickerChip
-                type="date"
-                value={draft.dueDate === today || draft.dueDate === tomorrow ? "" : draft.dueDate}
-                onChange={(dueDate) => setField({ dueDate, dueTime: dueDate ? draft.dueTime : "" })}
-                label={t("date")}
-                text={
-                  <>
-                    <CalendarDays className="size-4" aria-hidden />
-                    {draft.dueDate && draft.dueDate !== today && draft.dueDate !== tomorrow
-                      ? dueText({ dueDate: draft.dueDate, dueTime: null }, now)
-                      : t("otherDate")}
-                  </>
-                }
-              />
-              {draft.dueDate && (
+    <SelectionProvider
+      value={{ selection, onDelete: (ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids)) }}
+    >
+      <ListScreen>
+        <ListTop header={header}>
+          <QuickAdd
+            placeholder={t("quickAddPlaceholder")}
+            value={draft.title}
+            onChange={(title) => setField({ title })}
+            canSubmit={quickInput !== null}
+            onSubmit={() => {
+              if (!quickInput) return;
+              add(quickInput);
+              setDraft(emptyChore);
+            }}
+            options={
+              <>
+                <OptionChip on={draft.dueDate === today} onClick={() => pickDate(today)}>
+                  {t("today")}
+                </OptionChip>
+                <OptionChip on={draft.dueDate === tomorrow} onClick={() => pickDate(tomorrow)}>
+                  {t("tomorrow")}
+                </OptionChip>
                 <PickerChip
-                  type="time"
-                  value={draft.dueTime}
-                  onChange={(dueTime) => setField({ dueTime })}
-                  label={t("time")}
+                  type="date"
+                  value={draft.dueDate === today || draft.dueDate === tomorrow ? "" : draft.dueDate}
+                  onChange={(dueDate) => setField({ dueDate, dueTime: dueDate ? draft.dueTime : "" })}
+                  label={t("date")}
                   text={
                     <>
-                      <Clock className="size-4" aria-hidden />
-                      {draft.dueTime || t("time")}
+                      <CalendarDays className="size-4" aria-hidden />
+                      {draft.dueDate && draft.dueDate !== today && draft.dueDate !== tomorrow
+                        ? dueText({ dueDate: draft.dueDate, dueTime: null }, now)
+                        : t("otherDate")}
                     </>
                   }
                 />
-              )}
-              {people.length > 1 && (
-                <select
-                  value={draft.assigneeId}
-                  onChange={(e) => setField({ assigneeId: e.target.value })}
-                  aria-label={t("assignee")}
-                  className={`${chipClass} appearance-none pe-3`}
-                >
-                  <option value="">{t("assignee")}</option>
-                  {people.map((person) => (
-                    <option key={person.id} value={person.id}>
-                      {person.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </>
-          }
-        />
-      </ListTop>
-      <div data-list-body>
-        {/* All filters in one quiet row, styled like the sort switch. */}
-        <div className="px-5 pt-3 lg:px-8">
-          <div
-            role="group"
-            aria-label={t("filters")}
-            className="flex gap-0.5 overflow-x-auto rounded-full bg-muted p-0.5 [scrollbar-width:none]"
-          >
-            <FilterButton on={filter === "all"} onClick={() => setFilter("all")}>
-              {t("all")}
-            </FilterButton>
-            {canFilterMine && (
-              <FilterButton on={filter === "mine"} onClick={() => setFilter("mine")}>
-                {t("filterMine")}
+                {draft.dueDate && (
+                  <PickerChip
+                    type="time"
+                    value={draft.dueTime}
+                    onChange={(dueTime) => setField({ dueTime })}
+                    label={t("time")}
+                    text={
+                      <>
+                        <Clock className="size-4" aria-hidden />
+                        {draft.dueTime || t("time")}
+                      </>
+                    }
+                  />
+                )}
+                {people.length > 1 && (
+                  <select
+                    value={draft.assigneeId}
+                    onChange={(e) => setField({ assigneeId: e.target.value })}
+                    aria-label={t("assignee")}
+                    className={`${chipClass} appearance-none pe-3`}
+                  >
+                    <option value="">{t("assignee")}</option>
+                    {people.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </>
+            }
+          />
+        </ListTop>
+        <div data-list-body>
+          {/* All filters in one quiet row, styled like the sort switch. */}
+          <div className="px-5 pt-3 lg:px-8">
+            <div
+              role="group"
+              aria-label={t("filters")}
+              className="flex gap-0.5 overflow-x-auto rounded-full bg-muted p-0.5 [scrollbar-width:none]"
+            >
+              <FilterButton on={filter === "all"} onClick={() => setFilter("all")}>
+                {t("all")}
               </FilterButton>
+              {canFilterMine && (
+                <FilterButton on={filter === "mine"} onClick={() => setFilter("mine")}>
+                  {t("filterMine")}
+                </FilterButton>
+              )}
+              <FilterButton
+                on={filter === "overdue"}
+                onClick={() => setFilter("overdue")}
+                dot="bg-[#d9452f]"
+                count={counts.overdue}
+              >
+                {t("overdue")}
+              </FilterButton>
+              <FilterButton
+                on={filter === "soon"}
+                onClick={() => setFilter("soon")}
+                dot="bg-[#e0a21b]"
+                count={counts.soon}
+              >
+                {t("soon")}
+              </FilterButton>
+              <FilterButton on={filter === "noDate"} onClick={() => setFilter("noDate")}>
+                {t("noDate")}
+              </FilterButton>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            {chores.length === 0 && (
+              <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+                <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
+                  <CalendarCheck className="size-6" aria-hidden />
+                </span>
+                {t("empty")}
+              </div>
             )}
-            <FilterButton
-              on={filter === "overdue"}
-              onClick={() => setFilter("overdue")}
-              dot="bg-[#d9452f]"
-              count={counts.overdue}
-            >
-              {t("overdue")}
-            </FilterButton>
-            <FilterButton
-              on={filter === "soon"}
-              onClick={() => setFilter("soon")}
-              dot="bg-[#e0a21b]"
-              count={counts.soon}
-            >
-              {t("soon")}
-            </FilterButton>
-            <FilterButton on={filter === "noDate"} onClick={() => setFilter("noDate")}>
-              {t("noDate")}
-            </FilterButton>
+
+            {shown.length > 0 && (
+              <section>
+                <div className="mb-2 flex items-center justify-between gap-3 px-1">
+                  <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
+                  <div className="flex items-center gap-1.5">
+                    <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
+                      {(["date", "added"] as const).map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          aria-pressed={sort === option}
+                          onClick={() => setSort(option)}
+                          className={cn(
+                            "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
+                            sort === option && "bg-card text-foreground shadow-sm",
+                          )}
+                        >
+                          {option === "date" ? t("sortDate") : t("sortAdded")}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                  {shown.map(({ chore, status }) => (
+                    <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
+                  ))}
+                </ul>
+              </section>
+            )}
+            {chores.length > 0 && shown.length === 0 && (
+              <p className="py-8 text-center text-muted-foreground">{t("nothingHere")}</p>
+            )}
+
+            {done.length > 0 && filter === "all" && (
+              <section>
+                <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("done")}</h2>
+                <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                  {done.map(({ chore, status }) => (
+                    <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
-          {error && <p className="text-sm text-destructive">{error}</p>}
+        <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
 
-          {selection.selecting && (
-            <SelectToolbar
-              selection={selection}
-              onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
-            />
-          )}
-
-          {chores.length === 0 && (
-            <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
-              <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
-                <CalendarCheck className="size-6" aria-hidden />
-              </span>
-              {t("empty")}
+        <BottomSheet
+          open={editing !== null}
+          onOpenChange={(o) => !o && setEditing(null)}
+          title={t("editTitle")}
+          subtitle={addedBy}
+        >
+          {editing && (
+            <div className="flex flex-col gap-4">
+              <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />
+              <ChoreForm
+                initial={{
+                  title: editing.name,
+                  dueDate: editing.dueDate ?? "",
+                  dueTime: editing.dueTime?.slice(0, 5) ?? "",
+                  assigneeId: editing.assigneeId ?? "",
+                }}
+                people={people}
+                submitLabel={t("save")}
+                onSubmit={(input) => {
+                  const id = editing.id;
+                  run({ type: "patch", id, patch: patchOf(input) }, () => updateChore(id, input));
+                  setEditing(null);
+                }}
+                onDelete={() => {
+                  const id = editing.id;
+                  run({ type: "delete", id }, () => deleteItem(id));
+                  setEditing(null);
+                }}
+              />
+              <RemindButton chore={editing} people={people} />
             </div>
           )}
-
-          {shown.length > 0 && (
-            <section>
-              <div className="mb-2 flex items-center justify-between gap-3 px-1">
-                <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
-                <div className="flex items-center gap-1.5">
-                  <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
-                    {(["date", "added"] as const).map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        aria-pressed={sort === option}
-                        onClick={() => setSort(option)}
-                        className={cn(
-                          "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
-                          sort === option && "bg-card text-foreground shadow-sm",
-                        )}
-                      >
-                        {option === "date" ? t("sortDate") : t("sortAdded")}
-                      </button>
-                    ))}
-                  </div>
-                  {!selection.selecting && <StartSelectButton selection={selection} />}
-                </div>
-              </div>
-              <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
-                {shown.map(({ chore, status }) => (
-                  <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
-                ))}
-              </ul>
-            </section>
-          )}
-          {chores.length > 0 && shown.length === 0 && (
-            <p className="py-8 text-center text-muted-foreground">{t("nothingHere")}</p>
-          )}
-
-          {done.length > 0 && filter === "all" && (
-            <section>
-              <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("done")}</h2>
-              <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
-                {done.map(({ chore, status }) => (
-                  <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      </div>
-
-      <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
-
-      <BottomSheet
-        open={editing !== null}
-        onOpenChange={(o) => !o && setEditing(null)}
-        title={t("editTitle")}
-        subtitle={addedBy}
-      >
-        {editing && (
-          <div className="flex flex-col gap-4">
-            <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />
-            <ChoreForm
-              initial={{
-                title: editing.name,
-                dueDate: editing.dueDate ?? "",
-                dueTime: editing.dueTime?.slice(0, 5) ?? "",
-                assigneeId: editing.assigneeId ?? "",
-              }}
-              people={people}
-              submitLabel={t("save")}
-              onSubmit={(input) => {
-                const id = editing.id;
-                run({ type: "patch", id, patch: patchOf(input) }, () => updateChore(id, input));
-                setEditing(null);
-              }}
-              onDelete={() => {
-                const id = editing.id;
-                run({ type: "delete", id }, () => deleteItem(id));
-                setEditing(null);
-              }}
-            />
-            <RemindButton chore={editing} people={people} />
-          </div>
-        )}
-      </BottomSheet>
-    </ListScreen>
+        </BottomSheet>
+      </ListScreen>
+    </SelectionProvider>
   );
 }
 

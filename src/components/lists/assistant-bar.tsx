@@ -3,12 +3,9 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUp, Check, LoaderCircle, Sparkles, X } from "lucide-react";
-import {
-  type AddedItem,
-  type AssistantReply,
-  type Duplicate,
-} from "@/lib/assistant-plan";
+import { type AddedItem, type AssistantReply, type Duplicate } from "@/lib/assistant-plan";
 import type { ActionResult } from "@/app/actions";
+import { SelectActionBar, useListSelection } from "./bulk-delete";
 import { useBackend } from "@/components/lists/backend";
 import { useDueText } from "@/components/chores/chore-due";
 import { formatQuantity } from "@/lib/items";
@@ -41,15 +38,14 @@ const isOpenQuestion = (exchange: Exchange) =>
  * above the bar: a short note that fades after a few seconds, or a card when
  * there is a question to answer, so the list stays in view.
  */
-export function AssistantBar({
-  listId,
-  placeholder,
-  chores = false,
-}: {
-  listId: string;
-  placeholder: string;
-  chores?: boolean;
-}) {
+export function AssistantBar(props: { listId: string; placeholder: string; chores?: boolean }) {
+  const picking = useListSelection();
+  // While picking items to delete, the bottom bar holds "ביטול" and "מחיקה" instead.
+  if (picking?.selection.selecting) return <SelectActionBar {...picking} />;
+  return <Chat {...props} />;
+}
+
+function Chat({ listId, placeholder, chores = false }: { listId: string; placeholder: string; chores?: boolean }) {
   const t = useTranslations("Assistant");
   const tErrors = useTranslations("Errors");
   const { askAssistant, removeAdded, setItemQuantity } = useBackend();
@@ -109,7 +105,12 @@ export function AssistantBar({
           <Note
             exchange={exchange}
             chores={chores}
-            onUndo={(ids) => call(() => removeAdded(listId, ids), () => update({ undone: true }))}
+            onUndo={(ids) =>
+              call(
+                () => removeAdded(listId, ids),
+                () => update({ undone: true }),
+              )
+            }
           />
         )}
         {exchange && isOpenQuestion(exchange) && (
@@ -119,9 +120,7 @@ export function AssistantBar({
             className="mb-2 max-h-[45vh] overflow-y-auto rounded-[22px] border bg-card p-3.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)]"
           >
             <div className="flex items-start gap-2">
-              <p className="min-w-0 flex-1 truncate pt-1 text-[13px] text-muted-foreground">
-                “{exchange.message}”
-              </p>
+              <p className="min-w-0 flex-1 truncate pt-1 text-[13px] text-muted-foreground">“{exchange.message}”</p>
               <button
                 type="button"
                 onClick={() => setExchange(null)}
@@ -134,7 +133,12 @@ export function AssistantBar({
             <ExchangeBody
               exchange={exchange}
               chores={chores}
-              onUndo={(ids) => call(() => removeAdded(listId, ids), () => update({ undone: true }))}
+              onUndo={(ids) =>
+                call(
+                  () => removeAdded(listId, ids),
+                  () => update({ undone: true }),
+                )
+              }
               onIncrease={(dup) =>
                 call(
                   () => setItemQuantity(dup.itemId, dup.newQuantity!, dup.newUnit),
@@ -194,15 +198,7 @@ export function AssistantBar({
 }
 
 /** A one-line reply: "Added: eggs, tomatoes · Undo". Closes on its own. */
-function Note({
-  exchange,
-  chores,
-  onUndo,
-}: {
-  exchange: Exchange;
-  chores: boolean;
-  onUndo: (ids: string[]) => void;
-}) {
+function Note({ exchange, chores, onUndo }: { exchange: Exchange; chores: boolean; onUndo: (ids: string[]) => void }) {
   const t = useTranslations("Assistant");
   const tItem = useTranslations("ItemForm");
 
@@ -296,7 +292,9 @@ function ExchangeBody({
       {added.length > 0 && (
         <div>
           <div className="flex items-center justify-between gap-3">
-            <p className="font-semibold">{exchange.undone ? t("undone") : t(chores ? "addedChores" : "added", { count: added.length })}</p>
+            <p className="font-semibold">
+              {exchange.undone ? t("undone") : t(chores ? "addedChores" : "added", { count: added.length })}
+            </p>
             {!exchange.undone && (
               <button
                 type="button"
@@ -368,11 +366,7 @@ function ExchangeBody({
 
 function AddedRow({ item, now, unitsLabel }: { item: AddedItem; now: number; unitsLabel: string }) {
   const dueText = useDueText();
-  const detail = [
-    formatQuantity(item, unitsLabel),
-    item.dueDate ? dueText(item, now) : "",
-    item.assignee ?? "",
-  ]
+  const detail = [formatQuantity(item, unitsLabel), item.dueDate ? dueText(item, now) : "", item.assignee ?? ""]
     .filter(Boolean)
     .join(" · ");
   return (

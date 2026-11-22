@@ -7,7 +7,7 @@ import type { ItemInput } from "@/app/actions";
 import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { AssistantBar } from "@/components/lists/assistant-bar";
-import { SelectToolbar, StartSelectButton, useSelection } from "@/components/lists/bulk-delete";
+import { SelectionProvider, useSelection } from "@/components/lists/bulk-delete";
 import { ListProgress } from "@/components/lists/list-progress";
 import { ListScreen } from "@/components/lists/list-screen";
 import { ListTop } from "@/components/lists/list-top";
@@ -92,103 +92,100 @@ export function ShoppingList({
   const total = optimisticItems.length;
 
   return (
-    <ListScreen>
-      <ListTop header={header}>
-        <QuickAdd
-          placeholder={t("quickAddPlaceholder")}
-          value={draft.name}
-          onChange={(name) => {
-            set({ name });
-            setNotice(null);
-          }}
-          canSubmit={input !== null}
-          onSubmit={handleAdd}
-          notice={notice}
-          options={
-            <>
-              <QuantityStepper value={draft.quantity} onChange={(quantity) => set({ quantity })} />
-              <input
-                value={draft.unit}
-                onChange={(e) => set({ unit: e.target.value })}
-                placeholder={tItem("unit")}
-                aria-label={tItem("unit")}
-                maxLength={30}
-                className={`${chipClass} w-24 placeholder:text-muted-foreground`}
-              />
-              <select
-                value={draft.category}
-                onChange={(e) => set({ category: e.target.value })}
-                aria-label={tItem("category")}
-                className={`${chipClass} appearance-none pe-3`}
-              >
-                <option value="">{t("autoCategory")}</option>
-                {CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {tCategories(category)}
-                  </option>
-                ))}
-              </select>
-            </>
-          }
-        />
-      </ListTop>
-      <div data-list-body className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
-        {total > 0 &&
-          (selection.selecting ? (
-            <SelectToolbar
-              selection={selection}
-              onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
-            />
-          ) : (
-            <div className="flex min-h-9 items-center gap-3 ps-1">
+    <SelectionProvider
+      value={{ selection, onDelete: (ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids)) }}
+    >
+      <ListScreen>
+        <ListTop header={header}>
+          <QuickAdd
+            placeholder={t("quickAddPlaceholder")}
+            value={draft.name}
+            onChange={(name) => {
+              set({ name });
+              setNotice(null);
+            }}
+            canSubmit={input !== null}
+            onSubmit={handleAdd}
+            notice={notice}
+            options={
+              <>
+                <QuantityStepper value={draft.quantity} onChange={(quantity) => set({ quantity })} />
+                <input
+                  value={draft.unit}
+                  onChange={(e) => set({ unit: e.target.value })}
+                  placeholder={tItem("unit")}
+                  aria-label={tItem("unit")}
+                  maxLength={30}
+                  className={`${chipClass} w-24 placeholder:text-muted-foreground`}
+                />
+                <select
+                  value={draft.category}
+                  onChange={(e) => set({ category: e.target.value })}
+                  aria-label={tItem("category")}
+                  className={`${chipClass} appearance-none pe-3`}
+                >
+                  <option value="">{t("autoCategory")}</option>
+                  {CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {tCategories(category)}
+                    </option>
+                  ))}
+                </select>
+              </>
+            }
+          />
+        </ListTop>
+        <div data-list-body className="flex flex-col gap-4 px-5 pt-3.5 pb-40 lg:px-8">
+          {total > 0 && (
+            <div className="flex min-h-9 items-center ps-1">
               <ListProgress
                 done={bought.length}
                 total={total}
                 label={t("progress", { done: bought.length, total })}
                 bar="bg-primary"
               />
-              <StartSelectButton selection={selection} />
             </div>
-          ))}
+          )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-        {total === 0 && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
-            <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
-              <ShoppingCart className="size-6" aria-hidden />
-            </span>
-            {t("empty")}
-          </div>
-        )}
+          {total === 0 && (
+            <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+              <span className="flex size-14 items-center justify-center rounded-full bg-accent text-primary">
+                <ShoppingCart className="size-6" aria-hidden />
+              </span>
+              {t("empty")}
+            </div>
+          )}
 
-        <div className="flex flex-col gap-4 lg:block lg:columns-2 lg:gap-x-4 lg:*:mb-4 lg:*:break-inside-avoid">
-          {groupByCategory(open).map(({ category, items }) => {
-            const { icon: Icon, tone } = CATEGORY_ICONS[isCategory(category) ? category : DEFAULT_CATEGORY];
-            return (
-              <Section key={category} title={tCategories(category)} icon={<Icon className="size-3.5" />} tone={tone}>
-                {items.map((item) => (
+          <div className="flex flex-col gap-4 lg:block lg:columns-2 lg:gap-x-4 lg:*:mb-4 lg:*:break-inside-avoid">
+            {groupByCategory(open).map(({ category, items }) => {
+              const { icon: Icon, tone } = CATEGORY_ICONS[isCategory(category) ? category : DEFAULT_CATEGORY];
+              return (
+                <Section key={category} title={tCategories(category)} icon={<Icon className="size-3.5" />} tone={tone}>
+                  {items.map((item) => (
+                    <ItemRow key={item.id} item={item} people={people} selection={selection} {...handlers} />
+                  ))}
+                </Section>
+              );
+            })}
+
+            {bought.length > 0 && (
+              <Section
+                title={t("inCart", { count: bought.length })}
+                icon={<ShoppingCart className="size-3.5" />}
+                tone="bg-[#e4f3ec] text-[#11684b]"
+              >
+                {bought.map((item) => (
                   <ItemRow key={item.id} item={item} people={people} selection={selection} {...handlers} />
                 ))}
               </Section>
-            );
-          })}
-
-          {bought.length > 0 && (
-            <Section
-              title={t("inCart", { count: bought.length })}
-              icon={<ShoppingCart className="size-3.5" />}
-              tone="bg-[#e4f3ec] text-[#11684b]"
-            >
-              {bought.map((item) => (
-                <ItemRow key={item.id} item={item} people={people} selection={selection} {...handlers} />
-              ))}
-            </Section>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-      <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
-    </ListScreen>
+        <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} />
+      </ListScreen>
+    </SelectionProvider>
   );
 }
 

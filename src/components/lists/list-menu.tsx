@@ -3,12 +3,13 @@
 import { useState, useTransition } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Ellipsis, History, Pencil, Shapes, Trash2, Users } from "lucide-react";
+import { ChevronLeft, Ellipsis, History, ListChecks, Pencil, Shapes, Trash2, Users } from "lucide-react";
 import { useBackend } from "@/components/lists/backend";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import type { ListAccess } from "@/lib/list-access";
 import type { ListType } from "@/lib/list-kinds";
+import { useListSelection } from "./bulk-delete";
 import { ListAccessForm } from "./list-access-form";
 import { ListNameForm } from "./list-name-form";
 import { ListTypePicker } from "./list-type-picker";
@@ -34,10 +35,12 @@ export function ListMenu({
   userId: string;
 }) {
   const t = useTranslations("Lists");
+  const tBulk = useTranslations("BulkDelete");
   const tAccess = useTranslations("Access");
   const tErrors = useTranslations("Errors");
   const { history, deleteList, renameList, setListType } = useBackend();
   const [open, setOpen] = useState(false);
+  const picking = useListSelection();
   const [view, setView] = useState<"menu" | "access" | "rename" | "type" | "delete">("menu");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -87,6 +90,19 @@ export function ListMenu({
                 <Users className="size-5 text-muted-foreground" aria-hidden />
                 <span className="flex-1">{tAccess("menu")}</span>
                 <ChevronLeft className="size-4 text-muted-foreground ltr:-scale-x-100" aria-hidden />
+              </button>
+            )}
+            {picking && picking.selection.total > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  close();
+                  picking.selection.start();
+                }}
+                className={row}
+              >
+                <ListChecks className="size-5 text-muted-foreground" aria-hidden />
+                {tBulk("menu")}
               </button>
             )}
             <button type="button" onClick={() => setView("rename")} className={row}>
