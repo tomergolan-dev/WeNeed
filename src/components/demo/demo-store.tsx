@@ -312,6 +312,10 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       removeItems([id]);
       return ok;
     },
+    async deleteItems(_listId, ids) {
+      removeItems(ids);
+      return ok;
+    },
     async setItemDone(id, done) {
       patchItem(id, { done, doneBy: done ? ME : null, doneAt: done ? new Date() : null });
       return ok;

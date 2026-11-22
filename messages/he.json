@@ -147,7 +147,16 @@
     "dragEnd": "{name} הונח במקום {place}",
     "dragCancel": "ההזזה בוטלה",
     "quickAddPlaceholder": "הוספה ידנית, למשל ״פנס״",
-    "aiPlaceholder": "מה להוסיף? למשל: פנס, כובע ומגבת"
+    "aiPlaceholder": "מה להוסיף? למשל: פנס, כובע ומגבת",
+    "select": "מחיקה",
+    "selectHint": "בחרו פריטים",
+    "selectAll": "בחר הכל",
+    "cancelSelect": "ביטול",
+    "deleteSelected": "מחיקה ({count})",
+    "deleteTitle": "{count, plural, one {למחוק פריט אחד?} other {למחוק # פריטים?}}",
+    "deleteDescription": "אי אפשר לבטל את זה. גם ההערות והצירופים שלהם יימחקו.",
+    "deleteConfirm": "כן, למחוק",
+    "tools": "פעולות על הרשימה"
   },
   "ItemForm": {
     "add": "הוספה",

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
@@ -169,6 +169,30 @@ export async function deleteItem(itemId: string): Promise<ActionResult> {
 
   await deleteStoredFiles({ itemIds: [item.id] });
   await db.delete(items).where(eq(items.id, itemId));
+  refresh();
+  return ok;
+}
+
+/** Deletes several items of a list's current round at once. */
+export async function deleteItems(listId: string, itemIds: string[]): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+
+  const ids = z.array(z.uuid()).min(1).max(500).safeParse(itemIds);
+  if (!ids.success) return fail("invalid");
+  const list = await findList(listId, user.id);
+  if (!list) return fail("notFound");
+
+  const round = await ensureActiveRound(list.id);
+  const doomed = await db
+    .select({ id: items.id })
+    .from(items)
+    .where(and(eq(items.roundId, round.id), inArray(items.id, ids.data)));
+  if (doomed.length === 0) return fail("notFound");
+  const doomedIds = doomed.map((item) => item.id);
+
+  await deleteStoredFiles({ itemIds: doomedIds });
+  await db.delete(items).where(inArray(items.id, doomedIds));
   refresh();
   return ok;
 }

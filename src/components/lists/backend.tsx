@@ -7,6 +7,7 @@ import {
   addItem,
   createList,
   deleteItem,
+  deleteItems,
   deleteList,
   finishRound,
   renameList,
@@ -45,6 +46,7 @@ export type Backend = {
   addItem: typeof addItem;
   updateItem: typeof updateItem;
   deleteItem: typeof deleteItem;
+  deleteItems: typeof deleteItems;
   setItemDone: typeof setItemDone;
   setAllDone: typeof setAllDone;
   reorderItems: typeof reorderItems;
@@ -95,6 +97,7 @@ const serverBackend: Backend = {
   addItem,
   updateItem,
   deleteItem,
+  deleteItems,
   setItemDone,
   setAllDone,
   reorderItems,

@@ -10,7 +10,8 @@ export type ItemChange =
   | { type: "patch"; id: string; patch: Partial<Item> }
   | { type: "all"; done: boolean }
   | { type: "order"; ids: string[] }
-  | { type: "delete"; id: string };
+  | { type: "delete"; id: string }
+  | { type: "deleteMany"; ids: string[] };
 
 function reduce(items: Item[], change: ItemChange): Item[] {
   switch (change.type) {
@@ -22,6 +23,10 @@ function reduce(items: Item[], change: ItemChange): Item[] {
       return items.map((item) => ({ ...item, done: change.done }));
     case "delete":
       return items.filter((item) => item.id !== change.id);
+    case "deleteMany": {
+      const gone = new Set(change.ids);
+      return items.filter((item) => !gone.has(item.id));
+    }
     case "order": {
       const rank = new Map(change.ids.map((id, i) => [id, i]));
       const last = change.ids.length;
