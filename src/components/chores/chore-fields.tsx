@@ -74,22 +74,25 @@ export function ChoreFields({
           className={dateTimeClass}
         />
       </div>
-      <div className="col-span-2 flex flex-col gap-1.5">
-        <Label htmlFor={`${id}-assignee`}>{t("assignee")}</Label>
-        <NativeSelect
-          id={`${id}-assignee`}
-          className="w-full"
-          value={draft.assigneeId}
-          onChange={(e) => set({ assigneeId: e.target.value })}
-        >
-          <NativeSelectOption value="">{t("unassigned")}</NativeSelectOption>
-          {people.map((person) => (
-            <NativeSelectOption key={person.id} value={person.id}>
-              {person.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
+      {/* A list only one person sees has no one else to assign: its tasks are theirs. */}
+      {(people.length > 1 || draft.assigneeId !== "") && (
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <Label htmlFor={`${id}-assignee`}>{t("assignee")}</Label>
+          <NativeSelect
+            id={`${id}-assignee`}
+            className="w-full"
+            value={draft.assigneeId}
+            onChange={(e) => set({ assigneeId: e.target.value })}
+          >
+            <NativeSelectOption value="">{t("unassigned")}</NativeSelectOption>
+            {people.map((person) => (
+              <NativeSelectOption key={person.id} value={person.id}>
+                {person.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </div>
+      )}
     </div>
   );
 }

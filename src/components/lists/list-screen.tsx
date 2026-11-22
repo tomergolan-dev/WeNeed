@@ -17,6 +17,11 @@ import { useEffect, useRef } from "react";
  * closes or iOS pans, never while the list scrolls (it scrolls inside the
  * frame), so nothing jitters.
  *
+ * When the keyboard closes, iOS doesn't bring the list's scroll position back
+ * within the now taller list: it stays "past the end", showing blank space,
+ * and the list won't scroll until something moves it. So the position is put
+ * back in range then, and the page itself back at the top.
+ *
  * The layout is in globals.css (on touch screens only), with the parts marked
  * [data-list-top], [data-list-body] and [data-chat]. On a computer the page
  * scrolls as usual with a sticky top bar.
@@ -32,14 +37,29 @@ export function ListScreen({ children }: { children: React.ReactNode }) {
     const viewport = window.visualViewport;
     if (!root || !viewport || !window.matchMedia(PHONE).matches) return;
 
+    let height = "";
+    let top = "";
+    const settle = () => {
+      const body = root.querySelector<HTMLElement>("[data-list-body]");
+      if (!body) return;
+      const max = Math.max(0, body.scrollHeight - body.clientHeight);
+      if (body.scrollTop > max) body.scrollTop = max;
+    };
     const update = () => {
-      root.style.setProperty("--frame-h", `${viewport.height}px`);
-      root.style.setProperty("--frame-top", `${viewport.offsetTop}px`);
+      // Only on a real change: rewriting the same values while scrolling makes the list stutter.
+      const nextHeight = `${Math.round(viewport.height)}px`;
+      const nextTop = `${Math.round(viewport.offsetTop)}px`;
+      const resized = nextHeight !== height || nextTop !== top;
+      if (nextHeight !== height) root.style.setProperty("--frame-h", (height = nextHeight));
+      if (nextTop !== top) root.style.setProperty("--frame-top", (top = nextTop));
       const el = document.activeElement;
       const typing = (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && root.contains(el);
       const mode = !typing ? null : el.closest("[data-chat]") ? "chat" : "field";
+      const wasTyping = root.dataset.keyboard !== undefined;
       if (mode) root.dataset.keyboard = mode;
       else delete root.dataset.keyboard;
+      if (!mode && wasTyping && window.scrollY !== 0) window.scrollTo(0, 0);
+      if (resized) requestAnimationFrame(settle);
     };
 
     // When focus leaves a field, the next one (if any) has it by the next frame.

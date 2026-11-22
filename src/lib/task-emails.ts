@@ -7,7 +7,7 @@ import { Resend } from "resend";
 import { db } from "@/db";
 import { invites, items, lists, places, rounds, signInCodes, taskEmails, users } from "@/db/schema";
 import { directionOf, routing, type Locale } from "@/i18n/routing";
-import { canSeeList } from "./list-access";
+import { canSeeList, getListPeople } from "./list-access";
 import { daysBetween, dueAt, TIME_ZONE, todayIn } from "./due";
 import he from "../../messages/he.json";
 import en from "../../messages/en.json";
@@ -83,6 +83,7 @@ async function loadTask(itemId: string) {
       dueDate: items.dueDate,
       dueTime: items.dueTime,
       assigneeId: items.assigneeId,
+      note: items.note,
       roundStatus: rounds.status,
       listId: lists.id,
       listName: lists.name,
@@ -100,6 +101,15 @@ async function loadTask(itemId: string) {
 type Task = NonNullable<Awaited<ReturnType<typeof loadTask>>>;
 
 /**
+ * The one person who sees a list, when only one does. Their unassigned tasks
+ * are theirs, so they get the reminders (a list of one has no one to assign).
+ */
+async function soleViewer(listId: string) {
+  const people = await getListPeople(listId);
+  return people.length === 1 ? people[0].id : null;
+}
+
+/**
  * Sends one task email, if it should go out: the task is open and still
  * assigned to the person, they see the list, want task emails, and the daily
  * limits allow it. Automatic reminders go out once per due time.
@@ -113,7 +123,11 @@ export async function sendTaskEmail(input: {
 }): Promise<TaskEmailResult> {
   const task = await loadTask(input.itemId);
   if (!task || task.listType !== "tasks" || task.roundStatus !== "active" || task.done) return "skipped";
-  if (task.assigneeId !== input.userId) return "skipped";
+  if (
+    task.assigneeId !== input.userId &&
+    !(task.assigneeId === null && (await soleViewer(task.listId)) === input.userId)
+  )
+    return "skipped";
 
   const [recipient] = await db
     .select({ email: users.email, locale: users.locale, taskEmails: users.taskEmails })
@@ -194,6 +208,9 @@ async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmai
             : t("evening", { task: name });
   const due = dueText(task, locale, (key) => t(key as "today"));
   const where = task.personal ? task.listName : `${task.listName} · ${task.placeName}`;
+  // The task's note, shortened so a long one doesn't fill the email.
+  const fullNote = task.note?.trim() ?? "";
+  const note = fullNote.length > 600 ? `${fullNote.slice(0, 600)}…` : fullNote;
   // Hebrew lives at the plain addresses, English under /en.
   const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
   const url = `${(process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}${prefix}/lists/${task.listId}`;
@@ -218,6 +235,7 @@ async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmai
 <p style="margin:0;font-size:17px;font-weight:700">${escape(task.name)}</p>
 ${due ? `<p style="margin:6px 0 0;font-size:14px;color:#11684b">${escape(due)}</p>` : ""}
 <p style="margin:6px 0 0;font-size:13px;color:#66736e">${escape(where)}</p>
+${note ? `<div style="margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#f3f5f4"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#66736e">${t("note")}</p><p style="margin:0;font-size:14px;line-height:1.5;white-space:pre-line">${escape(note)}</p></div>` : ""}
 </div>
 <a href="${url}" style="display:inline-block;padding:14px 28px;border-radius:14px;background:#16835f;color:#fff;font-size:16px;font-weight:700;text-decoration:none">${t("button")}</a>
 <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#8a958f">${t("footer")}</p>
@@ -262,22 +280,26 @@ export async function sendDueReminders(now: number = Date.now()) {
   const hour = israelHour(now);
 
   const candidates = await db
-    .select({ id: items.id, assigneeId: items.assigneeId, dueDate: items.dueDate, dueTime: items.dueTime })
+    .select({
+      id: items.id,
+      assigneeId: items.assigneeId,
+      listId: lists.id,
+      dueDate: items.dueDate,
+      dueTime: items.dueTime,
+    })
     .from(items)
     .innerJoin(rounds, and(eq(rounds.id, items.roundId), eq(rounds.status, "active")))
     .innerJoin(lists, and(eq(lists.id, rounds.listId), eq(lists.type, "tasks")))
-    .where(
-      and(
-        eq(items.done, false),
-        isNotNull(items.assigneeId),
-        gte(items.dueDate, today),
-        lte(items.dueDate, tomorrow),
-      ),
-    );
+    .where(and(eq(items.done, false), gte(items.dueDate, today), lte(items.dueDate, tomorrow)));
 
   const results: Record<TaskEmailResult, number> = { sent: 0, skipped: 0, off: 0, limit: 0, failed: 0 };
+  const sole = new Map<string, string | null>();
   for (const task of candidates) {
-    if (!task.assigneeId || !task.dueDate) continue;
+    if (!task.dueDate) continue;
+    // Unassigned tasks go to the list's only person, if it has just one.
+    if (!task.assigneeId && !sole.has(task.listId)) sole.set(task.listId, await soleViewer(task.listId));
+    const recipient = task.assigneeId ?? sole.get(task.listId);
+    if (!recipient) continue;
     let kind: TaskEmailKind | null = null;
     let dueKey = task.dueDate;
     if (task.dueTime) {
@@ -293,10 +315,10 @@ export async function sendDueReminders(now: number = Date.now()) {
     if (!kind) continue;
 
     // Just told about it (assigned, or reminded by hand): no need for another email now.
-    const recent = await lastEmail(task.id, task.assigneeId, ["assigned", "manual"]);
+    const recent = await lastEmail(task.id, recipient, ["assigned", "manual"]);
     if (recent && now - recent < HOUR_MS) continue;
 
-    results[await sendTaskEmail({ itemId: task.id, userId: task.assigneeId, kind, dueKey })]++;
+    results[await sendTaskEmail({ itemId: task.id, userId: recipient, kind, dueKey })]++;
   }
   return results;
 }

@@ -657,7 +657,8 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "button": "View the task",
-    "footer": "You got this email because the task is assigned to you. You can turn task emails off in the account menu in WeNeed."
+    "footer": "You got this email because the task is assigned to you. You can turn task emails off in the account menu in WeNeed.",
+    "note": "Note"
   },
   "BulkDelete": {
     "menu": "Select items",

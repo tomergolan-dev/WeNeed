@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
   Camera,
@@ -166,23 +159,32 @@ function DetailsSheet({
 
   const showError = (code: AttachmentError) => setError(tErrors(code));
 
-  useEffect(() => {
-    let live = true;
+  // Set once the user types, so a load that finishes late never replaces their text.
+  const edited = useRef(false);
+  // The list refreshes itself every few seconds, which can hand this sheet new
+  // functions. Loading again then would put the saved note back over what is
+  // being typed, so the details load once per item.
+  const load = useEffectEvent((live: () => boolean) => {
+    edited.current = false;
     getItemDetails(item.id).then((result) => {
-      if (!live) return;
+      if (!live()) return;
       if (result.ok) {
         setLoaded({
           note: result.note,
           attachments: result.attachments,
           readOnly: result.readOnly,
         });
-        setNote(result.note);
+        if (!edited.current) setNote(result.note);
       } else setError(tErrors(result.error));
     });
+  });
+  useEffect(() => {
+    let live = true;
+    load(() => live);
     return () => {
       live = false;
     };
-  }, [item.id, tErrors, getItemDetails]);
+  }, [item.id]);
 
   const add = (attachment: AttachmentView) =>
     setLoaded(
@@ -289,7 +291,10 @@ function DetailsSheet({
               id="item-note"
               value={note}
               readOnly={readOnly}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => {
+                edited.current = true;
+                setNote(e.target.value);
+              }}
               onBlur={saveNote}
               maxLength={2000}
               rows={2}
