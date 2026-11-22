@@ -34,7 +34,17 @@ const name = z.string().trim().min(1).max(200);
 const input = z.object({
   type: z.enum(["shopping", "tasks", "checklist"]),
   text: z.string().trim().min(1).max(500),
-  current: z.array(name).max(200),
+  current: z
+    .array(
+      z.object({
+        name,
+        done: z.boolean(),
+        dueDate: z.string().max(10).nullable(),
+        dueTime: z.string().max(5).nullable(),
+        assignee: name.nullable(),
+      }),
+    )
+    .max(200),
   sender: name,
   members: z.array(name).max(10),
 });
@@ -43,7 +53,9 @@ const input = z.object({
 async function visitorKey() {
   const list = await headers();
   const ip = list.get("x-forwarded-for")?.split(",")[0]?.trim() || list.get("x-real-ip") || "unknown";
-  return createHmac("sha256", process.env.SESSION_SECRET ?? "").update(`demo:${ip}`).digest("base64url");
+  return createHmac("sha256", process.env.SESSION_SECRET ?? "")
+    .update(`demo:${ip}`)
+    .digest("base64url");
 }
 
 async function withinLimits() {
@@ -78,7 +90,7 @@ export async function parseDemoMessage(raw: z.input<typeof input>): Promise<Demo
       const result = await parseChecklist(text, current);
       return result ? { ok: true, type, result } : { ok: false, error: "aiFailed" };
     }
-    const result = await parseChores(text, { sender, members }, israelNow());
+    const result = await parseChores(text, { sender, members }, israelNow(), current);
     return result ? { ok: true, type, result } : { ok: false, error: "aiFailed" };
   } catch (error) {
     console.error("[demo-ai] chat failed", error);

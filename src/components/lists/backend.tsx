@@ -19,7 +19,7 @@ import {
   updateChore,
   updateItem,
 } from "@/app/actions";
-import { askAssistant, removeAdded, setItemQuantity } from "@/app/assistant-actions";
+import { askAssistant, setItemQuantity, undoReply } from "@/app/assistant-actions";
 import {
   addFile,
   addLink,
@@ -61,7 +61,7 @@ export type Backend = {
   deleteList: typeof deleteList;
   askAssistant: typeof askAssistant;
   setItemQuantity: typeof setItemQuantity;
-  removeAdded: typeof removeAdded;
+  undoReply: typeof undoReply;
   getItemDetails: typeof getItemDetails;
   setItemNote: typeof setItemNote;
   addLink: typeof addLink;
@@ -111,7 +111,7 @@ const serverBackend: Backend = {
   deleteList,
   askAssistant,
   setItemQuantity,
-  removeAdded,
+  undoReply,
   getItemDetails,
   setItemNote,
   addLink,

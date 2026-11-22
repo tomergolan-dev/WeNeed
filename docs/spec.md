@@ -131,7 +131,13 @@ We Need is also a portfolio project, so it includes a public demo.
 - Checklists: adds the items written, and skips those already on the list.
 - Manual adding and editing always remain available, for quick or precise changes.
 - Model: Claude (`claude-haiku-5-5`), with structured outputs. The parsing rules come from the bot (`src/lib/ai/list-assistant.ts`).
-- Later: editing by chat ("remove the milk", "check the eggs").
+- **Editing by chat** (decided 2026-11-22): the chat also changes items already on the list, alone or together with adding ("תוסיף עגבניות ותוריד את הבננות").
+  - Shopping: mark bought or back ("קניתי לחם"), set the amount ("תעשה 3 ביצים"), rename, remove. Asking for more of an item ("עוד 2 חלב") is still the "add more?" question.
+  - Checklists: check or uncheck ("תסמן את הכובע והמגבות", "תאפס הכל"), rename, remove.
+  - Tasks: done or open again, a new date or time ("תעביר את הזבל למחר ב-8", "הזבל ב-22"), no date, assign or unassign ("תשייך את המזגן לדני"), rename, remove. An assignment sends the task email, as from the edit sheet.
+  - The reply shows what changed ("עדכנתי: ביצים (5 יח׳)"), and "ביטול" undoes the changes and the additions of that message together.
+  - Removing never happens straight away: the reply asks "למחוק מהרשימה את …?" with "כן, למחוק" and "להשאיר", since a deletion can't be undone and takes the item's notes and attachments with it.
+  - An item the message names that isn't on the list is reported ("לא מצאתי ברשימה: …").
 
 ## Sign-in
 

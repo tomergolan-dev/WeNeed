@@ -9,7 +9,15 @@ import { BackendProvider, type Backend } from "@/components/lists/backend";
 import { useRouter } from "@/i18n/navigation";
 import { MAX_ATTACHMENTS_PER_ITEM } from "@/lib/attachment-rules";
 import type { AttachmentView } from "@/lib/attachments";
-import { planChecklist, planChores, planShopping, type AssistantReply } from "@/lib/assistant-plan";
+import { israelNow } from "@/lib/due";
+import {
+  planChecklist,
+  planChores,
+  planEdits,
+  planShopping,
+  type AssistantReply,
+  type ItemFields,
+} from "@/lib/assistant-plan";
 import { DEFAULT_CATEGORY } from "@/lib/categories";
 import { DONE_TASKS_VISIBLE_MS, dueStatus, todayIn } from "@/lib/due";
 import { combineQuantities, findOpenItem } from "@/lib/items";
@@ -112,7 +120,14 @@ function useSeed() {
     if (withNote) {
       withNote.note = t("tasks.note");
       attachments[withNote.id] = [
-        { id: crypto.randomUUID(), kind: "link", name: t("tasks.linkName"), url: t("tasks.link"), contentType: null, size: null },
+        {
+          id: crypto.randomUUID(),
+          kind: "link",
+          name: t("tasks.linkName"),
+          url: t("tasks.link"),
+          contentType: null,
+          size: null,
+        },
       ];
     }
     return { version: VERSION, place: t("place"), people, lists: [shopping, tasks, checklist], items, attachments };
@@ -247,6 +262,12 @@ type Router = ReturnType<typeof useRouter>;
 function createBackend(update: Update, get: () => DemoState, router: Router): Backend {
   const patchItem = (id: string, patch: Partial<Item>) =>
     update((s) => ({ ...s, items: s.items.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
+  // An item's fields from the chat, as the demo stores them.
+  const demoColumns = ({ dueTime, done, ...rest }: Partial<ItemFields>): Partial<Item> => ({
+    ...rest,
+    ...(dueTime !== undefined && { dueTime: dueTime ? `${dueTime}:00` : null }),
+    ...(done !== undefined && { done, doneBy: done ? ME : null, doneAt: done ? new Date() : null }),
+  });
   const removeItems = (ids: string[]) =>
     update((s) => {
       const attachments = { ...s.attachments };
@@ -255,13 +276,23 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
     });
   const listOf = (id: string) => get().lists.find((list) => list.id === id);
   const nextPosition = (listId: string) =>
-    Math.max(0, ...get().items.filter((item) => item.roundId === listId).map((item) => item.position)) + 1;
+    Math.max(
+      0,
+      ...get()
+        .items.filter((item) => item.roundId === listId)
+        .map((item) => item.position),
+    ) + 1;
   const insert = (listId: string, fields: Partial<Item> & { name: string }) => {
     const item = newItem(listId, fields, nextPosition(listId));
     update((s) => ({ ...s, items: [...s.items, item] }));
     return item;
   };
-  const choreFields = (input: { title: string; assigneeId: string | null; dueDate: string | null; dueTime: string | null }) => ({
+  const choreFields = (input: {
+    title: string;
+    assigneeId: string | null;
+    dueDate: string | null;
+    dueTime: string | null;
+  }) => ({
     name: input.title.trim(),
     assigneeId: input.assigneeId,
     dueDate: input.dueDate,
@@ -269,7 +300,10 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
   });
   const attachmentsOf = (itemId: string) => get().attachments[itemId] ?? [];
   const attach = (itemId: string, attachment: AttachmentView) =>
-    update((s) => ({ ...s, attachments: { ...s.attachments, [itemId]: [...(s.attachments[itemId] ?? []), attachment] } }));
+    update((s) => ({
+      ...s,
+      attachments: { ...s.attachments, [itemId]: [...(s.attachments[itemId] ?? []), attachment] },
+    }));
 
   return {
     base: "/demo",
@@ -324,7 +358,9 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       update((s) => ({
         ...s,
         items: s.items.map((item) =>
-          item.roundId === listId ? { ...item, done, doneBy: done ? ME : null, doneAt: done ? new Date() : null } : item,
+          item.roundId === listId
+            ? { ...item, done, doneBy: done ? ME : null, doneAt: done ? new Date() : null }
+            : item,
         ),
       }));
       return ok;
@@ -385,10 +421,29 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       const listItems = state.items.filter((item) => item.roundId === listId);
       const open = listItems.filter((item) => !item.done);
       const me = state.people.find((p) => p.id === ME)!;
+      const current = listItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        done: item.done,
+        quantity: item.quantity,
+        unit: item.unit,
+        dueDate: item.dueDate,
+        dueTime: item.dueTime?.slice(0, 5) ?? null,
+        assigneeId: item.assigneeId,
+      }));
+      const nameOf = (id: string | null) => state.people.find((p) => p.id === id)?.name ?? null;
       const parsed = await parseDemoMessage({
         type: list.type,
         text,
-        current: (list.type === "shopping" ? open : listItems).map((item) => item.name).slice(0, 200),
+        current: current
+          .map(({ name, done, dueDate, dueTime, assigneeId }) => ({
+            name,
+            done,
+            dueDate,
+            dueTime,
+            assignee: nameOf(assigneeId),
+          }))
+          .slice(0, 200),
         sender: me.name,
         members: state.people.map((p) => p.name),
       });
@@ -400,7 +455,16 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
           : parsed.type === "checklist"
             ? planChecklist(parsed.result, listItems)
             : planChores(parsed.result, state.people);
-      const reply: AssistantReply = { added: [], duplicates: plan.duplicates, skipped: plan.skipped };
+      const edits = planEdits(parsed.result.edits, current, state.people, israelNow().date);
+      for (const change of edits.changes) patchItem(change.itemId, demoColumns(change.patch));
+      const reply: AssistantReply = {
+        added: [],
+        duplicates: plan.duplicates,
+        skipped: plan.skipped,
+        changed: edits.changes,
+        removals: edits.removals,
+        notFound: edits.notFound,
+      };
       for (const planned of plan.add) {
         const item = insert(listId, {
           name: planned.name,
@@ -427,8 +491,9 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       patchItem(itemId, { quantity, unit: unit || null });
       return ok;
     },
-    async removeAdded(_listId, itemIds) {
-      removeItems(itemIds);
+    async undoReply(_listId, { added, restore }) {
+      removeItems(added);
+      for (const { itemId, fields } of restore) patchItem(itemId, demoColumns(fields));
       return ok;
     },
 

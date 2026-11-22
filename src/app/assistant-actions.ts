@@ -8,7 +8,16 @@ import { aiRequests, items } from "@/db/schema";
 import type { ActionError, ActionResult } from "@/app/actions";
 import { parseChecklist, parseChores, parseShopping } from "@/lib/ai/list-assistant";
 import { getCurrentUser } from "@/lib/auth";
-import { planChecklist, planChores, planShopping, type AssistantReply, type Plan } from "@/lib/assistant-plan";
+import {
+  planChecklist,
+  planChores,
+  planEdits,
+  planShopping,
+  type AssistantReply,
+  type EditPlan,
+  type ItemFields,
+  type Plan,
+} from "@/lib/assistant-plan";
 import { israelNow } from "@/lib/due";
 import { findEditableItem, findList, getListPeople } from "@/lib/list-access";
 import { ensureActiveRound } from "@/lib/lists";
@@ -52,17 +61,27 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
   if (!(await withinLimits(user.id))) return { ok: false, error: "aiLimit" };
 
   const round = await ensureActiveRound(list.id);
-  const current = await db
-    .select({ id: items.id, name: items.name, done: items.done, quantity: items.quantity, unit: items.unit })
+  const rows = await db
+    .select({
+      id: items.id,
+      name: items.name,
+      done: items.done,
+      quantity: items.quantity,
+      unit: items.unit,
+      dueDate: items.dueDate,
+      dueTime: items.dueTime,
+      assigneeId: items.assigneeId,
+    })
     .from(items)
     .where(eq(items.roundId, round.id));
+  const current = rows.map((row) => ({ ...row, dueTime: row.dueTime?.slice(0, 5) ?? null }));
   const [{ last }] = await db
     .select({ last: sql<number>`coalesce(max(${items.position}), 0)::int` })
     .from(items)
     .where(eq(items.roundId, round.id));
   let position = last;
 
-  const reply: AssistantReply = { added: [], duplicates: [], skipped: [] };
+  const reply: AssistantReply = { added: [], duplicates: [], skipped: [], changed: [], removals: [], notFound: [] };
   const insert = async (values: Omit<typeof items.$inferInsert, "roundId" | "addedBy" | "position">) => {
     const [row] = await db
       .insert(items)
@@ -73,25 +92,43 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
 
   try {
     let plan: Plan;
+    let edits: EditPlan;
+    const now = israelNow();
     if (list.type === "shopping") {
       // Products already bought ("in the cart") are added again.
       const open = current.filter((item) => !item.done);
-      const result = await parseShopping(parsedText.data, open.map((item) => item.name));
+      const result = await parseShopping(parsedText.data, current);
       if (!result) return { ok: false, error: "aiFailed" };
       plan = planShopping(result, open);
+      edits = planEdits(result.edits, current);
     } else if (list.type === "checklist") {
-      const result = await parseChecklist(parsedText.data, current.map((item) => item.name));
+      const result = await parseChecklist(parsedText.data, current);
       if (!result) return { ok: false, error: "aiFailed" };
       plan = planChecklist(result, current);
+      edits = planEdits(result.edits, current);
     } else {
       const members = await getListPeople(list.id);
+      const nameOf = (id: string | null) => members.find((m) => m.id === id)?.name ?? null;
       const result = await parseChores(
         parsedText.data,
         { sender: user.name, members: members.map((m) => m.name) },
-        israelNow(),
+        now,
+        current.map((item) => ({ ...item, assignee: nameOf(item.assigneeId) })),
       );
       if (!result) return { ok: false, error: "aiFailed" };
       plan = planChores(result, members);
+      edits = planEdits(result.edits, current, members, now.date);
+    }
+
+    reply.removals = edits.removals;
+    reply.notFound = edits.notFound;
+    for (const change of edits.changes) {
+      await db
+        .update(items)
+        .set(toColumns(change.patch, user.id))
+        .where(and(eq(items.roundId, round.id), eq(items.id, change.itemId)));
+      if (change.patch.assigneeId) notifyAssigned(change.itemId, change.patch.assigneeId, user.id);
+      reply.changed.push(change);
     }
 
     reply.duplicates = plan.duplicates;
@@ -148,19 +185,62 @@ export async function setItemQuantity(itemId: string, quantity: number, unit: st
   return { ok: true };
 }
 
-/** Undoes what the chat just added: removes those items from the current round. */
-export async function removeAdded(listId: string, itemIds: string[]): Promise<ActionResult> {
+/** An item's fields as database columns; checking or unchecking also records who and when. */
+function toColumns(fields: Partial<ItemFields>, userId: string): Partial<typeof items.$inferInsert> {
+  const { dueTime, done, ...rest } = fields;
+  return {
+    ...rest,
+    ...(dueTime !== undefined && { dueTime: dueTime ? `${dueTime}:00` : null }),
+    ...(done !== undefined &&
+      (done ? { done: true, doneBy: userId, doneAt: new Date() } : { done: false, doneBy: null, doneAt: null })),
+  };
+}
+
+const restoreFields = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    done: z.boolean(),
+    quantity: z.number().positive().max(100_000).nullable(),
+    unit: z.string().trim().max(30).nullable(),
+    dueDate: z.iso.date().nullable(),
+    dueTime: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+      .nullable(),
+    assigneeId: z.uuid().nullable(),
+  })
+  .partial();
+
+const undoInput = z.object({
+  added: z.array(z.uuid()).max(100),
+  restore: z.array(z.object({ itemId: z.uuid(), fields: restoreFields })).max(200),
+});
+
+/**
+ * Undoes a chat reply: removes the items it added and puts back what it
+ * changed, in the list's current round.
+ */
+export async function undoReply(listId: string, input: z.input<typeof undoInput>): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "unauthorized" };
 
-  const parsed = z.array(z.uuid()).min(1).max(100).safeParse(itemIds);
+  const parsed = undoInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
 
   const list = await findList(listId, user.id);
   if (!list) return { ok: false, error: "notFound" };
 
   const round = await ensureActiveRound(list.id);
-  await db.delete(items).where(and(eq(items.roundId, round.id), inArray(items.id, parsed.data)));
+  const { added, restore } = parsed.data;
+  if (added.length) await db.delete(items).where(and(eq(items.roundId, round.id), inArray(items.id, added)));
+  for (const { itemId, fields } of restore) {
+    const columns = toColumns(fields, user.id);
+    if (Object.keys(columns).length === 0) continue;
+    await db
+      .update(items)
+      .set(columns)
+      .where(and(eq(items.roundId, round.id), eq(items.id, itemId)));
+  }
   refresh();
   return { ok: true };
 }

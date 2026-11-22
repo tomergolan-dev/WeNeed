@@ -1,4 +1,5 @@
-// The AI chat in every list: reads a free-text message and returns what to add.
+// The AI chat in every list: reads a free-text message and returns what to
+// add, and what to change in items already on the list.
 // The extraction rules come from the paused WhatsApp bot's parser
 // (src/lib/bot/parse-message.ts), split by list kind.
 
@@ -22,8 +23,18 @@ const ITEM_RULES = `Extract every product as a separate item. Products are separ
 - name: the product only, without quantity, unit or packaging words ("2 קרטוני חלב" -> name "חלב"). Copy the product words exactly as the user wrote them: never fix spelling, never expand slang or abbreviations, never translate ("גבנצ 15%" stays "גבנצ 15%"). Keep a brand or variety when given ("חלב 3%", "קוטג' תנובה").
 - quantity: the number to buy when the user states one, otherwise null. Hebrew number words count ("שני", "שלושה", "חצי"). A number written with x or × ("x18", "18x", "×6") is a count of units: "חבילת ביצים x18" -> name "ביצים", quantity 18, unit null; "8 מעדני שוקולד" -> name "מעדני שוקולד", quantity 8, unit null. Packaging words without a count ("חבילת", "תבנית") are dropped.
 - unit: the unit as the user wrote it, in the language of the message ("קרטונים", "ק״ג", "בקבוקים", "חבילות", "שישיות"; "cartons", "kg", "bottles", "packs"), otherwise null. Never put a unit when the user gave none; a plain count of items has unit null ("2 שישיות מים" -> name "מים", quantity 2, unit "שישיות").
-- existing: if the current list already has the same product, its name copied exactly as it appears in the current list; otherwise null. The same product: singular/plural, spelling variants, the same product in another language, or a plain name for a listed item that only adds a brand, percentage or size ("עגבנייה" = "עגבניות"; "milk" = "חלב"; "חלב" = "חלב 3%"). Not the same: a different name for a related or similar product, even in the same family ("לחם" vs "לחמניות", "חלב" vs "חלב סויה", "גבינה לבנה" vs "גבנצ 15%", "יוגורט" vs "מעדן"). When unsure, null.
-Always return every requested item, including ones already on the list. Words like "צריך", "תוסיף", "נגמר", "אין לנו" are not part of a name. Return an empty array when the message names nothing to add (a greeting, a question).`;
+- existing: if the items still to get on the current list already have the same product, its name copied exactly as it appears in the current list; otherwise null. The same product: singular/plural, spelling variants, the same product in another language, or a plain name for a listed item that only adds a brand, percentage or size ("עגבנייה" = "עגבניות"; "milk" = "חלב"; "חלב" = "חלב 3%"). Not the same: a different name for a related or similar product, even in the same family ("לחם" vs "לחמניות", "חלב" vs "חלב סויה", "גבינה לבנה" vs "גבנצ 15%", "יוגורט" vs "מעדן"). When unsure, null.
+Always return every requested item, including ones already on the list. Words like "צריך", "תוסיף", "נגמר", "אין לנו" are not part of a name. Return an empty array when the message names nothing to add (a greeting, a question, or only changes to the list).`;
+
+// Changes to items already on the list. Each kind of list adds its actions.
+const editRules = (
+  actions: string,
+) => `The user may also change items already on the list. Each change goes in "edits", never in the items to add:
+- target: the item's name copied exactly as it appears in the current list, matched the way "existing" is (singular/plural, spelling variants, another language). When the user refers to something that is not on the list, the target is what the user wrote.
+- action, one of:
+${actions}
+- Fields the action doesn't use are null.
+One edit per item: "תסמן את הכובע והמגבות" is two edits. "הכל" / "everything" means every item on the list the action applies to. A message can both add and change ("תוסיף עגבניות ותוריד את הבננות": one item to add, one edit). Asking for an item again, or for more of it ("עוד 2 חלב"), is an item to add, not an edit. Return an empty "edits" array when nothing is changed.`;
 
 const CATEGORY_RULES = `category: the supermarket section the product is found in. Sections: produce (fruit, vegetables, fresh herbs), bakery (bread, pita, cakes), dairy (milk, cheese, white cheese such as "גבינה לבנה" and "גבנצ", cottage, yogurt, puddings, eggs, butter), meat_fish (fresh and packaged meat, chicken, fish), deli (cold cuts, salads, hummus), pantry (rice, pasta, flour, sugar, cooking oil and olive oil, coffee, tea, cereal), canned (canned and jarred food), spices (spices, sauces, condiments, vinegar; not oils), snacks (snacks, sweets, chocolate), drinks (water, juice, soda, wine, beer), frozen, cleaning (cleaning supplies, dish soap, laundry, trash bags), personal_care (shampoo, soap, toothpaste, toilet paper, tissues), baby (diapers, wipes, formula), home (light bulbs, batteries, kitchen tools), other (only when nothing else fits).`;
 
@@ -34,14 +45,25 @@ ${LANGUAGE_RULE}
 
 ${ITEM_RULES}
 - ${CATEGORY_RULES}
-A task that involves going to a store is still shopping: "לעבור מחר בסופר לקנות בצל לבן" -> item "בצל לבן".`;
+A task that involves going to a store is still shopping: "לעבור מחר בסופר לקנות בצל לבן" -> item "בצל לבן".
+
+${editRules(`  - remove: take it off the list ("תוריד את החלב", "תמחק", "לא צריך יותר לחם", "כבר יש לנו", "remove").
+  - check: it was bought, put it in the cart ("קניתי חלב", "לקחתי", "שמתי בעגלה", "got the milk").
+  - uncheck: back to the items to buy ("לא קניתי בסוף", "תחזיר את החלב", "עדיין צריך").
+  - rename: newName is the new name, as the user wrote it ("תשנה את חלב לחלב סויה").
+  - set_quantity: set the amount to quantity, with unit as in adding (null when the user gave none) ("תעשה 3 ביצים", "רק 2 חלב", "במקום 2 תעשה 4").`)}`;
 
 const CHECKLIST_PROMPT = `You read messages written in the AI chat of a reusable checklist in "We Need" (for example "Weekend up north" or "Gym bag"). Messages are usually in Hebrew, sometimes in English or mixed. Everything the user writes is an item to have on the checklist.
 
 ${LANGUAGE_RULE}
 
 ${ITEM_RULES}
-On a checklist, keep a quantity that matters inside the name as the user wrote it ("2 מגבות" -> name "2 מגבות").`;
+On a checklist, keep a quantity that matters inside the name as the user wrote it ("2 מגבות" -> name "2 מגבות").
+
+${editRules(`  - remove: take it off the checklist ("תוריד את המטקות", "תמחק", "remove").
+  - check: mark it as done or packed ("ארזתי את הכובע", "יש מגבות", "תסמן את", "check").
+  - uncheck: clear its mark ("תוריד את הסימון מ", "עוד לא ארזתי", "uncheck"; "תאפס הכל" unchecks every checked item).
+  - rename: newName is the new name, as the user wrote it.`)}`;
 
 const CHORES_PROMPT = `You read messages written in the AI chat of a shared chores list in "We Need". Messages are usually in Hebrew, sometimes in English or mixed. Everything the user writes is a chore to do; a message may hold several.
 
@@ -52,7 +74,19 @@ For each chore:
 - dueDate: the date the user gave, as YYYY-MM-DD, worked out from today's date in the context; otherwise null. "היום" is today, "מחר" tomorrow, "מחרתיים" the day after. A weekday ("ביום שישי", "עד שישי", "בשבת") is the nearest such day from today, today included only when it is that weekday and the user says "היום". "בשבוע הבא" without a day is null.
 - dueTime: the time the user gave, as HH:MM (24 hours); otherwise null. A bare hour from 1 to 7 ("ב-5", "בחמש") means the afternoon or evening (17:00) unless the user says morning ("בבוקר"). "בערב" alone is 20:00, "בצהריים" alone 13:00, "בבוקר" alone 09:00. A time without a date is today, or tomorrow if that time has already passed today.
 - assignee: who should do it, copied exactly from the members list. Only "אני", "עליי", "I" (the user speaking about themselves) mean the sender. An impersonal "צריך ל..." or a bare infinitive with no person named is null; null also when the name is not in the list.
-Return an empty array when the message names nothing to do (a greeting, a question).`;
+Return an empty array when the message names nothing to do (a greeting, a question, or only changes to the list).
+
+${editRules(`  - remove: delete the task ("תמחק את הווטרינר", "לא צריך לתקן את הברז", "remove").
+  - check: the task is done ("סיימתי את החשבון", "הזבל ירד", "עשיתי", "done").
+  - uncheck: open it again ("עוד לא סיימתי", "תפתח מחדש").
+  - rename: newName is the new title, as an action like a new chore's title.
+  - set_due: a new due date and/or time, with dueDate and dueTime worked out as for a new chore ("תעביר את הזבל למחר ב-8"). When the user gives only a time, dueDate is null (the task keeps its date); when only a date, dueTime is null (it keeps its time). A task already on the list named with just a date or time is also set_due ("הזבל ב-22", "הווטרינר ביום שלישי").
+  - clear_due: remove the task's date ("בלי תאריך").
+  - assign: assignee is who should do it, copied exactly from the members list ("תשייך את המזגן לדני", "אני אקח את הזבל" -> the sender).
+  - unassign: nobody is assigned anymore.`)}`;
+
+const target = z.string();
+const newName = z.string().nullable();
 
 const ShoppingOutput = z.object({
   items: z.array(
@@ -64,16 +98,36 @@ const ShoppingOutput = z.object({
       existing: z.string().nullable(),
     }),
   ),
+  edits: z.array(
+    z.object({
+      target,
+      action: z.enum(["remove", "check", "uncheck", "rename", "set_quantity"]),
+      newName,
+      quantity: z.number().nullable(),
+      unit: z.string().nullable(),
+    }),
+  ),
 });
 
 const ChecklistOutput = z.object({
   items: z.array(z.object({ name: z.string(), existing: z.string().nullable() })),
+  edits: z.array(z.object({ target, action: z.enum(["remove", "check", "uncheck", "rename"]), newName })),
 });
 
 const ChoresOutput = z.object({
   chores: z.array(
     z.object({
       title: z.string(),
+      dueDate: z.string().nullable(),
+      dueTime: z.string().nullable(),
+      assignee: z.string().nullable(),
+    }),
+  ),
+  edits: z.array(
+    z.object({
+      target,
+      action: z.enum(["remove", "check", "uncheck", "rename", "set_due", "clear_due", "assign", "unassign"]),
+      newName,
       dueDate: z.string().nullable(),
       dueTime: z.string().nullable(),
       assignee: z.string().nullable(),
@@ -110,22 +164,48 @@ async function parse<T extends z.ZodType>(system: string, schema: T, context: st
   return (response.parsed_output as z.infer<T> | null) ?? null;
 }
 
-const listContext = (current: string[]) =>
-  current.length ? `Current list: ${current.join(", ")}` : "The current list is empty.";
+/** An item as the chat sees it: its name, and whether it is checked (bought, packed or done). */
+export type CurrentItem = { name: string; done: boolean };
 
-export function parseShopping(text: string, current: string[]) {
-  return parse(SHOPPING_PROMPT, ShoppingOutput, [listContext(current)], text);
+const names = (items: CurrentItem[]) => items.map((item) => item.name).join(", ") || "none";
+
+export function parseShopping(text: string, current: CurrentItem[]) {
+  const context = current.length
+    ? [
+        `Current list, still to get: ${names(current.filter((item) => !item.done))}`,
+        `Already in the cart (bought): ${names(current.filter((item) => item.done))}`,
+      ]
+    : ["The current list is empty."];
+  return parse(SHOPPING_PROMPT, ShoppingOutput, context, text);
 }
 
-export function parseChecklist(text: string, current: string[]) {
-  return parse(CHECKLIST_PROMPT, ChecklistOutput, [listContext(current)], text);
+export function parseChecklist(text: string, current: CurrentItem[]) {
+  const context = current.length
+    ? [
+        `Current list, unchecked: ${names(current.filter((item) => !item.done))}`,
+        `Checked: ${names(current.filter((item) => item.done))}`,
+      ]
+    : ["The current list is empty."];
+  return parse(CHECKLIST_PROMPT, ChecklistOutput, context, text);
 }
+
+/** A task as the chat sees it, with its date and who it's assigned to. */
+export type CurrentChore = CurrentItem & { dueDate: string | null; dueTime: string | null; assignee: string | null };
 
 export function parseChores(
   text: string,
   people: { sender: string; members: string[] },
   now: { date: string; weekday: string; time: string },
+  current: CurrentChore[] = [],
 ) {
+  const describe = (chore: CurrentChore) => {
+    const details = [
+      chore.dueDate && `due ${chore.dueDate}${chore.dueTime ? ` ${chore.dueTime}` : ""}`,
+      chore.assignee && `assigned to ${chore.assignee}`,
+      chore.done && "done",
+    ].filter(Boolean);
+    return `- ${chore.name}${details.length ? ` (${details.join(", ")})` : ""}`;
+  };
   return parse(
     CHORES_PROMPT,
     ChoresOutput,
@@ -133,6 +213,7 @@ export function parseChores(
       `Today is ${now.weekday}, ${now.date}; the time is ${now.time} (Israel).`,
       `Sender: ${people.sender}`,
       `Members: ${people.members.join(", ")}`,
+      current.length ? `Current tasks:\n${current.map(describe).join("\n")}` : "The list has no tasks yet.",
     ],
     text,
   );
