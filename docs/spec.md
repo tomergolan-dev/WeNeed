@@ -42,6 +42,7 @@ We Need is also a portfolio project, so it includes a public demo.
 | 📋 Checklist | A reusable list, e.g. "Weekend up north" | Permanent; items are checked and unchecked again and again |
 
 - Tapping an item opens its edit sheet. Under the sheet's title, a small line says who added the item and when ("נוסף ע״י תומר · 22 בנוב׳, 13:06", or "נוסף על ידך" for one's own), in every kind of list (decided 2026-11-22, at Tomer's request).
+- Several items can be deleted at once in any list: a "מחיקה" pill (beside the progress in shopping, beside the sort switch in tasks, with the tools in checklists) switches the list to picking; see "Checklists" for how it works.
 - Lists can be renamed and deleted by members (deleting removes the list's history too, after a confirmation).
 - The home screen shows the place's lists as cards (item counts, progress, and for chores the overdue and due-soon counts), and a "New list" button.
 - **Choosing the kind:** a new list gets a name and a kind, shown as three cards, each with a line on what it is for. The kind is guessed from the name ("קניות סופר" → shopping, "מטלות הבית" → chores, "ציוד לטיול" → checklist; shopping when nothing hints) until the user picks one. The kind can be changed later from the list's menu. Decided 2026-11-17: an explicit kind keeps each list's actions clear (finish, due dates, check all), and the guess keeps it effortless. The AI chat may later guess less obvious names.
@@ -94,7 +95,7 @@ We Need is also a portfolio project, so it includes a public demo.
 - Items can be added, edited and removed at any time; the list itself stays.
 - **Check all** and **Uncheck all**, mainly to reset the list before the next use.
 - The progress line has a row of its own across the list, like a shopping list ("12 מתוך 15 מסומנים"); under it, the tools: "סמן הכל", "איפוס", "סדר" and "מחיקה" (decided 2026-11-22, at Tomer's request).
-- **Delete several:** "מחיקה" switches the list to picking: each row gets a circle that turns red when picked, and the row of tools becomes "בחר הכל", "ביטול" and "מחיקה (N)", which asks for a confirmation (it can't be undone, and takes the items' notes and attachments with them).
+- **Delete several** (in every kind of list; shopping and tasks added 2026-11-22): "מחיקה" switches the list to picking: each row gets a circle that turns red when picked, and the row of tools becomes "בחר הכל", "ביטול" and "מחיקה (N)", which asks for a confirmation (it can't be undone, and takes the items' notes and attachments with them).
 - Unchecked items are shown first, with a progress bar; each group keeps the list's order.
 - **Reorder:** "Change order" switches the list to a mode where items are dragged by a handle (touch, mouse or keyboard). The order is saved for everyone. New items go last.
 

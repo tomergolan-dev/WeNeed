@@ -148,14 +148,6 @@
     "dragCancel": "ההזזה בוטלה",
     "quickAddPlaceholder": "הוספה ידנית, למשל ״פנס״",
     "aiPlaceholder": "מה להוסיף? למשל: פנס, כובע ומגבת",
-    "select": "מחיקה",
-    "selectHint": "בחרו פריטים",
-    "selectAll": "בחר הכל",
-    "cancelSelect": "ביטול",
-    "deleteSelected": "מחיקה ({count})",
-    "deleteTitle": "{count, plural, one {למחוק פריט אחד?} other {למחוק # פריטים?}}",
-    "deleteDescription": "אי אפשר לבטל את זה. גם ההערות והצירופים שלהם יימחקו.",
-    "deleteConfirm": "כן, למחוק",
     "tools": "פעולות על הרשימה"
   },
   "ItemForm": {
@@ -658,5 +650,15 @@
     "tomorrow": "מחר",
     "button": "לצפייה במשימה",
     "footer": "קיבלת את המייל כי המשימה משויכת אליך. אפשר לכבות מיילים על משימות בתפריט החשבון ב-WeNeed."
+  },
+  "BulkDelete": {
+    "select": "מחיקה",
+    "hint": "בחרו פריטים",
+    "selectAll": "בחר הכל",
+    "cancel": "ביטול",
+    "delete": "מחיקה ({count})",
+    "title": "{count, plural, one {למחוק פריט אחד?} other {למחוק # פריטים?}}",
+    "description": "אי אפשר לבטל את זה. גם ההערות והצירופים שלהם יימחקו.",
+    "confirm": "כן, למחוק"
   }
 }

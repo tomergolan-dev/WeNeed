@@ -8,6 +8,13 @@ import { useBackend } from "@/components/lists/backend";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
+import {
+  SelectCircle,
+  SelectToolbar,
+  StartSelectButton,
+  useSelection,
+  type Selection,
+} from "@/components/lists/bulk-delete";
 import { useAddedBy } from "@/components/lists/added-by";
 import { useMe } from "@/components/lists/me";
 import { AssistantBar } from "@/components/lists/assistant-bar";
@@ -64,8 +71,9 @@ export function ChoresList({
   people: Person[];
 }) {
   const t = useTranslations("Chores");
-  const { addChore, deleteItem, setItemDone, updateChore } = useBackend();
+  const { addChore, deleteItem, deleteItems, setItemDone, updateChore } = useBackend();
   const { items: chores, run, error } = useListItems(items);
+  const selection = useSelection(chores);
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("date");
   const [editing, setEditing] = useState<Item | null>(null);
@@ -116,6 +124,7 @@ export function ChoresList({
   const rowProps = {
     now,
     people,
+    selection,
     onToggle: (chore: Item) =>
       run({ type: "patch", id: chore.id, patch: { done: !chore.done } }, () => setItemDone(chore.id, !chore.done)),
     onEdit: setEditing,
@@ -215,7 +224,12 @@ export function ChoresList({
             >
               {t("overdue")}
             </FilterButton>
-            <FilterButton on={filter === "soon"} onClick={() => setFilter("soon")} dot="bg-[#e0a21b]" count={counts.soon}>
+            <FilterButton
+              on={filter === "soon"}
+              onClick={() => setFilter("soon")}
+              dot="bg-[#e0a21b]"
+              count={counts.soon}
+            >
               {t("soon")}
             </FilterButton>
             <FilterButton on={filter === "noDate"} onClick={() => setFilter("noDate")}>
@@ -226,6 +240,13 @@ export function ChoresList({
 
         <div className="flex flex-col gap-4 px-5 pt-4 pb-40 lg:px-8">
           {error && <p className="text-sm text-destructive">{error}</p>}
+
+          {selection.selecting && (
+            <SelectToolbar
+              selection={selection}
+              onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
+            />
+          )}
 
           {chores.length === 0 && (
             <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
@@ -240,21 +261,24 @@ export function ChoresList({
             <section>
               <div className="mb-2 flex items-center justify-between gap-3 px-1">
                 <h2 className="text-[13px] font-semibold text-muted-foreground">{t("open")}</h2>
-                <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
-                  {(["date", "added"] as const).map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      aria-pressed={sort === option}
-                      onClick={() => setSort(option)}
-                      className={cn(
-                        "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
-                        sort === option && "bg-card text-foreground shadow-sm",
-                      )}
-                    >
-                      {option === "date" ? t("sortDate") : t("sortAdded")}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-1.5">
+                  <div role="group" aria-label={t("sortBy")} className="flex rounded-full bg-muted p-0.5">
+                    {(["date", "added"] as const).map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={sort === option}
+                        onClick={() => setSort(option)}
+                        className={cn(
+                          "h-7 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
+                          sort === option && "bg-card text-foreground shadow-sm",
+                        )}
+                      >
+                        {option === "date" ? t("sortDate") : t("sortAdded")}
+                      </button>
+                    ))}
+                  </div>
+                  {!selection.selecting && <StartSelectButton selection={selection} />}
                 </div>
               </div>
               <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
@@ -283,30 +307,35 @@ export function ChoresList({
 
       <AssistantBar listId={listId} placeholder={t("aiPlaceholder")} chores />
 
-      <BottomSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={t("editTitle")} subtitle={addedBy}>
+      <BottomSheet
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title={t("editTitle")}
+        subtitle={addedBy}
+      >
         {editing && (
           <div className="flex flex-col gap-4">
             <DetailsButton item={editing} onOpen={() => setEditing(null)} onEdit={() => setEditing(editing)} />
             <ChoreForm
-            initial={{
-              title: editing.name,
-              dueDate: editing.dueDate ?? "",
-              dueTime: editing.dueTime?.slice(0, 5) ?? "",
-              assigneeId: editing.assigneeId ?? "",
-            }}
-            people={people}
-            submitLabel={t("save")}
-            onSubmit={(input) => {
-              const id = editing.id;
-              run({ type: "patch", id, patch: patchOf(input) }, () => updateChore(id, input));
-              setEditing(null);
-            }}
-            onDelete={() => {
-              const id = editing.id;
-              run({ type: "delete", id }, () => deleteItem(id));
-              setEditing(null);
-            }}
-          />
+              initial={{
+                title: editing.name,
+                dueDate: editing.dueDate ?? "",
+                dueTime: editing.dueTime?.slice(0, 5) ?? "",
+                assigneeId: editing.assigneeId ?? "",
+              }}
+              people={people}
+              submitLabel={t("save")}
+              onSubmit={(input) => {
+                const id = editing.id;
+                run({ type: "patch", id, patch: patchOf(input) }, () => updateChore(id, input));
+                setEditing(null);
+              }}
+              onDelete={() => {
+                const id = editing.id;
+                run({ type: "delete", id }, () => deleteItem(id));
+                setEditing(null);
+              }}
+            />
             <RemindButton chore={editing} people={people} />
           </div>
         )}
@@ -351,6 +380,7 @@ function ChoreRow({
   status,
   now,
   people,
+  selection,
   onToggle,
   onEdit,
 }: {
@@ -358,12 +388,15 @@ function ChoreRow({
   status: DueStatus;
   now: number;
   people: Person[];
+  /** While picking tasks to delete: the row picks instead of checking or editing. */
+  selection: Selection;
   onToggle: (chore: Item) => void;
   onEdit: (chore: Item) => void;
 }) {
   const dueText = useDueText();
   const assignee = people.find((p) => p.id === chore.assigneeId)?.name;
   const draft = isDraft(chore);
+  const open = () => (selection.selecting ? selection.toggle(chore.id) : onEdit(chore));
 
   return (
     <li
@@ -373,22 +406,26 @@ function ChoreRow({
         status === "soon" && "shadow-[inset_-4px_0_0_#e0a21b] ltr:shadow-[inset_4px_0_0_#e0a21b]",
       )}
     >
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={chore.done}
-        aria-label={chore.name}
-        disabled={draft}
-        onClick={() => onToggle(chore)}
-        className={cn(
-          "mt-px flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
-          chore.done && "border-primary bg-primary",
-        )}
-      >
-        {chore.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
-      </button>
+      {selection.selecting ? (
+        <SelectCircle item={chore} selection={selection} className="mt-px" />
+      ) : (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={chore.done}
+          aria-label={chore.name}
+          disabled={draft}
+          onClick={() => onToggle(chore)}
+          className={cn(
+            "mt-px flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+            chore.done && "border-primary bg-primary",
+          )}
+        >
+          {chore.done && <Check className="size-4" strokeWidth={3} aria-hidden />}
+        </button>
+      )}
       <div
-        onClick={() => !draft && onEdit(chore)}
+        onClick={() => !draft && open()}
         className={cn("flex min-w-0 flex-1 cursor-pointer flex-col items-start text-start", draft && "opacity-60")}
       >
         <span className="flex max-w-full items-center gap-2">
@@ -397,13 +434,16 @@ function ChoreRow({
             disabled={draft}
             onClick={(e) => {
               e.stopPropagation();
-              onEdit(chore);
+              open();
             }}
-            className={cn("min-w-0 text-start text-base font-medium", chore.done && "text-muted-foreground line-through")}
+            className={cn(
+              "min-w-0 text-start text-base font-medium",
+              chore.done && "text-muted-foreground line-through",
+            )}
           >
             {chore.name}
           </button>
-          {!draft && <ClipChip item={chore} onEdit={() => onEdit(chore)} />}
+          {!draft && !selection.selecting && <ClipChip item={chore} onEdit={() => onEdit(chore)} />}
         </span>
         {!chore.done && (
           <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
@@ -486,7 +526,10 @@ function RemindButton({ chore, people }: { chore: Item; people: Person[] }) {
         {t("remind", { name: assignee.name })}
       </button>
       {state.note && (
-        <p role="status" className={cn("text-center text-xs", state.error ? "text-destructive" : "text-muted-foreground")}>
+        <p
+          role="status"
+          className={cn("text-center text-xs", state.error ? "text-destructive" : "text-muted-foreground")}
+        >
           {state.note}
         </p>
       )}

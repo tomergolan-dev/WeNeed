@@ -148,14 +148,6 @@
     "dragCancel": "Move canceled",
     "quickAddPlaceholder": "Add by hand, e.g. \"flashlight\"",
     "aiPlaceholder": "What to add? E.g. a hat, a towel",
-    "select": "Delete",
-    "selectHint": "Choose items",
-    "selectAll": "Select all",
-    "cancelSelect": "Cancel",
-    "deleteSelected": "Delete ({count})",
-    "deleteTitle": "{count, plural, one {Delete one item?} other {Delete # items?}}",
-    "deleteDescription": "This can't be undone. Their notes and attachments are deleted too.",
-    "deleteConfirm": "Yes, delete",
     "tools": "List actions"
   },
   "ItemForm": {
@@ -631,5 +623,15 @@
     "tomorrow": "Tomorrow",
     "button": "View the task",
     "footer": "You got this email because the task is assigned to you. You can turn task emails off in the account menu in WeNeed."
+  },
+  "BulkDelete": {
+    "select": "Delete",
+    "hint": "Choose items",
+    "selectAll": "Select all",
+    "cancel": "Cancel",
+    "delete": "Delete ({count})",
+    "title": "{count, plural, one {Delete one item?} other {Delete # items?}}",
+    "description": "This can't be undone. Their notes and attachments are deleted too.",
+    "confirm": "Yes, delete"
   }
 }

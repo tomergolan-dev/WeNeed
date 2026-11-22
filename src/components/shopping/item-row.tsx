@@ -7,6 +7,7 @@ import type { ItemInput } from "@/app/actions";
 import type { Item } from "@/db/schema";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { useAddedBy } from "@/components/lists/added-by";
+import { SelectCircle, type Selection } from "@/components/lists/bulk-delete";
 import { ClipChip, DetailsButton } from "@/components/lists/item-details";
 import { isDraft } from "@/components/lists/use-list-items";
 import { Button } from "@/components/ui/button";
@@ -17,38 +18,46 @@ import { ItemFields, toItemInput, type ItemDraft } from "./item-fields";
 type Props = {
   item: Item;
   people: { id: string; name: string }[];
+  /** While picking items to delete: the row picks instead of checking or editing. */
+  selection: Selection;
   onToggle: (id: string, done: boolean) => void;
   onUpdate: (id: string, input: ItemInput) => void;
   onDelete: (id: string) => void;
 };
 
-export function ItemRow({ item, people, onToggle, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete }: Props) {
   const [editing, setEditing] = useState(false);
   // Items added a moment ago only exist on this screen until the server confirms.
   const draft = isDraft(item);
   const tItem = useTranslations("ItemForm");
   const quantity = formatQuantity(item, tItem("units"));
+  const { selecting } = selection;
+  const open = () => (selecting ? selection.toggle(item.id) : setEditing(true));
 
   return (
     <li className="flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0">
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={item.done}
-        aria-label={item.name}
-        disabled={draft}
-        onClick={() => onToggle(item.id, !item.done)}
-        className={cn(
-          "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
-          item.done && "border-primary bg-primary",
-        )}
-      >
-        {item.done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
-      </button>
+      {selecting ? (
+        <SelectCircle item={item} selection={selection} />
+      ) : (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={item.done}
+          aria-label={item.name}
+          disabled={draft}
+          onClick={() => onToggle(item.id, !item.done)}
+          className={cn(
+            "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+            item.done && "border-primary bg-primary",
+          )}
+        >
+          {item.done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
+        </button>
+      )}
       {/* The whole row opens the edit sheet; the name is the keyboard target,
           and the paperclip sits right after it. */}
       <div
-        onClick={() => !draft && setEditing(true)}
+        onClick={() => !draft && open()}
         className={cn("flex min-w-0 flex-1 cursor-pointer items-center gap-2 self-stretch", draft && "opacity-60")}
       >
         <button
@@ -56,7 +65,7 @@ export function ItemRow({ item, people, onToggle, onUpdate, onDelete }: Props) {
           disabled={draft}
           onClick={(e) => {
             e.stopPropagation();
-            setEditing(true);
+            open();
           }}
           className={cn(
             "min-w-0 truncate py-3 text-start text-base",
@@ -65,7 +74,7 @@ export function ItemRow({ item, people, onToggle, onUpdate, onDelete }: Props) {
         >
           {item.name}
         </button>
-        {!draft && <ClipChip item={item} onEdit={() => setEditing(true)} />}
+        {!draft && !selecting && <ClipChip item={item} onEdit={() => setEditing(true)} />}
         <span className="flex-1" />
         {quantity && <span className="shrink-0 text-sm text-muted-foreground">{quantity}</span>}
       </div>
