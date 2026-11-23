@@ -5,8 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import { AccountPanel, type AccountUser } from "@/components/account-menu";
 import { Avatar } from "@/components/avatar";
+import { LogoMark } from "@/components/brand";
 import { NavLists, type SidebarGroup, type UrgentTask } from "@/components/sidebar";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 /**
@@ -85,9 +87,25 @@ export function MobileNav({
                 </span>
                 <ChevronLeft className="size-4 shrink-0 text-muted-foreground ltr:-scale-x-100" aria-hidden />
               </button>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-4 pb-4">
                 <NavLists {...nav} onNavigate={() => setOpen(false)} />
               </div>
+              {/* About the app, quietly at the bottom. */}
+              <footer className="flex flex-col gap-1 border-t border-border/60 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <span className="flex items-center gap-1.5">
+                  <LogoMark className="size-5" />
+                  <span dir="ltr" className="text-[13px] font-bold tracking-tight">
+                    WeNeed
+                  </span>
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  <Link href="/privacy" onClick={() => setOpen(false)} className="underline-offset-2 active:underline">
+                    {t("privacy")}
+                  </Link>
+                  {" · "}
+                  {t("madeBy")}
+                </span>
+              </footer>
             </>
           ) : (
             <>

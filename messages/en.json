@@ -6,6 +6,8 @@
   },
   "Nav": {
     "back": "Back",
+    "privacy": "Privacy policy",
+    "madeBy": "Made by Tomer Golan",
     "switchPlace": "Switch place",
     "yourPlace": "Your place",
     "personalArea": "Personal area",

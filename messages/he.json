@@ -6,6 +6,8 @@
   },
   "Nav": {
     "back": "חזרה",
+    "privacy": "מדיניות פרטיות",
+    "madeBy": "נוצר על ידי תומר גולן",
     "switchPlace": "החלפת מקום",
     "yourPlace": "המקום שלך",
     "personalArea": "אזור אישי",
