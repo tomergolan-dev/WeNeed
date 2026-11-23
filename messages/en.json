@@ -194,7 +194,11 @@
     "summary": "{bought} of {total} bought",
     "finishedBy": "Finished by {name}",
     "locked": "Read only.",
-    "notBought": "Not bought"
+    "notBought": "Not bought",
+    "tasksEmpty": "No tasks done in this list yet.",
+    "doneBy": "by {name}",
+    "unknownDate": "No date",
+    "doneByMe": "by you"
   },
   "Login": {
     "title": "Sign in",

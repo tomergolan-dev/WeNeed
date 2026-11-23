@@ -194,7 +194,11 @@
     "summary": "{bought} מתוך {total} נקנו",
     "finishedBy": "הסתיימה ע״י {name}",
     "locked": "לקריאה בלבד.",
-    "notBought": "לא נקנו"
+    "notBought": "לא נקנו",
+    "tasksEmpty": "עוד אין משימות שבוצעו ברשימה הזאת.",
+    "doneBy": "ע״י {name}",
+    "unknownDate": "ללא תאריך",
+    "doneByMe": "על ידך"
   },
   "Login": {
     "title": "כניסה",

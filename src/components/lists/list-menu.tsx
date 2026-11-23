@@ -18,7 +18,7 @@ const row =
   "flex h-14 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-start font-semibold transition-colors active:bg-muted";
 
 /**
- * The list's ⋯ menu: history (shopping), rename and kind; for admins also who
+ * The list's ⋯ menu: history (shopping and tasks), rename and kind; for admins also who
  * sees the list and delete. `access` is set only for admins.
  */
 export function ListMenu({
@@ -78,7 +78,7 @@ export function ListMenu({
       >
         {view === "menu" && (
           <div className="flex flex-col gap-2.5">
-            {type === "shopping" && history && (
+            {type !== "checklist" && history && (
               <Link href={`/lists/${listId}/history`} onClick={close} className={row}>
                 <History className="size-5 text-muted-foreground" aria-hidden />
                 <span className="flex-1">{t("history")}</span>

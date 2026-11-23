@@ -80,6 +80,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - **By order added.**
 - Filters: all, "עבורי" (assigned to me; only when the list has more than one person), due soon, overdue. They sit in one quiet row styled like the sort switch, with a count beside due soon and overdue only when there is something to count (decided 2026-11-22, at Tomer's request; a "no date" filter was dropped to keep the row short).
 - Check-off marks a chore as done; done chores stay visible for a week under "done recently".
+- **History** (decided 2026-11-23, at Tomer's request): "היסטוריה" in a tasks list's ⋯ menu shows all its done tasks, newest first, by month, each with when it was done and by whom ("על ידך" for the user). Read-only. Checklists have no history.
 - **Task emails** (decided 2026-11-22, at Tomer's request), only to the person a task is assigned to:
   - **Assigned:** when someone assigns a task to someone else (by hand or through the AI chat), the assignee gets an email right away. Assigning a task to yourself sends nothing.
   - **Send a reminder:** the task's edit sheet has "שליחת תזכורת במייל ל…" for a task assigned to someone else. One per task every 10 minutes. Not in the demo.

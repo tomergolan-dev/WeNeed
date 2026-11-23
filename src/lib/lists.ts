@@ -223,3 +223,26 @@ export async function getChores(listId: string): Promise<Item[]> {
     .where(and(eq(items.roundId, round.id), or(eq(items.done, false), gt(items.doneAt, since))))
     .orderBy(asc(items.createdAt));
 }
+
+/**
+ * A tasks list's done tasks, newest first, for its history: all of them, not
+ * only the last week's that the list itself shows.
+ */
+export async function getDoneTasks(listId: string, viewerId: string) {
+  return db
+    .select({
+      id: items.id,
+      name: items.name,
+      doneAt: items.doneAt,
+      doneBy: items.doneBy,
+      doneByName: nameFor(viewerId),
+      dueDate: items.dueDate,
+      dueTime: items.dueTime,
+    })
+    .from(items)
+    .innerJoin(rounds, eq(rounds.id, items.roundId))
+    .leftJoin(users, eq(users.id, items.doneBy))
+    .where(and(eq(rounds.listId, listId), eq(items.done, true)))
+    .orderBy(desc(items.doneAt))
+    .limit(1000);
+}
