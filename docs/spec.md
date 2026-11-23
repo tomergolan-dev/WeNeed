@@ -91,11 +91,11 @@ We Need is also a portfolio project, so it includes a public demo.
   - Schedule: a GitHub Actions workflow (`.github/workflows/task-reminders.yml`) calls `/api/cron/reminders` every 10 minutes with `CRON_SECRET`; Vercel's Hobby plan runs its own cron jobs only once a day. GitHub may run it a few minutes late, so the reminder windows are wide.
 - **Tasks in the calendar** (decided 2026-11-22): "הוספת המשימות ליומן שלי" in the account menu gives each user a private calendar link (`/api/calendar/<token>.ics`) to add once to Google Calendar or the iPhone calendar; after that the calendar updates on its own (Google every few hours, the iPhone as set on the phone).
   - It holds open tasks with a date, assigned to the user or to no one, in lists the user can see; tasks assigned to others, done tasks and tasks without a date stay out. Tasks overdue by more than 60 days are left out too.
-  - A task with a time is a half-hour event at that time; a task with only a date is an all-day event. Each event links back to its list.
+  - A task with a time is a half-hour event at that time; a task with only a date is an all-day event. The event's description has the task's note (up to 1000 characters), the list's name and a link back to it. Attachments stay in the app.
   - The link is the only key (calendar apps fetch it without signing in), so "קישור חדש" replaces it and the old one stops working.
 - **Names** (decided 2026-11-23, at Tomer's request), in the account menu:
   - A pencil beside the user's name at the top edits it ("השם שלי"). Everyone sees it. A new user gets the Google profile's name (or the address); this changes it.
-  - "החברים שלי", a row under the calendar: like contact names in a phone, the user can give anyone they share a place or a list with their own name for them ("אמא" for נורית, "תמיר" for תמיר ליטבק). Only that user sees it, everywhere: who added an item, the assignee picker, members, who sees a list, history, lists shared with them, task emails sent to them, and the AI chat ("תשייך לאמא"). Empty goes back to the name the person chose.
+  - "החברים שלי", a row under the calendar, opens a screen of its own in the menu (with a way back, since the list can be long): like contact names in a phone, the user can give anyone they share a place or a list with their own name for them ("אמא" for נורית, "תמיר" for תמיר ליטבק). Only that user sees it, everywhere: who added an item, the assignee picker, members, who sees a list, history, lists shared with them, task emails sent to them, and the AI chat ("תשייך לאמא"). Empty goes back to the name the person chose.
   - Not in the demo (it has no account).
 
 ### Checklists

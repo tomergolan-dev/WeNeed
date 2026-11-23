@@ -81,6 +81,11 @@ function nextDay(date: string) {
   return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10).replace(/-/g, "");
 }
 
+const shorten = (note: string | null) => {
+  const text = note?.trim() ?? "";
+  return text.length > 1000 ? `${text.slice(0, 1000)}…` : text;
+};
+
 /** The feed for one user, as an .ics file. */
 export async function buildCalendar(user: { id: string; locale: string }) {
   const since = new Date(Date.now() - PAST_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -90,6 +95,7 @@ export async function buildCalendar(user: { id: string; locale: string }) {
       name: items.name,
       dueDate: items.dueDate,
       dueTime: items.dueTime,
+      note: items.note,
       listId: lists.id,
       listName: lists.name,
     })
@@ -136,7 +142,8 @@ export async function buildCalendar(user: { id: string; locale: string }) {
     }
     lines.push(
       `SUMMARY:${escape(row.name)}`,
-      `DESCRIPTION:${escape(`${row.listName}\n${url}`)}`,
+      // The task's note first (shortened if long), then the list and a link to it.
+      `DESCRIPTION:${escape([shorten(row.note), row.listName, url].filter(Boolean).join("\n\n"))}`,
       `URL:${url}`,
       "END:VEVENT",
     );

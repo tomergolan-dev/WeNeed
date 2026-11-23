@@ -7,7 +7,7 @@ import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/a
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { MyNameEditor, MyPeopleRow } from "./profile-editor";
+import { MyNameEditor, MyPeopleRow, MyPeopleView } from "./profile-editor";
 
 const LOCALES = ["he", "en"] as const;
 
@@ -26,15 +26,16 @@ export function AccountMenu({
 }) {
   const t = useTranslations("Account");
   const [editing, setEditing] = useState(false);
-  // One row open at a time (the calendar or my people), so the menu stays short.
-  const [row, setRow] = useState<"calendar" | "people" | null>(null);
-  const toggle = (which: "calendar" | "people") => setRow((current) => (current === which ? null : which));
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  // "החברים שלי" takes the whole menu, with a way back, since the list can be long.
+  const [peopleOpen, setPeopleOpen] = useState(false);
   return (
     <Drawer
       onOpenChange={(open) => {
         if (open) return;
         setEditing(false);
-        setRow(null);
+        setCalendarOpen(false);
+        setPeopleOpen(false);
       }}
     >
       <DrawerTrigger
@@ -51,52 +52,58 @@ export function AccountMenu({
         {/* Scrolls when an open row makes the menu taller than the screen. */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
           <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
-          {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
-          {user && !editing && (
-            <div className="mb-4 text-center">
-              <p className="flex items-center justify-center gap-1 font-semibold">
-                {user.name}
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  aria-label={t("editName")}
-                  className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
-                >
-                  <PencilLine className="size-4" aria-hidden />
-                </button>
-              </p>
-              {user.email && (
-                <p dir="ltr" className="text-sm text-muted-foreground">
-                  {user.email}
-                </p>
-              )}
-            </div>
-          )}
-          <div className="rounded-[18px] border bg-card">
-            <div className="flex min-h-15 items-center gap-3 px-4 py-2.5">
-              <Globe className="size-5 text-muted-foreground" aria-hidden />
-              <span className="flex-1">{t("language")}</span>
-              <LanguagePicker />
-            </div>
-            {user && <TaskEmailsRow initial={user.taskEmails} />}
-            {user && <CalendarRow open={row === "calendar"} onToggle={() => toggle("calendar")} />}
-            {user && <MyPeopleRow open={row === "people"} onToggle={() => toggle("people")} />}
-          </div>
-          {user ? (
-            <form action={logOut} className="mt-5 text-center">
-              <button type="submit" className="h-10 px-4 text-[15px] text-muted-foreground active:text-foreground">
-                {t("logOut")}
-              </button>
-            </form>
+          {user && peopleOpen ? (
+            <MyPeopleView onBack={() => setPeopleOpen(false)} />
           ) : (
-            <div className="mt-5 text-center">
-              <Link
-                href="/login"
-                className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
-              >
-                {t("signIn")}
-              </Link>
-            </div>
+            <>
+              {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
+              {user && !editing && (
+                <div className="mb-4 text-center">
+                  <p className="flex items-center justify-center gap-1 font-semibold">
+                    {user.name}
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      aria-label={t("editName")}
+                      className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
+                    >
+                      <PencilLine className="size-4" aria-hidden />
+                    </button>
+                  </p>
+                  {user.email && (
+                    <p dir="ltr" className="text-sm text-muted-foreground">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+              )}
+              <div className="rounded-[18px] border bg-card">
+                <div className="flex min-h-15 items-center gap-3 px-4 py-2.5">
+                  <Globe className="size-5 text-muted-foreground" aria-hidden />
+                  <span className="flex-1">{t("language")}</span>
+                  <LanguagePicker />
+                </div>
+                {user && <TaskEmailsRow initial={user.taskEmails} />}
+                {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
+                {user && <MyPeopleRow onOpen={() => setPeopleOpen(true)} />}
+              </div>
+              {user ? (
+                <form action={logOut} className="mt-5 text-center">
+                  <button type="submit" className="h-10 px-4 text-[15px] text-muted-foreground active:text-foreground">
+                    {t("logOut")}
+                  </button>
+                </form>
+              ) : (
+                <div className="mt-5 text-center">
+                  <Link
+                    href="/login"
+                    className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
+                  >
+                    {t("signIn")}
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
       </DrawerContent>

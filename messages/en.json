@@ -40,7 +40,9 @@
     "nicknamePlaceholder": "My name for them",
     "nicknameFor": "My name for {name}",
     "editName": "Edit my name",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back to the menu",
+    "peopleIntro": "Give anyone a name that suits you, like \"Mom\" instead of \"Nurit\". Only you see it, in every list. Empty = the name they chose."
   },
   "Home": {
     "title": "What do we need today?",

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Users } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, Users } from "lucide-react";
 import { listMyPeople, setContactName, setMyName, type MyPeople } from "@/app/actions";
 import { cn } from "@/lib/utils";
 
@@ -69,53 +69,66 @@ export function MyNameEditor({ name, onDone }: { name: string; onDone: () => voi
   );
 }
 
+/** A row in the account menu, "החברים שלי", which opens the list in place of the menu. */
+export function MyPeopleRow({ onOpen }: { onOpen: () => void }) {
+  const t = useTranslations("Account");
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex min-h-15 w-full items-center gap-3 border-t px-4 py-2.5 text-start transition-colors active:bg-muted"
+    >
+      <Users className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="flex flex-1 flex-col">
+        <span>{t("people")}</span>
+        <span className="text-xs text-muted-foreground">{t("peopleHint")}</span>
+      </span>
+      <ChevronLeft className="size-4 shrink-0 text-muted-foreground ltr:-scale-x-100" aria-hidden />
+    </button>
+  );
+}
+
 /**
- * A row in the account menu, "החברים שלי": the people the user shares a place
- * or a list with, each with a field for the user's own name for them ("אמא"
- * for נורית), which only the user sees, everywhere in the app.
+ * "החברים שלי", in place of the menu: the people the user shares a place or a
+ * list with, each with a field for the user's own name for them ("אמא" for
+ * נורית), which only the user sees, everywhere in the app.
  */
-export function MyPeopleRow({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+export function MyPeopleView({ onBack }: { onBack: () => void }) {
   const t = useTranslations("Account");
   const tErrors = useTranslations("Errors");
   const [people, setPeople] = useState<Person[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const load = () =>
+  useEffect(() => {
     listMyPeople()
       .then((result) => (result.ok ? setPeople(result.people) : setError(tErrors(result.error))))
       .catch(() => setError(tErrors("generic")));
+  }, [tErrors]);
 
   return (
-    <div className="border-t px-4 py-2.5">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => {
-          onToggle();
-          if (!people) load();
-        }}
-        className="flex min-h-10 w-full items-center gap-3 text-start"
-      >
-        <Users className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="flex flex-1 flex-col">
-          <span>{t("people")}</span>
-          <span className="text-xs text-muted-foreground">{t("peopleHint")}</span>
-        </span>
-      </button>
-      {open && (
-        <div className="mt-2.5 flex flex-col gap-2 pb-1">
-          {people === null && !error && <div className="h-15 animate-pulse rounded-xl bg-muted" />}
-          {people?.length === 0 && <p className="text-sm text-muted-foreground">{t("peopleEmpty")}</p>}
-          {people && people.length > 0 && (
-            <ul className="flex flex-col">
-              {people.map((person) => (
-                <PersonRow key={person.id} person={person} onError={(code) => setError(tErrors(code))} />
-              ))}
-            </ul>
-          )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </div>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={t("back")}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground active:bg-muted"
+        >
+          <ArrowRight className="size-5 ltr:-scale-x-100" aria-hidden />
+        </button>
+        <h2 className="text-lg font-bold">{t("people")}</h2>
+      </div>
+      <p className="text-sm leading-5 text-muted-foreground">{t("peopleIntro")}</p>
+      {people === null && !error && <div className="h-15 animate-pulse rounded-[18px] bg-muted" />}
+      {people?.length === 0 && <p className="text-sm text-muted-foreground">{t("peopleEmpty")}</p>}
+      {people && people.length > 0 && (
+        <ul className="flex flex-col rounded-[18px] border bg-card px-4">
+          {people.map((person) => (
+            <PersonRow key={person.id} person={person} onError={(code) => setError(tErrors(code))} />
+          ))}
+        </ul>
       )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
@@ -144,7 +157,7 @@ function PersonRow({ person, onError }: { person: Person; onError: (code: ErrorC
   };
 
   return (
-    <li className="flex items-center gap-3 border-t py-2 first:border-t-0">
+    <li className="flex items-center gap-3 border-t py-2.5 first:border-t-0">
       <span className="min-w-0 flex-1 truncate text-[15px]">{person.name}</span>
       <span className="relative w-36 shrink-0">
         <input
