@@ -34,7 +34,7 @@ export function useDueText() {
   };
 }
 
-/** The warning pill: "באיחור של יום", "בעוד 3 שעות", "היום". */
+/** The warning pill: "באיחור של יום", "בעוד 3 שעות", "בעוד 20 דקות", "היום". */
 export function DuePill({ chore, status, now }: { chore: Dated; status: DueStatus; now: number }) {
   const t = useTranslations("Chores");
   if ((status !== "overdue" && status !== "soon") || !chore.dueDate) return null;
@@ -44,8 +44,12 @@ export function DuePill({ chore, status, now }: { chore: Dated; status: DueStatu
     const days = daysBetween(chore.dueDate, todayIn(now));
     text = days >= 1 ? t("overdueDays", { count: days }) : t("overdue");
   } else if (chore.dueTime) {
-    const hours = Math.ceil((dueAt(chore.dueDate, chore.dueTime) - now) / 3_600_000);
-    text = t("inHours", { count: hours });
+    // Minutes under an hour ("בעוד 20 דקות"), otherwise the nearest whole hour.
+    const left = dueAt(chore.dueDate, chore.dueTime) - now;
+    text =
+      left < 55 * 60_000
+        ? t("inMinutes", { count: Math.max(1, Math.ceil(left / 60_000)) })
+        : t("inHours", { count: Math.max(1, Math.round(left / 3_600_000)) });
   } else {
     text = daysBetween(todayIn(now), chore.dueDate) === 0 ? t("today") : t("tomorrow");
   }

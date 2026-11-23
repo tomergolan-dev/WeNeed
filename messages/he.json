@@ -142,6 +142,7 @@
     "overdue": "באיחור",
     "overdueDays": "{count, plural, one {באיחור של יום} two {באיחור של יומיים} other {באיחור של # ימים}}",
     "inHours": "{count, plural, one {בעוד שעה} two {בעוד שעתיים} other {בעוד # שעות}}",
+    "inMinutes": "{count, plural, one {בעוד דקה} two {בעוד שתי דקות} other {בעוד # דקות}}",
     "sortBy": "מיון",
     "sortDate": "לפי תאריך",
     "sortAdded": "לפי הוספה",

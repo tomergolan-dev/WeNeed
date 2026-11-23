@@ -142,6 +142,7 @@
     "overdue": "Overdue",
     "overdueDays": "{count, plural, one {A day overdue} other {# days overdue}}",
     "inHours": "{count, plural, one {In an hour} other {In # hours}}",
+    "inMinutes": "{count, plural, one {In a minute} other {In # minutes}}",
     "sortBy": "Sort",
     "sortDate": "By date",
     "sortAdded": "By order added",
