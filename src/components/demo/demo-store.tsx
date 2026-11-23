@@ -19,7 +19,8 @@ import {
   type ItemFields,
 } from "@/lib/assistant-plan";
 import { DEFAULT_CATEGORY } from "@/lib/categories";
-import { DONE_TASKS_VISIBLE_MS, dueStatus, todayIn } from "@/lib/due";
+import { DONE_TASKS_VISIBLE_MS, dueAt, dueStatus, todayIn } from "@/lib/due";
+import type { UrgentTask } from "@/components/sidebar";
 import { combineQuantities, findOpenItem } from "@/lib/items";
 import type { ListType } from "@/lib/list-kinds";
 import type { ListSummary } from "@/lib/lists";
@@ -181,6 +182,21 @@ export function itemsOf(state: DemoState, list: DemoList) {
 }
 
 /** The demo's lists with their counts, as on the home screen; due times as of `now`. */
+/** The place's id in the demo, which has only one. */
+export const DEMO_PLACE = "demo";
+
+/** The demo's urgent tasks, as the side menu shows them: mine or nobody's, late or due within a day. */
+export function demoUrgent(state: DemoState, now: number): UrgentTask[] {
+  return state.lists
+    .filter((list) => list.type === "tasks")
+    .flatMap((list) =>
+      itemsOf(state, list)
+        .filter((item) => (!item.assigneeId || item.assigneeId === ME) && ["overdue", "soon"].includes(dueStatus(item, now)))
+        .map((item) => ({ id: item.id, name: item.name, listId: list.id, listName: list.name, dueDate: item.dueDate, dueTime: item.dueTime })),
+    )
+    .sort((a, b) => dueAt(a.dueDate!, a.dueTime) - dueAt(b.dueDate!, b.dueTime));
+}
+
 export function summarizeLists(state: DemoState, now: number): ListSummary[] {
   return state.lists.map((list) => {
     const items = itemsOf(state, list);

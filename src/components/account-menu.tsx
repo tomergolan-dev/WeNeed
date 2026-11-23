@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, CalendarDays, Check, Copy, Globe, Menu, PencilLine } from "lucide-react";
+import { Bell, CalendarDays, Check, Copy, Globe, PencilLine } from "lucide-react";
 import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/app/actions";
+import { Avatar } from "@/components/avatar";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -11,103 +12,103 @@ import { MyNameEditor, MyPeopleRow, MyPeopleView } from "./profile-editor";
 
 const LOCALES = ["he", "en"] as const;
 
+type AccountUser = { name: string; email: string | null; taskEmails: boolean };
+
 /**
- * The one button in the top row, the same in every place: it opens the
- * user's own settings (the language, task emails, the calendar link) and signing out. A place's settings
- * are not here; they open from the place picker.
+ * The user's own settings (their name, the language, task emails, the
+ * calendar link, "My people") and signing out, in a sheet from the bottom.
+ * On a wide screen it opens from the user's badge atop the sidebar; on a
+ * phone the same settings open inside the side menu (see MobileNav). A
+ * place's settings are not here; they open from the home screen.
  */
 export function AccountMenu({
   user,
   className,
 }: {
   /** Null in the demo: no account, and "Sign in" instead of signing out. */
-  user: { name: string; email: string | null; taskEmails: boolean } | null;
+  user: AccountUser | null;
   className?: string;
 }) {
   const t = useTranslations("Account");
-  const [editing, setEditing] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  // "החברים שלי" takes the whole menu, with a way back, since the list can be long.
-  const [peopleOpen, setPeopleOpen] = useState(false);
   return (
-    <Drawer
-      onOpenChange={(open) => {
-        if (open) return;
-        setEditing(false);
-        setCalendarOpen(false);
-        setPeopleOpen(false);
-      }}
-    >
+    <Drawer>
       <DrawerTrigger
         aria-label={t("open")}
-        className={cn(
-          "flex size-10 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted",
-          className,
-        )}
+        className={cn("flex shrink-0 rounded-full transition-opacity active:opacity-80", className)}
       >
-        <Menu className="size-5" aria-hidden />
+        <Avatar name={user?.name ?? null} />
       </DrawerTrigger>
       <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] pt-2.5">
         <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-[#d5dad8]" />
         {/* Scrolls when an open row makes the menu taller than the screen. */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
           <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
-          {user && peopleOpen ? (
-            <MyPeopleView onBack={() => setPeopleOpen(false)} />
-          ) : (
-            <>
-              {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
-              {user && !editing && (
-                <div className="mb-5 text-center">
-                  <p className="flex items-center justify-center gap-0.5 text-[17px] font-semibold">
-                    {user.name}
-                    <button
-                      type="button"
-                      onClick={() => setEditing(true)}
-                      aria-label={t("editName")}
-                      className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
-                    >
-                      <PencilLine className="size-3.5" aria-hidden />
-                    </button>
-                  </p>
-                  {user.email && (
-                    <p dir="ltr" className="text-[13px] text-muted-foreground">
-                      {user.email}
-                    </p>
-                  )}
-                </div>
-              )}
-              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
-                <div className="flex min-h-13 items-center gap-3 px-4 py-2">
-                  <Globe className="size-[18px] text-muted-foreground" aria-hidden />
-                  <span className="flex-1 text-[15px]">{t("language")}</span>
-                  <LanguagePicker />
-                </div>
-                {user && <TaskEmailsRow initial={user.taskEmails} />}
-                {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
-                {user && <MyPeopleRow onOpen={() => setPeopleOpen(true)} />}
-              </div>
-              {user ? (
-                <form action={logOut} className="mt-4 text-center">
-                  <button type="submit" className="h-10 px-4 text-sm text-muted-foreground active:text-foreground">
-                    {t("logOut")}
-                  </button>
-                </form>
-              ) : (
-                <div className="mt-5 text-center">
-                  <Link
-                    href="/login"
-                    className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
-                  >
-                    {t("signIn")}
-                  </Link>
-                </div>
-              )}
-            </>
-          )}
+          <AccountPanel user={user} />
         </div>
       </DrawerContent>
     </Drawer>
+  );
+}
+
+/** The settings themselves. Their open rows reset each time, since the panel mounts when shown. */
+export function AccountPanel({ user }: { user: AccountUser | null }) {
+  const t = useTranslations("Account");
+  const [editing, setEditing] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  // "החברים שלי" takes the whole panel, with a way back, since the list can be long.
+  const [peopleOpen, setPeopleOpen] = useState(false);
+
+  if (user && peopleOpen) return <MyPeopleView onBack={() => setPeopleOpen(false)} />;
+  return (
+    <>
+      {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
+      {user && !editing && (
+        <div className="mb-5 text-center">
+          <p className="flex items-center justify-center gap-0.5 text-[17px] font-semibold">
+            {user.name}
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              aria-label={t("editName")}
+              className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
+            >
+              <PencilLine className="size-3.5" aria-hidden />
+            </button>
+          </p>
+          {user.email && (
+            <p dir="ltr" className="text-[13px] text-muted-foreground">
+              {user.email}
+            </p>
+          )}
+        </div>
+      )}
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+        <div className="flex min-h-13 items-center gap-3 px-4 py-2">
+          <Globe className="size-[18px] text-muted-foreground" aria-hidden />
+          <span className="flex-1 text-[15px]">{t("language")}</span>
+          <LanguagePicker />
+        </div>
+        {user && <TaskEmailsRow initial={user.taskEmails} />}
+        {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
+        {user && <MyPeopleRow onOpen={() => setPeopleOpen(true)} />}
+      </div>
+      {user ? (
+        <form action={logOut} className="mt-4 text-center">
+          <button type="submit" className="h-10 px-4 text-sm text-muted-foreground active:text-foreground">
+            {t("logOut")}
+          </button>
+        </form>
+      ) : (
+        <div className="mt-5 text-center">
+          <Link
+            href="/login"
+            className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
+          >
+            {t("signIn")}
+          </Link>
+        </div>
+      )}
+    </>
   );
 }
 

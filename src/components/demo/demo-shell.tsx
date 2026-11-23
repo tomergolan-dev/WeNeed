@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { RotateCcw } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
-import { DemoProvider, summarizeLists, useDemo } from "./demo-store";
+import { DEMO_PLACE, DemoProvider, demoUrgent, summarizeLists, useDemo } from "./demo-store";
 
 /** The demo's frame: the sample place in this browser, and a strip that says so. */
 export function DemoShell({ children }: { children: React.ReactNode }) {
@@ -37,13 +37,13 @@ function DemoStrip() {
   );
 }
 
-const DEMO_PLACE = "demo";
-
 function DemoSidebar() {
   const { state } = useDemo();
   const [now] = useState(() => Date.now());
   const groups = [{ id: DEMO_PLACE, name: state.place, icon: "home", lists: summarizeLists(state, now) }];
-  return <Sidebar groups={groups} currentId={DEMO_PLACE} base="/demo" switchable={false} />;
+  return (
+    <Sidebar groups={groups} currentId={DEMO_PLACE} urgent={demoUrgent(state, now)} base="/demo" switchable={false} />
+  );
 }
 
 function DemoSkeleton() {

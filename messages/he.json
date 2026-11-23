@@ -9,7 +9,12 @@
     "switchPlace": "החלפת מקום",
     "yourPlace": "המקום שלך",
     "personalArea": "אזור אישי",
-    "languageLabel": "Switch to English"
+    "languageLabel": "Switch to English",
+    "menu": "התפריט",
+    "hi": "היי {name}",
+    "profile": "פרופיל והגדרות",
+    "settings": "הגדרות",
+    "urgent": "דחוף"
   },
   "Account": {
     "title": "החשבון שלי",

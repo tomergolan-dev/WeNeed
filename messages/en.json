@@ -9,7 +9,12 @@
     "switchPlace": "Switch place",
     "yourPlace": "Your place",
     "personalArea": "Personal area",
-    "languageLabel": "Switch to Hebrew"
+    "languageLabel": "Switch to Hebrew",
+    "menu": "Menu",
+    "hi": "Hi {name}",
+    "profile": "Profile and settings",
+    "settings": "Settings",
+    "urgent": "Urgent"
   },
   "Account": {
     "title": "My account",

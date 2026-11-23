@@ -3,26 +3,25 @@ import { Settings } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { Brand } from "@/components/brand";
+import { LogoMark } from "@/components/brand";
+import { MobileNav } from "@/components/mobile-nav";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceSwitcher } from "@/components/places/place-switcher";
 import { getCurrentUser, requirePlace } from "@/lib/auth";
 import { getInvitesFor } from "@/lib/invites";
 import { getPlaceLists, getSharedWithMe } from "@/lib/lists";
+import { getNav } from "@/lib/nav";
 import { ListCard } from "@/components/lists/list-card";
 import { InviteBanner } from "@/components/places/invite-banner";
-import { AccountMenu } from "@/components/account-menu";
 
 export default async function HomePage() {
   return (
     <>
       <header className="sticky top-0 z-20 flex items-center justify-between bg-background px-5 pt-[18px] pb-2 lg:static lg:px-8 lg:pt-6">
-        <span className="lg:invisible">
-          <Brand />
-        </span>
-        <Suspense fallback={<span className="size-10 rounded-full border bg-card" />}>
-          <Account />
+        <Suspense fallback={<span className="size-10 rounded-full bg-muted lg:invisible" />}>
+          <Menu />
         </Suspense>
+        <LogoMark className="size-9 lg:invisible" />
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
         <Suspense fallback={<HomeSkeleton />}>
@@ -33,9 +32,20 @@ export default async function HomePage() {
   );
 }
 
-async function Account() {
+/** Phones: the user's badge, which opens the side menu. Wide screens have the sidebar instead. */
+async function Menu() {
   const user = await getCurrentUser();
-  return <AccountMenu user={user && { name: user.name, email: user.email, taskEmails: user.taskEmails }} className="lg:hidden" />;
+  if (!user) return null;
+  const { groups, currentId, urgent } = await getNav(user);
+  return (
+    <MobileNav
+      user={{ name: user.name, email: user.email, taskEmails: user.taskEmails }}
+      groups={groups}
+      currentId={currentId}
+      urgent={urgent}
+      className="lg:invisible"
+    />
+  );
 }
 
 async function Home() {
