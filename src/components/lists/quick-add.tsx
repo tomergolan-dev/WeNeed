@@ -163,6 +163,15 @@ export function PickerChip({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        // On a computer, the browser opens its picker only from the field's own
+        // small icon, which is hidden here; open it from anywhere on the chip.
+        onClick={(e) => {
+          try {
+            e.currentTarget.showPicker();
+          } catch {
+            // Not supported, or already open: the browser's own behavior stays.
+          }
+        }}
         aria-label={label}
         className="absolute inset-0 cursor-pointer opacity-0"
       />
