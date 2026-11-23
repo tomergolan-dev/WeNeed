@@ -1,9 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { sendDueReminders } from "@/lib/task-emails";
 
-// Called every 10 minutes by .github/workflows/task-reminders.yml (Vercel's
-// Hobby plan runs its own cron jobs only once a day), with the shared
-// CRON_SECRET as a bearer token.
+// The backup to the reminders queue (see sendDueReminders): called once a day
+// by Vercel's cron (vercel.json; the Hobby plan allows no more), and as often
+// as GitHub manages by .github/workflows/task-reminders.yml, which GitHub
+// often skips. Both send the shared CRON_SECRET as a bearer token.
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const given = request.headers.get("authorization") ?? "";

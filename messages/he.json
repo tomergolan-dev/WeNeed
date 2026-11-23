@@ -691,6 +691,7 @@
     "assigned": "{name} שייך/ה לך משימה: {task}",
     "manual": "{name} מזכיר/ה לך: {task}",
     "hourBefore": "בעוד שעה: {task}",
+    "quarterBefore": "בעוד רבע שעה: {task}",
     "morning": "להיום: {task}",
     "evening": "עוד פתוח להיום: {task}",
     "someone": "מישהו",

@@ -1,9 +1,10 @@
 import "server-only";
-import { and, eq, gt, gte, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNotNull, lte, sql, type SQL } from "drizzle-orm";
 import { after } from "next/server";
 // The plain translator, without React: emails are built outside any page.
 import { createTranslator } from "use-intl/core";
 import { Resend } from "resend";
+import { send } from "@vercel/queue";
 import { db } from "@/db";
 import { invites, items, lists, places, rounds, signInCodes, taskEmails, users } from "@/db/schema";
 import { directionOf, routing, type Locale } from "@/i18n/routing";
@@ -16,9 +17,13 @@ import en from "../../messages/en.json";
 // Emails about tasks, to the person a task is assigned to:
 // - "assigned": someone else assigned it to them (sent right away);
 // - "manual": someone pressed "send a reminder" on it;
-// - automatic reminders, from sendDueReminders (run every 10 minutes by a
-//   GitHub Actions schedule): an hour before a task with a time, and at 8:00
-//   and 17:00 on the day of a task with a date only.
+// - automatic reminders: an hour and a quarter of an hour before a task with
+//   a time, and at 8:00 and 17:00 on the day of a task with a date only.
+//   Saving a task schedules them in Vercel Queues for their exact time
+//   (scheduleReminders); the queue calls /api/queues/task-reminders then,
+//   which checks the task again (remindTask). The reminders cron
+//   (sendDueReminders) is a backup, and schedules tasks more than the
+//   queue's 7 days ahead once they come closer.
 // Nothing is sent for done tasks, to people who turned task emails off, or to
 // people who no longer see the list.
 
@@ -32,6 +37,7 @@ const MAX_TASK_EMAILS_PER_USER_PER_DAY = 12;
 /** A manual reminder for the same task waits this long after the last one. */
 export const MANUAL_GAP_MS = 10 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
+const QUARTER_MS = 15 * 60 * 1000;
 const MORNING_HOUR = 8;
 const EVENING_HOUR = 17;
 
@@ -205,6 +211,8 @@ async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmai
         ? t("manual", { name: isolate(senderName ?? t("someone")), task: name })
         : kind === "hour_before"
           ? t("hourBefore", { task: name })
+          : kind === "quarter_before"
+            ? t("quarterBefore", { task: name })
           : kind === "morning"
             ? t("morning", { task: name })
             : t("evening", { task: name });
@@ -271,56 +279,143 @@ function israelHour(now: number) {
   );
 }
 
-/**
- * Sends the automatic reminders that are due now. Safe to run as often as
- * wanted: each reminder goes out once per due time. The windows are wide
- * (until the due time, or a few hours) since the schedule can run late.
- */
-export async function sendDueReminders(now: number = Date.now()) {
-  const today = todayIn(now);
-  const tomorrow = todayIn(now + 24 * HOUR_MS);
-  const hour = israelHour(now);
+type Candidate = { id: string; assigneeId: string | null; listId: string; dueDate: string | null; dueTime: string | null };
 
-  const candidates = await db
-    .select({
-      id: items.id,
-      assigneeId: items.assigneeId,
-      listId: lists.id,
-      dueDate: items.dueDate,
-      dueTime: items.dueTime,
-    })
+const candidateFields = {
+  id: items.id,
+  assigneeId: items.assigneeId,
+  listId: lists.id,
+  dueDate: items.dueDate,
+  dueTime: items.dueTime,
+};
+
+/** Open tasks in active rounds, matching `where`. */
+function candidates(where: SQL) {
+  return db
+    .select(candidateFields)
     .from(items)
     .innerJoin(rounds, and(eq(rounds.id, items.roundId), eq(rounds.status, "active")))
     .innerJoin(lists, and(eq(lists.id, rounds.listId), eq(lists.type, "tasks")))
-    .where(and(eq(items.done, false), gte(items.dueDate, today), lte(items.dueDate, tomorrow)));
+    .where(and(eq(items.done, false), where));
+}
+
+/**
+ * The automatic reminder due for a task at a moment, if any. The windows run
+ * until the due time (or a few hours), so a late run still sends it.
+ */
+function reminderAt(task: Pick<Candidate, "dueDate" | "dueTime">, now: number) {
+  if (!task.dueDate) return null;
+  if (task.dueTime) {
+    const at = dueAt(task.dueDate, task.dueTime);
+    const dueKey = `${task.dueDate} ${task.dueTime.slice(0, 5)}`;
+    if (now >= at - QUARTER_MS && now < at) return { kind: "quarter_before" as const, dueKey };
+    if (now >= at - HOUR_MS && now < at) return { kind: "hour_before" as const, dueKey };
+    return null;
+  }
+  if (task.dueDate !== todayIn(now)) return null;
+  const hour = israelHour(now);
+  if (hour >= MORNING_HOUR && hour < 12) return { kind: "morning" as const, dueKey: task.dueDate };
+  if (hour >= EVENING_HOUR && hour < 23) return { kind: "evening" as const, dueKey: task.dueDate };
+  return null;
+}
+
+/** The moments a task's automatic reminders are due. */
+function reminderTimes(task: Pick<Candidate, "dueDate" | "dueTime">) {
+  if (!task.dueDate) return [];
+  if (task.dueTime) {
+    const at = dueAt(task.dueDate, task.dueTime);
+    return [at - HOUR_MS, at - QUARTER_MS];
+  }
+  return [MORNING_HOUR, EVENING_HOUR].map((hour) => dueAt(task.dueDate!, `${String(hour).padStart(2, "0")}:00:00`));
+}
+
+/** Sends a task's automatic reminder if one is due now. */
+async function remind(task: Candidate, now: number, sole: Map<string, string | null>): Promise<TaskEmailResult | null> {
+  const reminder = reminderAt(task, now);
+  if (!reminder) return null;
+  // Unassigned tasks go to the list's only person, if it has just one.
+  if (!task.assigneeId && !sole.has(task.listId)) sole.set(task.listId, await soleViewer(task.listId));
+  const recipient = task.assigneeId ?? sole.get(task.listId);
+  if (!recipient) return null;
+
+  // Just told about it (assigned, or reminded by hand): no need for another email now.
+  // The quarter-hour reminder still goes out unless that was a few minutes ago.
+  const recent = await lastEmail(task.id, recipient, ["assigned", "manual"]);
+  const gap = reminder.kind === "quarter_before" ? MANUAL_GAP_MS : HOUR_MS;
+  if (recent && now - recent < gap) return "skipped";
+
+  return sendTaskEmail({ itemId: task.id, userId: recipient, kind: reminder.kind, dueKey: reminder.dueKey });
+}
+
+/** Called by the queue at a reminder's time: sends it if the task still calls for it. */
+export async function remindTask(itemId: string, now: number = Date.now()) {
+  const [task] = await candidates(eq(items.id, itemId));
+  if (!task) return null;
+  return remind(task, now, new Map());
+}
+
+// The queue keeps a delayed message for at most 7 days.
+const QUEUE_MAX_MS = 7 * 24 * HOUR_MS - HOUR_MS;
+const TOPIC = "task-reminders";
+
+/**
+ * Schedules a task's coming reminders in the queue, each for its exact time.
+ * Safe to call again: a reminder already scheduled for the same moment is
+ * dropped as a duplicate, and one for a moment the task no longer has does
+ * nothing when it arrives (remindTask checks the task again).
+ */
+export async function scheduleReminders(task: Pick<Candidate, "id" | "dueDate" | "dueTime">, now: number = Date.now()) {
+  const times = reminderTimes(task).filter((at) => at - now > 30_000 && at - now < QUEUE_MAX_MS);
+  // The queue works on Vercel only (it signs in with the deployment's identity).
+  if (process.env.VERCEL !== "1") {
+    if (times.length) console.log(`[task-reminders] would schedule ${task.id} at`, times.map((t) => new Date(t).toISOString()));
+    return;
+  }
+  for (const at of times) {
+    // A few seconds late, so the reminder's window has surely opened.
+    const delaySeconds = Math.ceil((at - now) / 1000) + 5;
+    try {
+      await send(
+        TOPIC,
+        { itemId: task.id },
+        {
+          delaySeconds,
+          retentionSeconds: Math.min(604_800, delaySeconds + 3600),
+          idempotencyKey: `${task.id}:${at}`,
+        },
+      );
+    } catch (error) {
+      // A duplicate is fine; anything else is left to the backup cron.
+      if ((error as Error)?.name !== "DuplicateMessageError") console.error("[task-reminders] schedule failed", error);
+    }
+  }
+}
+
+/** After a task is saved: schedules its reminders, without holding up the response. */
+export function planReminders(itemId: string) {
+  after(async () => {
+    const [task] = await candidates(eq(items.id, itemId));
+    if (task) await scheduleReminders(task);
+  });
+}
+
+/**
+ * The reminders cron, a backup to the queue: sends the automatic reminders
+ * that are due now (each goes out once per due time, so running it often is
+ * safe), and schedules in the queue those of tasks due within a week, which
+ * covers tasks that were saved more than the queue's 7 days ahead.
+ */
+export async function sendDueReminders(now: number = Date.now()) {
+  const today = todayIn(now);
+  const week = todayIn(now + 7 * 24 * HOUR_MS);
+  const tasks = await candidates(and(gte(items.dueDate, today), lte(items.dueDate, week))!);
 
   const results: Record<TaskEmailResult, number> = { sent: 0, skipped: 0, off: 0, limit: 0, failed: 0 };
   const sole = new Map<string, string | null>();
-  for (const task of candidates) {
-    if (!task.dueDate) continue;
-    // Unassigned tasks go to the list's only person, if it has just one.
-    if (!task.assigneeId && !sole.has(task.listId)) sole.set(task.listId, await soleViewer(task.listId));
-    const recipient = task.assigneeId ?? sole.get(task.listId);
-    if (!recipient) continue;
-    let kind: TaskEmailKind | null = null;
-    let dueKey = task.dueDate;
-    if (task.dueTime) {
-      const at = dueAt(task.dueDate, task.dueTime);
-      if (now >= at - HOUR_MS && now < at) {
-        kind = "hour_before";
-        dueKey = `${task.dueDate} ${task.dueTime.slice(0, 5)}`;
-      }
-    } else if (task.dueDate === today) {
-      if (hour >= MORNING_HOUR && hour < 12) kind = "morning";
-      else if (hour >= EVENING_HOUR && hour < 23) kind = "evening";
-    }
-    if (!kind) continue;
-
-    // Just told about it (assigned, or reminded by hand): no need for another email now.
-    const recent = await lastEmail(task.id, recipient, ["assigned", "manual"]);
-    if (recent && now - recent < HOUR_MS) continue;
-
-    results[await sendTaskEmail({ itemId: task.id, userId: recipient, kind, dueKey })]++;
+  for (const task of tasks) {
+    const result = await remind(task, now, sole);
+    if (result) results[result]++;
+    await scheduleReminders(task, now);
   }
   return results;
 }

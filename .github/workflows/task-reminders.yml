@@ -1,6 +1,7 @@
-# Sends WeNeed's automatic task reminders: calls the app every 10 minutes,
-# and the app emails whatever reminders are due (see src/lib/task-emails.ts).
-# GitHub may start a scheduled run a few minutes late; the reminders allow for it.
+# A backup for WeNeed's automatic task reminders, which are scheduled in
+# Vercel Queues when a task is saved (see src/lib/task-emails.ts): asks the
+# app to send any reminder that is due now. GitHub runs it far less often
+# than every 10 minutes, and late; the app allows for that.
 name: Task reminders
 
 on:

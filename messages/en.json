@@ -664,6 +664,7 @@
     "assigned": "{name} assigned you a task: {task}",
     "manual": "{name} is reminding you: {task}",
     "hourBefore": "In an hour: {task}",
+    "quarterBefore": "In 15 minutes: {task}",
     "morning": "For today: {task}",
     "evening": "Still open today: {task}",
     "someone": "Someone",

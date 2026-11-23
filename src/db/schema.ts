@@ -278,7 +278,14 @@ export const demoAiRequests = pgTable(
 // Why a task email was sent: assigned to someone, a reminder someone sent by
 // hand, or an automatic reminder (an hour before a timed task; the morning and
 // the evening of a task with a date only).
-export const taskEmailKind = pgEnum("task_email_kind", ["assigned", "manual", "hour_before", "morning", "evening"]);
+export const taskEmailKind = pgEnum("task_email_kind", [
+  "assigned",
+  "manual",
+  "hour_before",
+  "morning",
+  "evening",
+  "quarter_before",
+]);
 
 // One row per task email, written before it is sent. Automatic reminders are
 // sent once per due time (due_key), so moving a task's date sends them again.
@@ -301,7 +308,7 @@ export const taskEmails = pgTable(
   (t) => [
     uniqueIndex("task_emails_once_idx")
       .on(t.itemId, t.userId, t.kind, t.dueKey)
-      .where(sql`${t.kind} in ('hour_before', 'morning', 'evening')`),
+      .where(sql`${t.kind} not in ('assigned', 'manual')`),
     index("task_emails_item_idx").on(t.itemId, t.createdAt),
     index("task_emails_created_idx").on(t.createdAt),
   ],

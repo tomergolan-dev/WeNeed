@@ -19,7 +19,7 @@ import { getMyPeople } from "@/lib/names";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
-import { lastManualReminder, MANUAL_GAP_MS, notifyAssigned, sendTaskEmail } from "@/lib/task-emails";
+import { lastManualReminder, MANUAL_GAP_MS, notifyAssigned, planReminders, sendTaskEmail } from "@/lib/task-emails";
 
 // Error codes map to messages under "Errors" in messages/he.json.
 export type ActionError =
@@ -375,6 +375,7 @@ export async function addChore(listId: string, input: ChoreInput): Promise<Actio
     })
     .returning({ id: items.id });
   notifyAssigned(added.id, parsed.data.assigneeId, user.id);
+  planReminders(added.id);
   refresh();
   return ok;
 }
@@ -395,6 +396,7 @@ export async function updateChore(itemId: string, input: ChoreInput): Promise<Ac
   await db.update(items).set(choreFields(parsed.data)).where(eq(items.id, itemId));
   // Only a new assignee hears about it.
   if (before?.assigneeId !== parsed.data.assigneeId) notifyAssigned(itemId, parsed.data.assigneeId, user.id);
+  planReminders(itemId);
   refresh();
   return ok;
 }
