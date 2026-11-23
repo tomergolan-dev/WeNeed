@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
-import { attachments, items, listMembers, lists, placeMembers, places, rounds, users } from "@/db/schema";
+import { attachments, contactNames, items, listMembers, lists, placeMembers, places, rounds, users } from "@/db/schema";
 import { calendarToken, calendarUrls } from "@/lib/calendar";
 import { getCurrentPlace, getCurrentUser, isPlaceMember, openPersonalArea, setCurrentPlace } from "@/lib/auth";
 import { deleteStoredFiles } from "@/lib/attachments";
@@ -15,6 +15,7 @@ import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
 import { canSeeList, findEditableItem, findList, guessCategory, isPlaceAdmin, nextPosition } from "@/lib/list-access";
 import { isPlaceIcon } from "@/lib/place-icons";
+import { getMyPeople } from "@/lib/names";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
 import { requestSignInCode, verifySignInCode } from "@/lib/sign-in";
@@ -435,6 +436,50 @@ export async function setTaskEmails(enabled: boolean): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return fail("unauthorized");
   await db.update(users).set({ taskEmails: enabled === true }).where(eq(users.id, user.id));
+  return ok;
+}
+
+const personName = z.string().trim().min(1).max(40);
+
+/** Changes the user's own name, which everyone sees (unless they named the user themselves). */
+export async function setMyName(name: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  const parsed = personName.safeParse(name);
+  if (!parsed.success) return fail("invalid");
+  await db.update(users).set({ name: parsed.data }).where(eq(users.id, user.id));
+  refresh();
+  return ok;
+}
+
+export type MyPeople = { ok: true; people: { id: string; name: string; nickname: string | null }[] } | { ok: false; error: ActionError };
+
+/** The people the user shares something with, for naming them. */
+export async function listMyPeople(): Promise<MyPeople> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "unauthorized" };
+  return { ok: true, people: await getMyPeople(user.id) };
+}
+
+/** What the user calls someone they share something with; empty goes back to their own name. */
+export async function setContactName(userId: string, name: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  if (!z.uuid().safeParse(userId).success || userId === user.id) return fail("invalid");
+  const trimmed = typeof name === "string" ? name.trim() : "";
+  if (trimmed === "") {
+    await db.delete(contactNames).where(and(eq(contactNames.ownerId, user.id), eq(contactNames.userId, userId)));
+  } else {
+    const parsed = personName.safeParse(trimmed);
+    if (!parsed.success) return fail("invalid");
+    // Only people the user shares something with (or already named).
+    if (!(await getMyPeople(user.id)).some((person) => person.id === userId)) return fail("invalid");
+    await db
+      .insert(contactNames)
+      .values({ ownerId: user.id, userId, name: parsed.data })
+      .onConflictDoUpdate({ target: [contactNames.ownerId, contactNames.userId], set: { name: parsed.data } });
+  }
+  refresh();
   return ok;
 }
 

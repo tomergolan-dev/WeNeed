@@ -38,12 +38,12 @@ async function List({ params }: Pick<PageProps<"/[locale]/lists/[id]">, "params"
     getTranslations("ListKinds"),
     getTranslations("Places"),
     list.type === "tasks" ? getChores(list.id) : getRoundItems(round.id),
-    getListPeople(list.id),
+    getListPeople(list.id, user.id),
     isPlaceAdmin(user.id, list.placeId),
   ]);
   // Only admins change who sees a list.
   const [access, counts] = await Promise.all([
-    admin ? getListAccess(list.id) : null,
+    admin ? getListAccess(list.id, user.id) : null,
     countAttachments(items.map((item) => item.id)),
   ]);
   // Where the list lives: a shared place, my personal area, or someone else's.

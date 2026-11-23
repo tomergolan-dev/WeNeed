@@ -27,7 +27,7 @@ async function History({ params }: Pick<PageProps<"/[locale]/lists/[id]/history"
   const [t, format, rounds] = await Promise.all([
     getTranslations("History"),
     getFormatter(),
-    getCompletedRounds(list.id),
+    getCompletedRounds(list.id, user.id),
   ]);
 
   return (

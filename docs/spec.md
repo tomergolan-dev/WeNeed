@@ -93,6 +93,10 @@ We Need is also a portfolio project, so it includes a public demo.
   - It holds open tasks with a date, assigned to the user or to no one, in lists the user can see; tasks assigned to others, done tasks and tasks without a date stay out. Tasks overdue by more than 60 days are left out too.
   - A task with a time is a half-hour event at that time; a task with only a date is an all-day event. Each event links back to its list.
   - The link is the only key (calendar apps fetch it without signing in), so "קישור חדש" replaces it and the old one stops working.
+- **Names** (decided 2026-11-23, at Tomer's request): "עריכת פרטים" under the user's name in the account menu.
+  - "השם שלי": the user's own name, which everyone sees. A new user gets the Google profile's name (or the address); this changes it.
+  - "איך אחרים מופיעים אצלי": like contact names in a phone, the user can give anyone they share a place or a list with their own name for them ("אמא" for נורית, "תמיר" for תמיר ליטבק). Only that user sees it, everywhere: who added an item, the assignee picker, members, who sees a list, history, lists shared with them, task emails sent to them, and the AI chat ("תשייך לאמא"). Empty goes back to the name the person chose.
+  - Not in the demo (it has no account).
 
 ### Checklists
 
@@ -226,6 +230,7 @@ We Need is also a portfolio project, so it includes a public demo.
   - `items` have an optional due date and time, used by chores, and a position (their order in the round). *(Stage C)*
   - `ai_requests`: one row per AI chat message, for the daily limits. *(Stage D)*
   - `task_emails`: one row per task email (item, recipient, kind, due key, sent by), for sending each automatic reminder once and for the limits; `users.locale` and `users.task_emails` for the email's language and the on/off switch. *(Migration 0013)*
+  - `contact_names`: what a user calls someone else (owner, person, name). *(Migration 0015)*
   - `demo_ai_requests`: one row per demo AI message (a keyed hash of the visitor's IP), for the demo's limits. *(Stage H)*
   - `items.note`, and `attachments`: item, kind (`link` / `file`), the link's address or the file's Blob pathname, name, content type and size, added by. *(Stage F)*
 - **Secrets:** only in environment variables; `.env.example` stays up to date.

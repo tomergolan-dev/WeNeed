@@ -107,7 +107,7 @@ export async function askAssistant(listId: string, text: string): Promise<Assist
       plan = planChecklist(result, current);
       edits = planEdits(result.edits, current);
     } else {
-      const members = await getListPeople(list.id);
+      const members = await getListPeople(list.id, user.id);
       const nameOf = (id: string | null) => members.find((m) => m.id === id)?.name ?? null;
       const result = await parseChores(
         parsedText.data,

@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
+import { nameFor } from "./names";
 import { invites, items, listMembers, lists, placeMembers, places, rounds, users } from "@/db/schema";
 import { guessCategoryWithAi } from "@/lib/ai/list-assistant";
 import { DEFAULT_CATEGORY, isCategory, type Category } from "@/lib/categories";
@@ -58,9 +59,9 @@ export async function isPlaceAdmin(userId: string, placeId: string) {
 }
 
 /** Everyone who can see the list, in the order they joined; for initials and assignees. */
-export async function getListPeople(listId: string) {
+export async function getListPeople(listId: string, viewerId?: string) {
   return db
-    .select({ id: users.id, name: users.name })
+    .select({ id: users.id, name: viewerId ? nameFor(viewerId) : users.name })
     .from(users)
     .innerJoin(lists, eq(lists.id, listId))
     .leftJoin(placeMembers, and(eq(placeMembers.placeId, lists.placeId), eq(placeMembers.userId, users.id)))
@@ -121,7 +122,7 @@ export type ListAccess = {
 };
 
 /** Everything the "who sees this list" sheet shows. */
-export async function getListAccess(listId: string): Promise<ListAccess | null> {
+export async function getListAccess(listId: string, viewerId: string): Promise<ListAccess | null> {
   const [list] = await db
     .select({ visibility: lists.visibility, placeId: lists.placeId, placeName: places.name, owner: places.personalOwnerId })
     .from(lists)
@@ -133,7 +134,7 @@ export async function getListAccess(listId: string): Promise<ListAccess | null> 
     db
       .select({
         id: users.id,
-        name: users.name,
+        name: nameFor(viewerId),
         role: placeMembers.role,
         allLists: sql<boolean>`coalesce(${placeMembers.allLists}, false)`,
         added: sql<boolean>`${listMembers.userId} is not null`,

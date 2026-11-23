@@ -126,6 +126,23 @@ export const listMembers = pgTable(
   (t) => [primaryKey({ columns: [t.listId, t.userId] }), index("list_members_user_idx").on(t.userId)],
 );
 
+// What a user calls someone else ("אמא" for נורית), like a contact name in a
+// phone: shown only to that user, everywhere in the app, instead of the name
+// the other person chose.
+export const contactNames = pgTable(
+  "contact_names",
+  {
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.ownerId, t.userId] })],
+);
+
 // An invitation by email, to a whole place (listIds null) or to some of its lists.
 export const invites = pgTable(
   "invites",

@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { invites, items, lists, places, rounds, signInCodes, taskEmails, users } from "@/db/schema";
 import { directionOf, routing, type Locale } from "@/i18n/routing";
 import { canSeeList, getListPeople } from "./list-access";
+import { contactName } from "./names";
 import { daysBetween, dueAt, TIME_ZONE, todayIn } from "./due";
 import he from "../../messages/he.json";
 import en from "../../messages/en.json";
@@ -143,7 +144,8 @@ export async function sendTaskEmail(input: {
   let senderName: string | null = null;
   if (input.sentBy) {
     const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, input.sentBy));
-    senderName = sender?.name ?? null;
+    // What the recipient calls the sender, if they named them.
+    senderName = (await contactName(input.userId, input.sentBy)) ?? sender?.name ?? null;
   }
 
   // Claim the email first, so two runs never send the same automatic reminder.

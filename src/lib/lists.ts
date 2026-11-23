@@ -3,6 +3,7 @@ import { and, asc, desc, eq, gt, inArray, isNotNull, ne, or, sql, type SQL } fro
 import { db } from "@/db";
 import { items, listMembers, lists, placeMembers, places, rounds, users, type Item, type List } from "@/db/schema";
 import { canSeeListSql } from "./list-access";
+import { nameFor } from "./names";
 import { DONE_TASKS_VISIBLE_MS, dueStatus } from "./due";
 
 type ListType = List["type"];
@@ -44,7 +45,7 @@ async function summarizeLists(userId: string, where: SQL): Promise<ListSummary[]
       name: lists.name,
       type: lists.type,
       visibility: lists.visibility,
-      ownerName: sql<string | null>`(select u.name from ${places} p join ${users} u on u.id = p.personal_owner_id where p.id = ${lists.placeId})`,
+      ownerName: sql<string | null>`(select ${nameFor(userId, sql`u.id`, sql`u.name`)} from ${places} p join ${users} u on u.id = p.personal_owner_id where p.id = ${lists.placeId})`,
       total: sql<number>`count(${items.id})::int`,
       done: sql<number>`count(${items.id}) filter (where ${items.done})::int`,
     })
@@ -66,7 +67,7 @@ async function summarizeLists(userId: string, where: SQL): Promise<ListSummary[]
       .innerJoin(lists, and(eq(lists.id, rounds.listId), eq(lists.type, "tasks")))
       .where(and(inArray(lists.id, ids), eq(items.done, false), isNotNull(items.dueDate))),
     db
-      .select({ listId: listMembers.listId, name: users.name })
+      .select({ listId: listMembers.listId, name: nameFor(userId) })
       .from(listMembers)
       .innerJoin(users, eq(users.id, listMembers.userId))
       .where(and(inArray(listMembers.listId, ids), ne(listMembers.userId, userId)))
@@ -87,7 +88,7 @@ async function summarizeLists(userId: string, where: SQL): Promise<ListSummary[]
 /** A list, only if the user can see it, with whose personal area it is in (if any). */
 export async function getListFor(userId: string, listId: string) {
   const [row] = await db
-    .select({ list: lists, placeName: places.name, personalOwnerId: places.personalOwnerId, ownerName: users.name })
+    .select({ list: lists, placeName: places.name, personalOwnerId: places.personalOwnerId, ownerName: nameFor(userId) })
     .from(lists)
     .innerJoin(places, eq(places.id, lists.placeId))
     .leftJoin(users, eq(users.id, places.personalOwnerId))
@@ -122,13 +123,13 @@ export async function getRoundItems(roundId: string): Promise<Item[]> {
 }
 
 /** Finished rounds of a list, newest first, with item counts. */
-export async function getCompletedRounds(listId: string) {
+export async function getCompletedRounds(listId: string, viewerId: string) {
   return db
     .select({
       id: rounds.id,
       createdAt: rounds.createdAt,
       completedAt: rounds.completedAt,
-      completedByName: users.name,
+      completedByName: nameFor(viewerId),
       total: sql<number>`count(${items.id})::int`,
       bought: sql<number>`count(${items.id}) filter (where ${items.done})::int`,
     })
@@ -136,14 +137,14 @@ export async function getCompletedRounds(listId: string) {
     .leftJoin(users, eq(users.id, rounds.completedBy))
     .leftJoin(items, eq(items.roundId, rounds.id))
     .where(and(eq(rounds.listId, listId), eq(rounds.status, "completed")))
-    .groupBy(rounds.id, users.name)
+    .groupBy(rounds.id, users.id, users.name)
     .orderBy(desc(rounds.completedAt));
 }
 
 /** A finished round, only if the user can see its list. */
 export async function getCompletedRound(userId: string, listId: string, roundId: string) {
   const [row] = await db
-    .select({ round: rounds, listName: lists.name, completedByName: users.name })
+    .select({ round: rounds, listName: lists.name, completedByName: nameFor(userId) })
     .from(rounds)
     .innerJoin(lists, eq(lists.id, rounds.listId))
     .leftJoin(users, eq(users.id, rounds.completedBy))
@@ -159,7 +160,7 @@ export async function getCompletedRound(userId: string, listId: string, roundId:
 }
 
 /** A place with its members, in the order they joined. */
-export async function getPlace(placeId: string) {
+export async function getPlace(placeId: string, viewerId?: string) {
   const [place] = await db
     .select({ id: places.id, name: places.name, icon: places.icon, personalOwnerId: places.personalOwnerId })
     .from(places)
@@ -169,7 +170,7 @@ export async function getPlace(placeId: string) {
     db
       .select({
         id: users.id,
-        name: users.name,
+        name: viewerId ? nameFor(viewerId) : users.name,
         email: users.email,
         role: placeMembers.role,
         allLists: placeMembers.allLists,

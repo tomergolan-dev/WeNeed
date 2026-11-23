@@ -35,7 +35,7 @@ async function Members() {
 
   const [format, details, invites, lists] = await Promise.all([
     getFormatter(),
-    getPlace(place.id),
+    getPlace(place.id, user.id),
     getPlaceInvites(place.id),
     getPlaceLists(place.id, user.id),
   ]);
