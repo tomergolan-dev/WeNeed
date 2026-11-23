@@ -3,6 +3,7 @@ import { Settings } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { LogoMark } from "@/components/brand";
 import { MobileNav } from "@/components/mobile-nav";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceSwitcher } from "@/components/places/place-switcher";
@@ -20,6 +21,13 @@ export default async function HomePage() {
         <Suspense fallback={<span className="size-8 rounded-full bg-muted lg:invisible" />}>
           <Menu />
         </Suspense>
+        {/* A small logo, at the greeting's size; wide screens have it atop the sidebar. */}
+        <span className="flex items-center gap-1.5 lg:hidden">
+          <LogoMark className="size-6" />
+          <span dir="ltr" className="text-[15px] font-bold tracking-tight">
+            WeNeed
+          </span>
+        </span>
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
         <Suspense fallback={<HomeSkeleton />}>
