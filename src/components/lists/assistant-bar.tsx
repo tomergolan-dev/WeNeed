@@ -125,7 +125,7 @@ export function AssistantBar({
           <section
             aria-live="polite"
             aria-label={t("replyLabel")}
-            className="mb-2 max-h-[45vh] overflow-y-auto rounded-[22px] border bg-card p-3.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)]"
+            className="mb-2 max-h-[45vh] overflow-y-auto rounded-[20px] border border-border/60 bg-card p-3.5 shadow-[0_8px_24px_-14px_rgba(0,0,0,0.18)]"
           >
             <div className="flex items-start gap-2">
               <p className="min-w-0 flex-1 truncate pt-1 text-[13px] text-muted-foreground">“{exchange.message}”</p>
@@ -168,9 +168,9 @@ export function AssistantBar({
         <form
           ref={formRef}
           onSubmit={send}
-          className="flex min-h-14 items-end gap-2 rounded-[28px] border bg-card p-2 shadow-[0_6px_24px_-10px_rgba(0,0,0,0.22)] transition-colors focus-within:border-primary"
+          className="flex min-h-11 items-end gap-2 rounded-[23px] border border-border/60 bg-card p-1 shadow-[0_4px_16px_-10px_rgba(0,0,0,0.16)] transition-colors focus-within:border-primary"
         >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
             <Sparkles className="size-[18px]" aria-hidden />
           </span>
           {/* Grows with the text, up to a few lines. Enter adds a line on phones
@@ -196,15 +196,15 @@ export function AssistantBar({
             placeholder={placeholder}
             aria-label={t("label")}
             maxLength={500}
-            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-2 text-base leading-6 outline-none placeholder:text-sm placeholder:text-muted-foreground placeholder-shown:my-2 placeholder-shown:h-6 placeholder-shown:overflow-hidden placeholder-shown:py-0"
+            className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-1.5 text-base leading-6 outline-none placeholder:text-sm placeholder:text-muted-foreground placeholder-shown:my-1.5 placeholder-shown:h-6 placeholder-shown:overflow-hidden placeholder-shown:py-0"
           />
           <button
             type="submit"
             disabled={!text.trim() || pending}
             aria-label={t("send")}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-30"
           >
-            <ArrowUp className="size-5" aria-hidden />
+            <ArrowUp className="size-[18px]" aria-hidden />
           </button>
         </form>
       </div>
@@ -273,7 +273,7 @@ function Note({ exchange, chores, onUndo }: { exchange: Exchange; chores: boolea
     <div
       role="status"
       className={cn(
-        "mb-2 flex animate-in items-center gap-2.5 rounded-2xl border bg-card py-2 ps-3 pe-2 text-sm shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] fade-in slide-in-from-bottom-1",
+        "mb-2 flex animate-in items-center gap-2.5 rounded-2xl border border-border/60 bg-card py-2 ps-3 pe-2 text-[13px] shadow-[0_6px_18px_-12px_rgba(0,0,0,0.18)] fade-in slide-in-from-bottom-1",
         exchange.state === "error" && "text-destructive",
       )}
     >
@@ -375,7 +375,7 @@ function ExchangeBody({
                   <button
                     type="button"
                     onClick={() => onIncrease(dup)}
-                    className="h-10 rounded-xl bg-primary px-3.5 text-sm font-semibold text-primary-foreground"
+                    className="h-9 rounded-xl bg-primary px-3.5 text-sm font-medium text-primary-foreground"
                   >
                     {t("yesTotal", {
                       quantity: formatQuantity({ quantity: dup.newQuantity, unit: dup.newUnit }, tItem("units")),
@@ -384,7 +384,7 @@ function ExchangeBody({
                   <button
                     type="button"
                     onClick={() => onKeep(dup)}
-                    className="h-10 rounded-xl border bg-card px-3.5 text-sm font-semibold"
+                    className="h-9 rounded-xl border border-border/60 bg-card px-3.5 text-sm font-medium"
                   >
                     {t("keep")}
                   </button>
@@ -411,14 +411,14 @@ function ExchangeBody({
               <button
                 type="button"
                 onClick={() => onRemove(removals.map((r) => r.itemId))}
-                className="h-10 rounded-xl bg-destructive px-3.5 text-sm font-semibold text-white"
+                className="h-9 rounded-xl bg-destructive px-3.5 text-sm font-medium text-white"
               >
                 {t("removeYes")}
               </button>
               <button
                 type="button"
                 onClick={onKeepAll}
-                className="h-10 rounded-xl border bg-card px-3.5 text-sm font-semibold"
+                className="h-9 rounded-xl border border-border/60 bg-card px-3.5 text-sm font-medium"
               >
                 {t("keep")}
               </button>
