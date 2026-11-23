@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/[locale]/l
           </div>
         </header>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-10">
-          <h1 className="text-[24px] font-extrabold tracking-tight lg:text-[30px]">{t("title")}</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight lg:text-[28px]">{t("title")}</h1>
           <p className="mt-1 mb-6 text-sm text-muted-foreground lg:invisible">{t("subtitle")}</p>
           <Suspense fallback={<div className="h-72 animate-pulse rounded-3xl bg-muted" />}>
             <Form searchParams={searchParams} />

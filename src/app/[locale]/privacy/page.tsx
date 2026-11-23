@@ -24,7 +24,7 @@ export default async function PrivacyPage() {
         </Link>
         <LanguageSwitch />
       </header>
-      <h1 className="mt-8 text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
+      <h1 className="mt-8 text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{t("updated")}</p>
       <p className="mt-5 leading-7">{t("intro")}</p>
 

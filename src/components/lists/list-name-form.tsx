@@ -47,7 +47,7 @@ export function ListNameForm({
         placeholder={t("namePlaceholder")}
         maxLength={40}
         autoFocus
-        className="h-12 rounded-2xl bg-card text-base"
+        className="h-11 rounded-xl bg-card text-base"
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" size="xl" disabled={pending || !name.trim()}>

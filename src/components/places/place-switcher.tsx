@@ -66,7 +66,7 @@ export function PlaceSwitcher({
           <PlaceBadge icon={place.icon} />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="flex items-center gap-2">
-              <span className="truncate text-base font-semibold">{name(place)}</span>
+              <span className="truncate text-[15px] font-semibold">{name(place)}</span>
               {!place.personal && (
                 <span
                   className={cn(
@@ -109,7 +109,7 @@ export function PlaceSwitcher({
       <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
         <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
         <div className="mb-3.5 flex items-center justify-between">
-          <DrawerTitle className="text-xl font-extrabold">{t("title")}</DrawerTitle>
+          <DrawerTitle className="text-lg font-extrabold">{t("title")}</DrawerTitle>
           <DrawerClose
             aria-label={t("close")}
             className="flex size-10 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853]"
@@ -130,7 +130,7 @@ export function PlaceSwitcher({
           <Link
             href="/places/new"
             onClick={() => setOpen(false)}
-            className="mt-4 flex h-13 shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-[#c3cbc7] text-[15px] font-semibold text-accent-foreground transition-colors active:bg-muted"
+            className="mt-4 flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-[#c3cbc7] text-sm font-medium text-accent-foreground transition-colors active:bg-muted"
           >
             <Plus className="size-4" aria-hidden />
             {t("newPlace")}

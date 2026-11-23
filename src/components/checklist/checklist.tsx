@@ -168,7 +168,7 @@ export function Checklist({
                             else setEditing(item);
                           }}
                           className={cn(
-                            "min-w-0 truncate py-3 text-start text-base",
+                            "min-w-0 truncate py-3 text-start text-[15px]",
                             item.done && "text-muted-foreground",
                             isDraft(item) && "opacity-60",
                           )}
@@ -259,7 +259,7 @@ function RenameItemForm({
         onChange={(e) => setName(e.target.value)}
         aria-label={t("name")}
         maxLength={100}
-        className="h-12 rounded-2xl bg-card text-base"
+        className="h-11 rounded-xl bg-card text-base"
       />
       <div className="flex gap-2">
         <Button type="button" variant="outline" size="xl" className="text-destructive" onClick={onDelete}>

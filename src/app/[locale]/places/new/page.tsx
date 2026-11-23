@@ -33,7 +33,7 @@ async function NewPlace() {
           <X className="size-4" aria-hidden />
         </Link>
       </header>
-      <h1 className="mt-8 text-[24px] font-extrabold tracking-tight">
+      <h1 className="mt-8 text-[22px] font-extrabold tracking-tight">
         {t("createTitle")}
       </h1>
       <p className="mt-1 mb-6 text-sm text-muted-foreground">{t("createSubtitle")}</p>

@@ -75,7 +75,7 @@ export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete 
             open();
           }}
           className={cn(
-            "min-w-0 truncate py-3 text-start text-base",
+            "min-w-0 truncate py-3 text-start text-[15px]",
             item.done && "text-muted-foreground line-through",
           )}
         >

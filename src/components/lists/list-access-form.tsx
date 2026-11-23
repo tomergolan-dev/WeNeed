@@ -159,7 +159,7 @@ export function ListAccessForm({
             const checked = isChecked(person);
             const hint = sub(person);
             return (
-              <li key={person.id} className="flex min-h-15 items-center gap-3 border-b py-2 last:border-b-0">
+              <li key={person.id} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
                 <Initial name={person.name} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-semibold">
@@ -194,7 +194,7 @@ export function ListAccessForm({
             );
           })}
           {access.pending.map((address) => (
-            <li key={address} className="flex min-h-15 items-center gap-3 border-b py-2 last:border-b-0">
+            <li key={address} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
                 <Mail className="size-4" aria-hidden />
               </span>
@@ -241,7 +241,7 @@ export function ListAccessForm({
         size="xl"
         disabled={pending}
         onClick={save}
-        className="mt-1 h-13.5 w-full rounded-2xl bg-[#1d2522] text-base font-bold text-white hover:bg-[#1d2522]/90"
+        className="mt-1 h-11 w-full rounded-xl bg-[#1d2522] text-[15px] font-medium text-white hover:bg-[#1d2522]/90"
       >
         {t("save")}
       </Button>

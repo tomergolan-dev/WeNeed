@@ -80,7 +80,7 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "par
               ? t("toList", { name: from })
               : t("toLists", { name: from, count: invite.lists.length })}
         </p>
-        <h1 className="mt-1 text-[24px] font-extrabold tracking-tight">
+        <h1 className="mt-1 text-[22px] font-extrabold tracking-tight">
           {invite.lists === null ? invite.placeName : invite.lists.map((l) => l.name).join(", ")}
         </h1>
         {invite.lists !== null && <p className="mt-0.5 text-[15px] text-muted-foreground">{where}</p>}

@@ -88,7 +88,7 @@ function NewListForm({ beforeCreate }: { beforeCreate?: () => Promise<void> }) {
         placeholder={t("namePlaceholder")}
         maxLength={40}
         autoFocus={focusOnOpen()}
-        className="h-12 rounded-2xl bg-card text-base"
+        className="h-11 rounded-xl bg-card text-base"
       />
       <p className="mt-1 text-sm font-semibold">{t("typeLabel")}</p>
       <ListTypePicker value={type} onChange={setPicked} />

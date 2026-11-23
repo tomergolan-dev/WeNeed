@@ -61,7 +61,7 @@ export function MembersManager({
                   : t("seesNothing");
             const role = m.role === "owner" ? t("admin") : t("member");
             return (
-              <li key={m.id} className="flex min-h-15 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
+              <li key={m.id} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
                 <Initial name={m.name} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-[15px] font-medium">
@@ -105,7 +105,7 @@ export function MembersManager({
           <h2 className={heading}>{t("pending", { count: invites.length })}</h2>
           <ul className={cn(card, "px-3.5")}>
             {invites.map((invite) => (
-              <li key={invite.id} className="flex min-h-15 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
+              <li key={invite.id} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
                   <Mail className="size-4" aria-hidden />
                 </span>

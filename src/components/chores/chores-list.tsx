@@ -433,7 +433,7 @@ function ChoreRow({
               open();
             }}
             className={cn(
-              "min-w-0 text-start text-base",
+              "min-w-0 text-start text-[15px]",
               chore.done && "text-muted-foreground line-through",
             )}
           >

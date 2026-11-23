@@ -82,7 +82,7 @@ function SortableRow({ item }: { item: Item }) {
       )}
     >
       <span
-        className={cn("min-w-0 flex-1 truncate py-3 text-base font-medium", item.done && "text-muted-foreground")}
+        className={cn("min-w-0 flex-1 truncate py-3 text-[15px]", item.done && "text-muted-foreground")}
       >
         {item.name}
       </span>

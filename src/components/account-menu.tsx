@@ -91,12 +91,12 @@ export function AccountPanel({
             aria-expanded={picking}
             className="relative mx-auto mb-2 flex rounded-full active:opacity-80"
           >
-            <Avatar name={user.name} avatar={user.avatar} className="size-18 text-[28px]" />
+            <Avatar name={user.name} avatar={user.avatar} className="size-16 text-2xl" />
             <span className="absolute -end-0.5 bottom-0 flex size-6.5 items-center justify-center rounded-full border-2 border-card bg-muted text-muted-foreground">
               <Camera className="size-3.5" aria-hidden />
             </span>
           </button>
-          <p className="flex items-center justify-center gap-0.5 text-[17px] font-semibold">
+          <p className="flex items-center justify-center gap-0.5 text-[15px] font-semibold">
             {user.name}
             <button
               type="button"
@@ -116,9 +116,9 @@ export function AccountPanel({
         </div>
       )}
       <div className={flat ? "-mx-4 border-y border-border/60" : "overflow-hidden rounded-2xl border border-border/60 bg-card"}>
-        <div className="flex min-h-13 items-center gap-3 px-4 py-2">
+        <div className="flex min-h-12 items-center gap-3 px-4 py-2">
           <Globe className="size-[18px] text-muted-foreground" aria-hidden />
-          <span className="flex-1 text-[15px]">{t("language")}</span>
+          <span className="flex-1 text-sm">{t("language")}</span>
           <LanguagePicker />
         </div>
         {user && <TaskEmailsRow initial={user.taskEmails} />}
@@ -218,8 +218,8 @@ function CalendarRow({ open, onToggle }: { open: boolean; onToggle: () => void }
       >
         <CalendarDays className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
         <span className="flex flex-1 flex-col gap-0.5">
-          <span className="text-[15px]">{t("calendar")}</span>
-          <span className="text-[13px] leading-snug text-muted-foreground">{t("calendarHint")}</span>
+          <span className="text-sm">{t("calendar")}</span>
+          <span className="text-xs leading-snug text-muted-foreground">{t("calendarHint")}</span>
         </span>
       </button>
       {open && (
@@ -281,11 +281,11 @@ function TaskEmailsRow({ initial }: { initial: boolean }) {
   const t = useTranslations("Account");
   const [on, setOn] = useState(initial);
   return (
-    <label className="flex min-h-13 cursor-pointer items-center gap-3 border-t border-border/60 px-4 py-2">
+    <label className="flex min-h-12 cursor-pointer items-center gap-3 border-t border-border/60 px-4 py-2">
       <Bell className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
       <span className="flex flex-1 flex-col gap-0.5">
-        <span className="text-[15px]">{t("taskEmails")}</span>
-        <span className="text-[13px] leading-snug text-muted-foreground">{t("taskEmailsHint")}</span>
+        <span className="text-sm">{t("taskEmails")}</span>
+        <span className="text-xs leading-snug text-muted-foreground">{t("taskEmailsHint")}</span>
       </span>
       <input
         type="checkbox"

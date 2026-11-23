@@ -25,7 +25,7 @@ export function BottomSheet({
         <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
         <div className="mb-3.5 flex items-center justify-between">
           <div className="min-w-0">
-            <DrawerTitle className="text-xl font-extrabold">{title}</DrawerTitle>
+            <DrawerTitle className="text-lg font-extrabold">{title}</DrawerTitle>
             {subtitle && <p className="mt-0.5 truncate text-[13px] text-muted-foreground">{subtitle}</p>}
           </div>
           <DrawerClose

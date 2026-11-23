@@ -77,12 +77,12 @@ export function MyPeopleRow({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex min-h-13 w-full items-center gap-3 border-t border-border/60 px-4 py-2 text-start transition-colors active:bg-muted"
+      className="flex min-h-12 w-full items-center gap-3 border-t border-border/60 px-4 py-2 text-start transition-colors active:bg-muted"
     >
       <Users className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
       <span className="flex flex-1 flex-col gap-0.5">
-        <span className="text-[15px]">{t("people")}</span>
-        <span className="text-[13px] leading-snug text-muted-foreground">{t("peopleHint")}</span>
+        <span className="text-sm">{t("people")}</span>
+        <span className="text-xs leading-snug text-muted-foreground">{t("peopleHint")}</span>
       </span>
       <ChevronLeft className="size-4 shrink-0 text-muted-foreground ltr:-scale-x-100" aria-hidden />
     </button>
@@ -117,7 +117,7 @@ export function MyPeopleView({ onBack, flat = false }: { onBack: () => void; fla
         >
           <ArrowRight className="size-[18px] ltr:-scale-x-100" aria-hidden />
         </button>
-        <h2 className="text-[17px] font-semibold">{t("people")}</h2>
+        <h2 className="text-[15px] font-semibold">{t("people")}</h2>
       </div>
       <p className="text-[13px] leading-5 text-muted-foreground">{t("peopleIntro")}</p>
       {people === null && !error && <div className="h-15 animate-pulse rounded-[18px] bg-muted" />}
@@ -163,7 +163,7 @@ function PersonRow({ person, onError }: { person: Person; onError: (code: ErrorC
   return (
     <li className="border-t border-border/60 first:border-t-0">
       {editing ? (
-        <div className="flex min-h-14 flex-col justify-center gap-1 py-2">
+        <div className="flex min-h-12 flex-col justify-center gap-1 py-2">
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -189,10 +189,10 @@ function PersonRow({ person, onError }: { person: Person; onError: (code: ErrorC
           type="button"
           onClick={() => setEditing(true)}
           aria-label={t("nicknameFor", { name: person.name })}
-          className="flex min-h-14 w-full items-center gap-3 py-2 text-start"
+          className="flex min-h-12 w-full items-center gap-3 py-2 text-start"
         >
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="truncate text-[15px]">{stored || person.name}</span>
+            <span className="truncate text-sm">{stored || person.name}</span>
             {stored && <span className="truncate text-[13px] text-muted-foreground">{person.name}</span>}
           </span>
           <PencilLine className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />

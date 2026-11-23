@@ -78,9 +78,9 @@ export function MobileNav({
                 onClick={() => setView("account")}
                 className="flex items-center gap-3 border-b border-border/60 px-4 pt-5 pb-4 text-start active:bg-muted"
               >
-                <Avatar name={user?.name ?? null} avatar={user?.avatar} className="size-12 text-xl" />
+                <Avatar name={user?.name ?? null} avatar={user?.avatar} className="size-10 text-base" />
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[17px] font-semibold">{user?.name ?? "WeNeed"}</span>
+                  <span className="truncate text-[15px] font-semibold">{user?.name ?? "WeNeed"}</span>
                   <span className="text-[13px] text-muted-foreground">{t("profile")}</span>
                 </span>
                 <ChevronLeft className="size-4 shrink-0 text-muted-foreground ltr:-scale-x-100" aria-hidden />
@@ -100,7 +100,7 @@ export function MobileNav({
                 >
                   <ArrowRight className="size-[18px] ltr:-scale-x-100" aria-hidden />
                 </button>
-                <DrawerTitle className="text-[17px] font-semibold">{t("profile")}</DrawerTitle>
+                <DrawerTitle className="text-[15px] font-semibold">{t("profile")}</DrawerTitle>
               </div>
               <div
                 className={cn(

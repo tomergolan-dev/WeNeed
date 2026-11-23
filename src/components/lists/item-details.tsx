@@ -117,7 +117,7 @@ export function DetailsButton({
         onOpen();
         open(item, onEdit);
       }}
-      className="flex h-13 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-start font-semibold transition-colors active:bg-muted"
+      className="flex h-12 w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 text-start text-[15px] font-medium transition-colors active:bg-muted"
     >
       <Paperclip className="size-5 text-muted-foreground" aria-hidden />
       <span className="flex-1">{t("open")}</span>

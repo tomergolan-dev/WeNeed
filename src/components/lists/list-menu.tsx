@@ -15,7 +15,7 @@ import { ListNameForm } from "./list-name-form";
 import { ListTypePicker } from "./list-type-picker";
 
 const row =
-  "flex h-14 w-full items-center gap-3 rounded-2xl border bg-card px-4 text-start font-semibold transition-colors active:bg-muted";
+  "flex h-12 w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 text-start text-[15px] font-medium transition-colors active:bg-muted";
 
 /**
  * The list's ⋯ menu: history (shopping and tasks), rename and kind; for admins also who
