@@ -100,7 +100,7 @@ async function TaskHistory({ listId, listName, userId }: { listId: string; listN
             {months.map((month) => (
               <section key={month.label} className="flex flex-col gap-2">
                 <h2 className="px-1 text-sm font-semibold text-muted-foreground">{month.label}</h2>
-                <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                <ul className="overflow-hidden rounded-2xl border border-border/60 bg-card">
                   {month.tasks.map((task) => (
                     <li key={task.id} className="flex flex-col gap-0.5 border-t px-4 py-3 first:border-t-0">
                       <span className="font-medium">{task.name}</span>

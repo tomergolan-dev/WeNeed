@@ -166,7 +166,7 @@ export function ShoppingList({
             {groupByCategory(open).map(({ category, items }) => {
               const { icon: Icon, tone } = CATEGORY_ICONS[isCategory(category) ? category : DEFAULT_CATEGORY];
               return (
-                <Section key={category} title={tCategories(category)} icon={<Icon className="size-3.5" />} tone={tone}>
+                <Section key={category} title={tCategories(category)} icon={<Icon className="size-3" />} tone={tone}>
                   {items.map((item) => (
                     <ItemRow key={item.id} item={item} people={people} selection={selection} {...handlers} />
                   ))}
@@ -177,7 +177,7 @@ export function ShoppingList({
             {bought.length > 0 && (
               <Section
                 title={t("inCart", { count: bought.length })}
-                icon={<ShoppingCart className="size-3.5" />}
+                icon={<ShoppingCart className="size-3" />}
                 tone="bg-[#e4f3ec] text-[#11684b]"
               >
                 {bought.map((item) => (
@@ -207,12 +207,12 @@ function Section({
   return (
     <section>
       <h2 className="mb-2 flex items-center gap-2 px-1 text-[13px] font-semibold text-muted-foreground">
-        <span className={cn("flex size-6 items-center justify-center rounded-full", tone)} aria-hidden>
+        <span className={cn("flex size-5 items-center justify-center rounded-full", tone)} aria-hidden>
           {icon}
         </span>
         {title}
       </h2>
-      <ul className="rounded-[18px] border bg-card shadow-soft">{children}</ul>
+      <ul className="rounded-2xl border border-border/60 bg-card">{children}</ul>
     </section>
   );
 }

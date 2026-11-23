@@ -57,7 +57,7 @@ export function ListMenu({
           setError(null);
           setOpen(true);
         }}
-        className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card transition-colors active:bg-muted"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-card transition-colors active:bg-muted"
       >
         <Ellipsis className="size-5" aria-hidden />
       </button>

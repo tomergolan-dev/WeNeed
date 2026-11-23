@@ -273,7 +273,7 @@ export function ChoresList({
                     onDelete={(ids) => run({ type: "deleteMany", ids }, () => deleteItems(listId, ids))}
                   />
                 </div>
-                <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                <ul className="overflow-hidden rounded-2xl border border-border/60 bg-card">
                   {shown.map(({ chore, status }) => (
                     <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
                   ))}
@@ -287,7 +287,7 @@ export function ChoresList({
             {done.length > 0 && filter === "all" && (
               <section>
                 <h2 className="mb-2 px-1 text-[13px] font-semibold text-muted-foreground">{t("done")}</h2>
-                <ul className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+                <ul className="overflow-hidden rounded-2xl border border-border/60 bg-card">
                   {done.map(({ chore, status }) => (
                     <ChoreRow key={chore.id} chore={chore} status={status} {...rowProps} />
                   ))}
@@ -358,7 +358,7 @@ function FilterButton({
       aria-pressed={on}
       className={cn(
         "flex h-7 flex-1 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs whitespace-nowrap text-muted-foreground transition-colors",
-        on && "bg-card font-semibold text-foreground shadow-sm",
+        on && "bg-card font-medium text-foreground shadow-sm",
       )}
     >
       {dot && <span className={cn("size-1.5 rounded-full", dot)} aria-hidden />}
@@ -433,7 +433,7 @@ function ChoreRow({
               open();
             }}
             className={cn(
-              "min-w-0 text-start text-base font-medium",
+              "min-w-0 text-start text-base",
               chore.done && "text-muted-foreground line-through",
             )}
           >

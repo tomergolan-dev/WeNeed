@@ -41,7 +41,7 @@ export function QuickAdd({
         inputRef.current?.focus();
       }}
     >
-      <div className="flex h-11 items-center gap-2 rounded-full border bg-card ps-4 pe-1.5 transition-colors focus-within:border-primary">
+      <div className="flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card ps-4 pe-1.5 transition-colors focus-within:border-primary">
         <Plus className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
         <input
           ref={inputRef}
@@ -51,12 +51,12 @@ export function QuickAdd({
           aria-label={t("label")}
           maxLength={200}
           enterKeyHint="done"
-          className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+          className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-sm placeholder:text-muted-foreground"
         />
         <button
           type="submit"
           disabled={!canSubmit}
-          className="h-8 shrink-0 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
+          className="h-8 shrink-0 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity disabled:opacity-40"
         >
           {t("add")}
         </button>
@@ -77,7 +77,7 @@ export function QuickAdd({
 
 /** The look shared by the small controls under the name field. */
 export const chipClass =
-  "flex h-9 shrink-0 items-center rounded-full border bg-card px-3 text-sm text-foreground outline-none transition-colors focus-within:border-primary focus-visible:border-primary";
+  "flex h-9 shrink-0 items-center rounded-full border border-border/60 bg-card px-3 text-sm text-foreground outline-none transition-colors focus-within:border-primary focus-visible:border-primary";
 
 export function OptionChip({
   on,

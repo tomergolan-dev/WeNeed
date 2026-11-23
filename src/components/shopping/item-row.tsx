@@ -83,7 +83,7 @@ export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete 
         </button>
         {!draft && !selecting && <ClipChip item={item} onEdit={() => setEditing(true)} />}
         <span className="flex-1" />
-        {quantity && <span className="shrink-0 text-sm text-muted-foreground">{quantity}</span>}
+        {quantity && <span className="shrink-0 text-[13px] text-muted-foreground">{quantity}</span>}
       </div>
       {editing && (
         <EditItemSheet

@@ -37,7 +37,7 @@ export function FinishListButton({ listId, remaining }: { listId: string; remain
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger className="flex h-10 shrink-0 items-center gap-1 rounded-full border bg-card ps-2.5 pe-3 text-[13px] font-semibold transition-colors active:bg-muted">
+      <AlertDialogTrigger className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-border/60 bg-card ps-2.5 pe-3 text-[13px] font-medium transition-colors active:bg-muted">
         <ShoppingCart className="size-4 text-primary" aria-hidden />
         {t("finish")}
       </AlertDialogTrigger>

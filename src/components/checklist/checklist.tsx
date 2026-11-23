@@ -130,7 +130,7 @@ export function Checklist({
                   onReorder={(ids) => run({ type: "order", ids }, () => reorderItems(listId, ids))}
                 />
               ) : (
-                <ul className="rounded-[18px] border bg-card shadow-soft">
+                <ul className="rounded-2xl border border-border/60 bg-card">
                   {sorted.map((item) => (
                     <PickableRow key={item.id} item={item} selection={selection}>
                       {selecting ? (
@@ -168,7 +168,7 @@ export function Checklist({
                             else setEditing(item);
                           }}
                           className={cn(
-                            "min-w-0 truncate py-3 text-start text-base font-medium",
+                            "min-w-0 truncate py-3 text-start text-base",
                             item.done && "text-muted-foreground",
                             isDraft(item) && "opacity-60",
                           )}

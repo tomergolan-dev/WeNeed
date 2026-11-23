@@ -85,7 +85,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ItemList({ items, units }: { items: Item[]; units: string }) {
   return (
-    <ul className="rounded-[18px] border bg-card shadow-soft">
+    <ul className="rounded-2xl border border-border/60 bg-card">
       {items.map((item) => (
         <li key={item.id} className="flex min-h-12 items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0">
           <Check className={cn("size-4 shrink-0", item.done ? "text-primary" : "invisible")} aria-hidden />
