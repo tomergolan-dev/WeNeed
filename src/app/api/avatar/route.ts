@@ -12,7 +12,7 @@ export async function GET() {
   if (!blob || blob.statusCode !== 200) return new Response(null, { status: 404 });
   return new Response(blob.stream, {
     headers: {
-      "Content-Type": "image/jpeg",
+      "Content-Type": blob.blob.contentType ?? "image/jpeg",
       // The URL carries the photo's stored name, so a new photo is a new URL.
       "Cache-Control": "private, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",

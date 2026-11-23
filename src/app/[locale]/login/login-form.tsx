@@ -47,7 +47,7 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
 
   if (!email) {
     return (
-      <div className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-elevated">
+      <div className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-card p-5">
         {google && (
           <>
             {/* A plain link: the route handler redirects to Google. */}
@@ -81,7 +81,7 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               placeholder={t("emailPlaceholder")}
-              className="h-12 rounded-2xl px-4 text-base"
+              className="h-11 rounded-xl px-3.5 text-base"
               aria-invalid={error ? true : undefined}
             />
           </div>
@@ -96,7 +96,7 @@ export function LoginForm({ google, initialError }: { google: boolean; initialEr
 
   return (
     <form
-      className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-elevated"
+      className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-card p-5"
       onSubmit={(e) => {
         e.preventDefault();
         verify(code);

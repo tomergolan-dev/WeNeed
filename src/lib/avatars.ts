@@ -33,6 +33,9 @@ export function parseAvatar(value: string | null | undefined):
   return { kind: "letter" };
 }
 
+/** Stored when the user picks the letter, so a Google photo is never brought in over their choice. */
+export const LETTER = "letter";
+
 /** Uploaded photos are made small in the browser first: a square this many pixels wide, as JPEG. */
 export const AVATAR_PX = 256;
 /** The most a resized photo may weigh when it reaches the server. */

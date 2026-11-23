@@ -26,7 +26,7 @@ export function InviteAnswer({ inviteId }: { inviteId: string }) {
 
   return (
     <div className="mt-5.5 flex flex-col gap-2.5">
-      <Button type="button" size="xl" disabled={pending} onClick={() => answer(true)} className="h-13.5 w-full rounded-2xl text-base font-bold">
+      <Button type="button" size="xl" disabled={pending} onClick={() => answer(true)} className="w-full">
         <Check className="size-5" aria-hidden />
         {t("accept")}
       </Button>
@@ -36,7 +36,7 @@ export function InviteAnswer({ inviteId }: { inviteId: string }) {
         size="xl"
         disabled={pending}
         onClick={() => answer(false)}
-        className="h-13.5 w-full rounded-2xl text-base font-bold"
+        className="w-full"
       >
         {t("decline")}
       </Button>

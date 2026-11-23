@@ -16,7 +16,7 @@ import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
 import { canSeeList, findEditableItem, findList, guessCategory, isPlaceAdmin, nextPosition } from "@/lib/list-access";
 import { isPlaceIcon } from "@/lib/place-icons";
-import { isAvatarIcon, MAX_AVATAR_BYTES, parseAvatar } from "@/lib/avatars";
+import { isAvatarIcon, LETTER, MAX_AVATAR_BYTES, parseAvatar } from "@/lib/avatars";
 import { getMyPeople } from "@/lib/names";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
@@ -461,7 +461,7 @@ export async function setAvatarIcon(key: string | null): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return fail("unauthorized");
   if (key !== null && !isAvatarIcon(key)) return fail("invalid");
-  await replaceAvatar(user.id, user.avatar, key === null ? null : `icon:${key}`);
+  await replaceAvatar(user.id, user.avatar, key === null ? LETTER : `icon:${key}`);
   refresh();
   return ok;
 }

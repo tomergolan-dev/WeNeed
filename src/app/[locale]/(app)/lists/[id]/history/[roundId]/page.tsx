@@ -14,7 +14,7 @@ type Props = PageProps<"/[locale]/lists/[id]/history/[roundId]">;
 
 export default function RoundPage({ params }: Props) {
   return (
-    <Suspense fallback={<div className="mx-5 mt-4 h-60 animate-pulse rounded-[18px] bg-muted" />}>
+    <Suspense fallback={<div className="mx-5 mt-4 h-60 animate-pulse rounded-2xl bg-muted" />}>
       <Round params={params} />
     </Suspense>
   );
@@ -87,7 +87,7 @@ function ItemList({ items, units }: { items: Item[]; units: string }) {
   return (
     <ul className="rounded-2xl border border-border/60 bg-card">
       {items.map((item) => (
-        <li key={item.id} className="flex min-h-12 items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0">
+        <li key={item.id} className="flex min-h-12 items-center gap-3 border-b border-border/60 px-3.5 last:border-b-0">
           <Check className={cn("size-4 shrink-0", item.done ? "text-primary" : "invisible")} aria-hidden />
           <span className={cn("min-w-0 flex-1 truncate", !item.done && "text-muted-foreground")}>{item.name}</span>
           <span className="shrink-0 text-sm text-muted-foreground">{formatQuantity(item, units)}</span>

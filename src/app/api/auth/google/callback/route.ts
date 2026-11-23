@@ -1,8 +1,9 @@
 import { decodeIdToken } from "arctic";
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { openPersonalArea } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/email";
-import { GOOGLE_STATE_COOKIE, GOOGLE_VERIFIER_COOKIE, googleClient, type GoogleClaims } from "@/lib/google";
+import { GOOGLE_STATE_COOKIE, GOOGLE_VERIFIER_COOKIE, googleClient, importGooglePhoto, type GoogleClaims } from "@/lib/google";
 import { startSession } from "@/lib/session";
 import { findOrCreateUser } from "@/lib/sign-in";
 
@@ -33,6 +34,9 @@ export async function GET(request: Request) {
   if (!email) return fail();
 
   const userId = await findOrCreateUser(email, claims.name);
+  // After the redirect, so signing in doesn't wait for the photo.
+  const picture = claims.picture;
+  if (picture) after(() => importGooglePhoto(userId, picture).catch((error) => console.error("[sign-in] Google photo", error)));
   await startSession(userId);
   await openPersonalArea(userId);
   return Response.redirect(new URL("/", url.origin));

@@ -11,7 +11,7 @@ import { TIME_ZONE } from "@/lib/due";
 
 export default function HistoryPage({ params }: PageProps<"/[locale]/lists/[id]/history">) {
   return (
-    <Suspense fallback={<div className="mx-5 mt-4 h-40 animate-pulse rounded-[18px] bg-muted" />}>
+    <Suspense fallback={<div className="mx-5 mt-4 h-40 animate-pulse rounded-2xl bg-muted" />}>
       <History params={params} />
     </Suspense>
   );
@@ -44,7 +44,7 @@ async function History({ params }: Pick<PageProps<"/[locale]/lists/[id]/history"
               <li key={round.id}>
                 <Link
                   href={`/lists/${list.id}/history/${round.id}`}
-                  className="flex items-center gap-3 rounded-[18px] border bg-card px-4 py-3.5 shadow-soft transition-colors active:bg-muted"
+                  className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 transition-colors active:bg-muted"
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="font-semibold">

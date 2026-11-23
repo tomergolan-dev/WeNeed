@@ -16,7 +16,7 @@ export async function InviteBanner({ invite }: { invite: InviteView }) {
   return (
     <Link
       href={`/invites/${invite.id}`}
-      className="flex items-center gap-3 rounded-[18px] bg-[#fff3d6] px-3.5 py-3 text-[#5c3d00] transition-colors active:bg-[#fbe9bd]"
+      className="flex items-center gap-3 rounded-2xl bg-[#fff3d6] px-3.5 py-3 text-[#5c3d00] transition-colors active:bg-[#fbe9bd]"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-[#8a5a00]">
         <Mail className="size-4.5" aria-hidden />
@@ -28,7 +28,7 @@ export async function InviteBanner({ invite }: { invite: InviteView }) {
           b: (chunks) => <b className="font-bold">{chunks}</b>,
         })}
       </span>
-      <span className="shrink-0 text-sm font-bold">{t("inviteOpen")}</span>
+      <span className="shrink-0 text-sm font-semibold">{t("inviteOpen")}</span>
     </Link>
   );
 }

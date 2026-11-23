@@ -34,7 +34,7 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "par
 
   if (!invite) {
     return (
-      <div className="rounded-3xl border bg-card px-5 py-8 text-center shadow-soft">
+      <div className="rounded-3xl border border-border/60 bg-card px-5 py-8 text-center">
         <p className="text-muted-foreground">{t("gone")}</p>
         <Link href="/" className="mt-4 inline-block font-semibold text-accent-foreground">
           {t("home")}
@@ -60,7 +60,7 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "par
 
   return (
     <>
-      <div className="rounded-3xl border bg-card px-5.5 pt-7 pb-5.5 text-center shadow-[0_1px_2px_rgba(20,20,20,.04),0_8px_20px_-10px_rgba(20,20,20,.13)]">
+      <div className="rounded-3xl border border-border/60 bg-card px-5.5 pt-7 pb-5.5 text-center">
         <div className="mb-4.5 flex justify-center">
           <div className="relative">
             {kind && KindIcon ? (
@@ -80,7 +80,7 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "par
               ? t("toList", { name: from })
               : t("toLists", { name: from, count: invite.lists.length })}
         </p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-tight">
+        <h1 className="mt-1 text-[24px] font-extrabold tracking-tight">
           {invite.lists === null ? invite.placeName : invite.lists.map((l) => l.name).join(", ")}
         </h1>
         {invite.lists !== null && <p className="mt-0.5 text-[15px] text-muted-foreground">{where}</p>}
@@ -88,7 +88,7 @@ async function Invite({ params }: Pick<PageProps<"/[locale]/invites/[id]">, "par
         {facts.length > 0 && (
           <ul className="mt-5 text-start">
             {facts.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-center gap-2.5 border-t border-[#f0f2f1] py-2.5 text-[15px]">
+              <li key={text} className="flex items-center gap-2.5 border-t border-border/60 py-2.5 text-[15px]">
                 <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                 {text}
               </li>
