@@ -33,16 +33,14 @@
     "myName": "My name",
     "myNameHint": "This is how everyone sees you in the app.",
     "save": "Save",
-    "saved": "Saved",
     "people": "My people",
     "peopleHint": "Names you choose for them show only to you",
     "peopleEmpty": "No one shares a place or a list with you yet.",
-    "nicknamePlaceholder": "My name for them",
     "nicknameFor": "My name for {name}",
     "editName": "Edit my name",
     "cancel": "Cancel",
     "back": "Back to the menu",
-    "peopleIntro": "A name you enter for someone shows only to you, in every list. Without one, the name they chose shows."
+    "peopleIntro": "A name you enter for someone shows only to you, in every list."
   },
   "Home": {
     "title": "What do we need today?",

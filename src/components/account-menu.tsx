@@ -58,8 +58,8 @@ export function AccountMenu({
             <>
               {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
               {user && !editing && (
-                <div className="mb-4 text-center">
-                  <p className="flex items-center justify-center gap-1 font-semibold">
+                <div className="mb-5 text-center">
+                  <p className="flex items-center justify-center gap-0.5 text-[17px] font-semibold">
                     {user.name}
                     <button
                       type="button"
@@ -67,20 +67,20 @@ export function AccountMenu({
                       aria-label={t("editName")}
                       className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
                     >
-                      <PencilLine className="size-4" aria-hidden />
+                      <PencilLine className="size-3.5" aria-hidden />
                     </button>
                   </p>
                   {user.email && (
-                    <p dir="ltr" className="text-sm text-muted-foreground">
+                    <p dir="ltr" className="text-[13px] text-muted-foreground">
                       {user.email}
                     </p>
                   )}
                 </div>
               )}
-              <div className="rounded-[18px] border bg-card">
-                <div className="flex min-h-15 items-center gap-3 px-4 py-2.5">
-                  <Globe className="size-5 text-muted-foreground" aria-hidden />
-                  <span className="flex-1">{t("language")}</span>
+              <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+                <div className="flex min-h-13 items-center gap-3 px-4 py-2">
+                  <Globe className="size-[18px] text-muted-foreground" aria-hidden />
+                  <span className="flex-1 text-[15px]">{t("language")}</span>
                   <LanguagePicker />
                 </div>
                 {user && <TaskEmailsRow initial={user.taskEmails} />}
@@ -88,8 +88,8 @@ export function AccountMenu({
                 {user && <MyPeopleRow onOpen={() => setPeopleOpen(true)} />}
               </div>
               {user ? (
-                <form action={logOut} className="mt-5 text-center">
-                  <button type="submit" className="h-10 px-4 text-[15px] text-muted-foreground active:text-foreground">
+                <form action={logOut} className="mt-4 text-center">
+                  <button type="submit" className="h-10 px-4 text-sm text-muted-foreground active:text-foreground">
                     {t("logOut")}
                   </button>
                 </form>
@@ -119,7 +119,7 @@ function LanguagePicker() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (
-    <div role="radiogroup" aria-label={t("language")} className="flex rounded-full bg-muted p-1">
+    <div role="radiogroup" aria-label={t("language")} className="flex rounded-full bg-muted p-0.5">
       {LOCALES.map((code) => {
         const on = code === locale;
         return (
@@ -132,8 +132,8 @@ function LanguagePicker() {
             disabled={pending}
             onClick={() => !on && startTransition(() => router.replace(pathname, { locale: code }))}
             className={cn(
-              "h-8 rounded-full px-3.5 text-sm text-muted-foreground transition-colors",
-              on && "bg-card font-semibold text-foreground shadow-sm",
+              "h-7 rounded-full px-3 text-[13px] text-muted-foreground transition-colors",
+              on && "bg-card font-medium text-foreground shadow-sm",
             )}
           >
             {t(code)}
@@ -169,10 +169,10 @@ function CalendarRow({ open, onToggle }: { open: boolean; onToggle: () => void }
     });
 
   const button =
-    "flex h-10 items-center justify-center gap-1.5 rounded-xl border bg-card px-3 text-sm font-semibold transition-colors active:bg-muted";
+    "flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-card px-3 text-[13px] font-medium transition-colors active:bg-muted";
 
   return (
-    <div className="border-t px-4 py-2.5">
+    <div className="border-t border-border/60 px-4 py-2">
       <button
         type="button"
         aria-expanded={open}
@@ -180,17 +180,17 @@ function CalendarRow({ open, onToggle }: { open: boolean; onToggle: () => void }
           onToggle();
           if (!links) load();
         }}
-        className="flex min-h-10 w-full items-center gap-3 text-start"
+        className="flex min-h-9 w-full items-center gap-3 text-start"
       >
-        <CalendarDays className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="flex flex-1 flex-col">
-          <span>{t("calendar")}</span>
-          <span className="text-xs text-muted-foreground">{t("calendarHint")}</span>
+        <CalendarDays className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+        <span className="flex flex-1 flex-col gap-0.5">
+          <span className="text-[15px]">{t("calendar")}</span>
+          <span className="text-[13px] leading-snug text-muted-foreground">{t("calendarHint")}</span>
         </span>
       </button>
       {open && (
         <div className="mt-2.5 flex flex-col gap-2 pb-1">
-          <p className="text-sm leading-5">{t("calendarStep")}</p>
+          <p className="text-[13px] leading-5">{t("calendarStep")}</p>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="grid grid-cols-2 gap-2">
             <a
@@ -247,11 +247,11 @@ function TaskEmailsRow({ initial }: { initial: boolean }) {
   const t = useTranslations("Account");
   const [on, setOn] = useState(initial);
   return (
-    <label className="flex min-h-15 cursor-pointer items-center gap-3 border-t px-4 py-2.5">
-      <Bell className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-      <span className="flex flex-1 flex-col">
-        <span>{t("taskEmails")}</span>
-        <span className="text-xs text-muted-foreground">{t("taskEmailsHint")}</span>
+    <label className="flex min-h-13 cursor-pointer items-center gap-3 border-t border-border/60 px-4 py-2">
+      <Bell className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+      <span className="flex flex-1 flex-col gap-0.5">
+        <span className="text-[15px]">{t("taskEmails")}</span>
+        <span className="text-[13px] leading-snug text-muted-foreground">{t("taskEmailsHint")}</span>
       </span>
       <input
         type="checkbox"
@@ -267,10 +267,10 @@ function TaskEmailsRow({ initial }: { initial: boolean }) {
       <span
         aria-hidden
         className={cn(
-          "relative h-7 w-12 shrink-0 rounded-full bg-[#d5dad8] transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+          "relative h-6 w-10 shrink-0 rounded-full bg-[#d5dad8] transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
           on && "bg-primary",
-          "after:absolute after:start-0.5 after:top-0.5 after:size-6 after:rounded-full after:bg-white after:shadow-sm after:transition-transform",
-          on && "after:translate-x-5 rtl:after:-translate-x-5",
+          "after:absolute after:start-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform",
+          on && "after:translate-x-4 rtl:after:-translate-x-4",
         )}
       />
     </label>

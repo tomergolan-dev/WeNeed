@@ -2,15 +2,16 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Check, ChevronLeft, Users } from "lucide-react";
+import { ArrowRight, ChevronLeft, PencilLine, Users } from "lucide-react";
 import { listMyPeople, setContactName, setMyName, type MyPeople } from "@/app/actions";
 import { cn } from "@/lib/utils";
 
 type Person = Extract<MyPeople, { ok: true }>["people"][number];
 type ErrorCode = "generic" | "invalid" | "unauthorized";
 
+// Text in fields stays 16px: smaller makes iPhone zoom in on typing.
 const field =
-  "h-11 w-full min-w-0 rounded-xl border bg-card px-3 text-base outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15";
+  "h-10 w-full min-w-0 rounded-xl border border-border/70 bg-card px-3 text-base outline-none placeholder:text-muted-foreground/70 focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15";
 
 /** At the top of the account menu, in place of the user's name: editing it. Everyone sees it. */
 export function MyNameEditor({ name, onDone }: { name: string; onDone: () => void }) {
@@ -35,7 +36,7 @@ export function MyNameEditor({ name, onDone }: { name: string; onDone: () => voi
       }}
       className="mb-4 flex flex-col gap-1.5"
     >
-      <label htmlFor="my-name" className="text-sm font-semibold">
+      <label htmlFor="my-name" className="text-[13px] font-medium text-muted-foreground">
         {t("myName")}
       </label>
       <input
@@ -47,20 +48,20 @@ export function MyNameEditor({ name, onDone }: { name: string; onDone: () => voi
         autoFocus
         className={field}
       />
-      <p className="text-xs text-muted-foreground">{t("myNameHint")}</p>
+      <p className="text-[13px] text-muted-foreground">{t("myNameHint")}</p>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="mt-1 grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onDone}
-          className="h-11 rounded-xl border bg-card text-sm font-semibold transition-colors active:bg-muted"
+          className="h-10 rounded-xl border border-border/70 bg-card text-sm font-medium transition-colors active:bg-muted"
         >
           {t("cancel")}
         </button>
         <button
           type="submit"
           disabled={pending || value.trim() === ""}
-          className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-40"
+          className="h-10 rounded-xl bg-primary text-sm font-medium text-primary-foreground disabled:opacity-40"
         >
           {t("save")}
         </button>
@@ -76,12 +77,12 @@ export function MyPeopleRow({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="flex min-h-15 w-full items-center gap-3 border-t px-4 py-2.5 text-start transition-colors active:bg-muted"
+      className="flex min-h-13 w-full items-center gap-3 border-t border-border/60 px-4 py-2 text-start transition-colors active:bg-muted"
     >
-      <Users className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-      <span className="flex flex-1 flex-col">
-        <span>{t("people")}</span>
-        <span className="text-xs text-muted-foreground">{t("peopleHint")}</span>
+      <Users className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+      <span className="flex flex-1 flex-col gap-0.5">
+        <span className="text-[15px]">{t("people")}</span>
+        <span className="text-[13px] leading-snug text-muted-foreground">{t("peopleHint")}</span>
       </span>
       <ChevronLeft className="size-4 shrink-0 text-muted-foreground ltr:-scale-x-100" aria-hidden />
     </button>
@@ -106,23 +107,23 @@ export function MyPeopleView({ onBack }: { onBack: () => void }) {
   }, [tErrors]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={onBack}
           aria-label={t("back")}
-          className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground active:bg-muted"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground active:bg-muted"
         >
-          <ArrowRight className="size-5 ltr:-scale-x-100" aria-hidden />
+          <ArrowRight className="size-[18px] ltr:-scale-x-100" aria-hidden />
         </button>
-        <h2 className="text-lg font-bold">{t("people")}</h2>
+        <h2 className="text-[17px] font-semibold">{t("people")}</h2>
       </div>
-      <p className="text-sm leading-5 text-muted-foreground">{t("peopleIntro")}</p>
+      <p className="text-[13px] leading-5 text-muted-foreground">{t("peopleIntro")}</p>
       {people === null && !error && <div className="h-15 animate-pulse rounded-[18px] bg-muted" />}
       {people?.length === 0 && <p className="text-sm text-muted-foreground">{t("peopleEmpty")}</p>}
       {people && people.length > 0 && (
-        <ul className="flex flex-col rounded-[18px] border bg-card px-4">
+        <ul className="flex flex-col rounded-2xl border border-border/60 bg-card px-4">
           {people.map((person) => (
             <PersonRow key={person.id} person={person} onError={(code) => setError(tErrors(code))} />
           ))}
@@ -133,48 +134,70 @@ export function MyPeopleView({ onBack }: { onBack: () => void }) {
   );
 }
 
-/** One person: the name they chose, and a field for what the user calls them, saved on leaving it. */
+/**
+ * One person, like a contact in a phone: the name the user calls them (or the
+ * name they chose), with the other underneath. Tapping it edits the user's
+ * name for them in place; leaving the field or "done" saves it.
+ */
 function PersonRow({ person, onError }: { person: Person; onError: (code: ErrorCode) => void }) {
   const t = useTranslations("Account");
+  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(person.nickname ?? "");
   const [stored, setStored] = useState(person.nickname ?? "");
-  const [justSaved, setJustSaved] = useState(false);
 
   const save = () => {
+    setEditing(false);
     const next = value.trim();
+    setValue(next);
     if (next === stored) return;
     const before = stored;
     setStored(next);
     setContactName(person.id, next).then((result) => {
-      if (!result.ok) {
-        setStored(before);
-        onError(result.error === "invalid" || result.error === "unauthorized" ? result.error : "generic");
-        return;
-      }
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 1500);
+      if (result.ok) return;
+      setStored(before);
+      setValue(before);
+      onError(result.error === "invalid" || result.error === "unauthorized" ? result.error : "generic");
     });
   };
 
   return (
-    <li className="flex items-center gap-3 border-t py-2.5 first:border-t-0">
-      <span className="min-w-0 flex-1 truncate text-[15px]">{person.name}</span>
-      <span className="relative w-36 shrink-0">
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-          maxLength={40}
-          placeholder={t("nicknamePlaceholder")}
+    <li className="border-t border-border/60 first:border-t-0">
+      {editing ? (
+        <div className="flex min-h-14 flex-col justify-center gap-1 py-2">
+          <input
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onBlur={save}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") {
+                setValue(stored);
+                setEditing(false);
+              }
+            }}
+            autoFocus
+            maxLength={40}
+            placeholder={person.name}
+            aria-label={t("nicknameFor", { name: person.name })}
+            enterKeyHint="done"
+            className={cn(field, "h-9 rounded-lg border-transparent bg-muted")}
+          />
+          <span className="truncate text-[13px] text-muted-foreground">{person.name}</span>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
           aria-label={t("nicknameFor", { name: person.name })}
-          enterKeyHint="done"
-          className={cn(field, "h-10 pe-8 text-[15px]")}
-        />
-        {justSaved && (
-          <Check className="absolute end-2.5 top-1/2 size-4 -translate-y-1/2 text-primary" aria-label={t("saved")} />
-        )}
-      </span>
+          className="flex min-h-14 w-full items-center gap-3 py-2 text-start"
+        >
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="truncate text-[15px]">{stored || person.name}</span>
+            {stored && <span className="truncate text-[13px] text-muted-foreground">{person.name}</span>}
+          </span>
+          <PencilLine className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        </button>
+      )}
     </li>
   );
 }
