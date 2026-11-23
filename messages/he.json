@@ -706,7 +706,12 @@
     "hourBeforeTitle": "תזכורת: בעוד שעה",
     "quarterBeforeTitle": "תזכורת: בעוד 15 דקות",
     "morningTitle": "תזכורת: משימה להיום",
-    "eveningTitle": "המשימה עוד פתוחה להיום"
+    "eveningTitle": "המשימה עוד פתוחה להיום",
+    "overdue": "עבר המועד: {task}",
+    "overdueYesterday": "לא בוצעה אתמול: {task}",
+    "overdueTitle": "עבר המועד של המשימה",
+    "overdueYesterdayTitle": "המשימה לא בוצעה אתמול",
+    "yesterday": "אתמול"
   },
   "BulkDelete": {
     "menu": "בחירת פריטים",

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."task_email_kind" ADD VALUE 'overdue';

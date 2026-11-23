@@ -679,7 +679,12 @@
     "hourBeforeTitle": "Reminder: in an hour",
     "quarterBeforeTitle": "Reminder: in 15 minutes",
     "morningTitle": "Reminder: a task for today",
-    "eveningTitle": "This task is still open today"
+    "eveningTitle": "This task is still open today",
+    "overdue": "Overdue: {task}",
+    "overdueYesterday": "Not done yesterday: {task}",
+    "overdueTitle": "This task is overdue",
+    "overdueYesterdayTitle": "This task wasn't done yesterday",
+    "yesterday": "Yesterday"
   },
   "BulkDelete": {
     "menu": "Select items",

@@ -285,6 +285,7 @@ export const taskEmailKind = pgEnum("task_email_kind", [
   "morning",
   "evening",
   "quarter_before",
+  "overdue",
 ]);
 
 // One row per task email, written before it is sent. Automatic reminders are

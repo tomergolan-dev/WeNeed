@@ -18,7 +18,9 @@ import en from "../../messages/en.json";
 // - "assigned": someone else assigned it to them (sent right away);
 // - "manual": someone pressed "send a reminder" on it;
 // - automatic reminders: an hour and a quarter of an hour before a task with
-//   a time, and at 8:00 and 17:00 on the day of a task with a date only.
+//   a time, and at 8:00 and 17:00 on the day of a task with a date only;
+// - "overdue", once per due time: an hour after a task with a time, or at
+//   8:00 the next day for a task with a date only, if it is still open.
 //   Saving a task schedules them in Vercel Queues for their exact time
 //   (scheduleReminders); the queue calls /api/queues/task-reminders then,
 //   which checks the task again (remindTask). The reminders cron
@@ -38,6 +40,8 @@ const MAX_TASK_EMAILS_PER_USER_PER_DAY = 12;
 export const MANUAL_GAP_MS = 10 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 const QUARTER_MS = 15 * 60 * 1000;
+// The "overdue" email for a task with a time goes out within this long after it (if a run is late).
+const OVERDUE_WINDOW_MS = 12 * HOUR_MS;
 const MORNING_HOUR = 8;
 const EVENING_HOUR = 17;
 
@@ -195,9 +199,14 @@ function dueText(task: Task, locale: Locale, t: (key: string) => string) {
       ? t("today")
       : days === 1
         ? t("tomorrow")
-        : new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
-            date,
-          );
+        : days === -1
+          ? t("yesterday")
+          : new Intl.DateTimeFormat(locale, {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+              timeZone: "UTC",
+            }).format(date);
   return task.dueTime ? `${day}, ${task.dueTime.slice(0, 5)}` : day;
 }
 
@@ -214,9 +223,13 @@ export function renderTaskEmail(locale: Locale, task: Task, kind: TaskEmailKind,
           ? t("hourBefore", { task: name })
           : kind === "quarter_before"
             ? t("quarterBefore", { task: name })
-          : kind === "morning"
-            ? t("morning", { task: name })
-            : t("evening", { task: name });
+            : kind === "overdue"
+              ? task.dueTime
+                ? t("overdue", { task: name })
+                : t("overdueYesterday", { task: name })
+              : kind === "morning"
+                ? t("morning", { task: name })
+                : t("evening", { task: name });
   // In the email itself the task is in the card below, so the title leaves it out.
   const sender = isolate(senderName ?? t("someone"));
   const title =
@@ -228,9 +241,13 @@ export function renderTaskEmail(locale: Locale, task: Task, kind: TaskEmailKind,
           ? t("hourBeforeTitle")
           : kind === "quarter_before"
             ? t("quarterBeforeTitle")
-            : kind === "morning"
-              ? t("morningTitle")
-              : t("eveningTitle");
+            : kind === "overdue"
+              ? task.dueTime
+                ? t("overdueTitle")
+                : t("overdueYesterdayTitle")
+              : kind === "morning"
+                ? t("morningTitle")
+                : t("eveningTitle");
   const due = dueText(task, locale, (key) => t(key as "today"));
   const where = task.personal ? task.listName : `${task.listName} · ${task.placeName}`;
   // The task's note, shortened so a long one doesn't fill the email.
@@ -296,7 +313,13 @@ function israelHour(now: number) {
   );
 }
 
-type Candidate = { id: string; assigneeId: string | null; listId: string; dueDate: string | null; dueTime: string | null };
+type Candidate = {
+  id: string;
+  assigneeId: string | null;
+  listId: string;
+  dueDate: string | null;
+  dueTime: string | null;
+};
 
 const candidateFields = {
   id: items.id,
@@ -327,23 +350,33 @@ function reminderAt(task: Pick<Candidate, "dueDate" | "dueTime">, now: number) {
     const dueKey = `${task.dueDate} ${task.dueTime.slice(0, 5)}`;
     if (now >= at - QUARTER_MS && now < at) return { kind: "quarter_before" as const, dueKey };
     if (now >= at - HOUR_MS && now < at) return { kind: "hour_before" as const, dueKey };
+    if (now >= at + HOUR_MS && now < at + OVERDUE_WINDOW_MS) return { kind: "overdue" as const, dueKey };
     return null;
   }
-  if (task.dueDate !== todayIn(now)) return null;
   const hour = israelHour(now);
+  if (task.dueDate === todayIn(now - 24 * HOUR_MS) && hour >= MORNING_HOUR && hour < 12)
+    return { kind: "overdue" as const, dueKey: task.dueDate };
+  if (task.dueDate !== todayIn(now)) return null;
   if (hour >= MORNING_HOUR && hour < 12) return { kind: "morning" as const, dueKey: task.dueDate };
   if (hour >= EVENING_HOUR && hour < 23) return { kind: "evening" as const, dueKey: task.dueDate };
   return null;
 }
 
-/** The moments a task's automatic reminders are due. */
+/** The day after a YYYY-MM-DD date. */
+function nextDay(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
+/** The moments a task's automatic emails are due. */
 function reminderTimes(task: Pick<Candidate, "dueDate" | "dueTime">) {
   if (!task.dueDate) return [];
   if (task.dueTime) {
     const at = dueAt(task.dueDate, task.dueTime);
-    return [at - HOUR_MS, at - QUARTER_MS];
+    return [at - HOUR_MS, at - QUARTER_MS, at + HOUR_MS];
   }
-  return [MORNING_HOUR, EVENING_HOUR].map((hour) => dueAt(task.dueDate!, `${String(hour).padStart(2, "0")}:00:00`));
+  const at = (date: string, hour: number) => dueAt(date, `${String(hour).padStart(2, "0")}:00:00`);
+  return [at(task.dueDate, MORNING_HOUR), at(task.dueDate, EVENING_HOUR), at(nextDay(task.dueDate), MORNING_HOUR)];
 }
 
 /** Sends a task's automatic reminder if one is due now. */
@@ -385,7 +418,11 @@ export async function scheduleReminders(task: Pick<Candidate, "id" | "dueDate" |
   const times = reminderTimes(task).filter((at) => at - now > 30_000 && at - now < QUEUE_MAX_MS);
   // The queue works on Vercel only (it signs in with the deployment's identity).
   if (process.env.VERCEL !== "1") {
-    if (times.length) console.log(`[task-reminders] would schedule ${task.id} at`, times.map((t) => new Date(t).toISOString()));
+    if (times.length)
+      console.log(
+        `[task-reminders] would schedule ${task.id} at`,
+        times.map((t) => new Date(t).toISOString()),
+      );
     return;
   }
   for (const at of times) {
@@ -423,9 +460,10 @@ export function planReminders(itemId: string) {
  * covers tasks that were saved more than the queue's 7 days ahead.
  */
 export async function sendDueReminders(now: number = Date.now()) {
-  const today = todayIn(now);
+  // From yesterday, for the "overdue" emails.
+  const yesterday = todayIn(now - 24 * HOUR_MS);
   const week = todayIn(now + 7 * 24 * HOUR_MS);
-  const tasks = await candidates(and(gte(items.dueDate, today), lte(items.dueDate, week))!);
+  const tasks = await candidates(and(gte(items.dueDate, yesterday), lte(items.dueDate, week))!);
 
   const results: Record<TaskEmailResult, number> = { sent: 0, skipped: 0, off: 0, limit: 0, failed: 0 };
   const sole = new Map<string, string | null>();
