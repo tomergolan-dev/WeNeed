@@ -9,7 +9,7 @@ import { requireUser } from "@/lib/auth";
 // Outside the (app) layout, which needs a place: this is where the first one is made.
 export default function NewPlacePage() {
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 pt-2.5 pb-[18px]">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 pb-[18px]">
       <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-muted" />}>
         <NewPlace />
       </Suspense>
@@ -23,7 +23,8 @@ async function NewPlace() {
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex items-center justify-between bg-background py-2">
+      {/* Edge to edge from the very top, like the app's other top bars (see the privacy page). */}
+      <header className="sticky top-0 z-20 -mx-5 flex items-center justify-between bg-background px-5 pt-[18px] pb-2">
         <Brand />
         <Link
           href="/"
@@ -33,7 +34,7 @@ async function NewPlace() {
           <X className="size-5" aria-hidden />
         </Link>
       </header>
-      <h1 className="mt-8 text-[22px] font-extrabold tracking-tight">
+      <h1 className="mt-6 text-[22px] font-extrabold tracking-tight">
         {t("createTitle")}
       </h1>
       <p className="mt-1 mb-6 text-sm text-muted-foreground">{t("createSubtitle")}</p>

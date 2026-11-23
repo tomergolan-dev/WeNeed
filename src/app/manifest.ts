@@ -16,6 +16,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     dir: "rtl",
     start_url: "/",
     display: "standalone",
+    orientation: "portrait",
     background_color: "#fafbfa",
     theme_color: "#16835f",
     icons: [

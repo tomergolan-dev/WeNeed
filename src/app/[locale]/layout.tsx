@@ -6,6 +6,7 @@ import { locale as rootLocale } from "next/root-params";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { DirectionProvider } from "@/components/ui/direction";
+import { PortraitOnly } from "@/components/portrait-only";
 import { directionOf, routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -62,6 +63,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <DirectionProvider direction={dir}>{children}</DirectionProvider>
+          <PortraitOnly />
         </NextIntlClientProvider>
       </body>
     </html>
