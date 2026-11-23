@@ -42,7 +42,7 @@
     "editName": "Edit my name",
     "cancel": "Cancel",
     "back": "Back to the menu",
-    "peopleIntro": "Give anyone a name that suits you, like \"Mom\" instead of \"Nurit\". Only you see it, in every list. Empty = the name they chose."
+    "peopleIntro": "A name you enter for someone shows only to you, in every list. Without one, the name they chose shows."
   },
   "Home": {
     "title": "What do we need today?",
