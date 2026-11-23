@@ -13,8 +13,11 @@
     "menu": "Menu",
     "hi": "Hi {name}",
     "profile": "Profile and settings",
-    "settings": "Settings",
-    "urgent": "Urgent"
+    "urgent": "Urgent",
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "night": "Good night"
   },
   "Account": {
     "title": "My account",
@@ -45,7 +48,12 @@
     "editName": "Edit my name",
     "cancel": "Cancel",
     "back": "Back to the menu",
-    "peopleIntro": "A name you enter for someone shows only to you, in every list."
+    "peopleIntro": "A name you enter for someone shows only to you, in every list.",
+    "avatarChange": "Change picture",
+    "avatarUpload": "Upload a photo",
+    "avatarOr": "Or pick the letter or an icon:",
+    "avatarLetter": "First letter of the name",
+    "avatarIcon": "Icon"
   },
   "Home": {
     "title": "What do we need today?",

@@ -12,7 +12,7 @@ export async function AppSidebar() {
       groups={groups}
       currentId={currentId}
       urgent={urgent}
-      user={{ name: user.name, email: user.email, taskEmails: user.taskEmails }}
+      user={{ name: user.name, email: user.email, taskEmails: user.taskEmails, avatar: user.avatar }}
     />
   );
 }

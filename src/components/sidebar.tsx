@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { AlarmClock } from "lucide-react";
 import { switchPlace } from "@/app/actions";
 import { Brand } from "@/components/brand";
-import { AccountMenu } from "@/components/account-menu";
-import { DuePill } from "@/components/chores/chore-due";
+import { AccountMenu, type AccountUser } from "@/components/account-menu";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceBadge } from "@/components/places/place-badge";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -59,7 +59,7 @@ export function Sidebar({
   ...nav
 }: NavProps & {
   /** For the account menu; null in the demo. */
-  user?: { name: string; email: string | null; taskEmails: boolean } | null;
+  user?: AccountUser | null;
   footer?: React.ReactNode;
 }) {
   const home = nav.base || "/";
@@ -160,30 +160,44 @@ export function NavLists({ groups, currentId, urgent = [], base = "", switchable
   );
 }
 
-/** "דחוף": the user's late and nearly due tasks from every list, each opening its list. */
+/**
+ * "דחוף": the user's tasks (theirs or nobody's) that are late or due within a
+ * day, from every list, as quiet rows like the lists below ("להחליף נורה ·
+ * מטלות הבית"): a red dot for late, an amber one for soon. Each opens its list.
+ */
 function Urgent({ tasks, base, onNavigate }: { tasks: UrgentTask[]; base: string; onNavigate?: () => void }) {
   const t = useTranslations("Nav");
-  // As of opening the menu; the pills say "late by a day", "in 3 hours".
+  // As of opening the menu.
   const [now] = useState(() => Date.now());
   return (
-    <section className="flex flex-col gap-1">
-      <h2 className="px-2 text-[13px] font-semibold text-muted-foreground">{t("urgent")}</h2>
-      <ul className="rounded-2xl border border-[#f6dcd7] bg-[#fff8f6] px-1">
-        {tasks.map((task) => (
-          <li key={task.id} className="border-t border-[#f6e4e0] first:border-t-0">
-            <Link
-              href={`${base}/lists/${task.listId}`}
-              onClick={onNavigate}
-              className="flex items-center gap-2 rounded-xl px-2 py-2"
-            >
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm">{task.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{task.listName}</span>
-              </span>
-              <DuePill chore={task} status={dueStatus({ ...task, done: false }, now)} now={now} />
-            </Link>
-          </li>
-        ))}
+    <section className="flex flex-col gap-0.5">
+      <h2 className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-semibold text-muted-foreground">
+        <span className="flex size-6 items-center justify-center rounded-full bg-[#fdecea] text-[#b42318]" aria-hidden>
+          <AlarmClock className="size-3.5" />
+        </span>
+        {t("urgent")}
+      </h2>
+      <ul className="flex flex-col gap-0.5">
+        {tasks.map((task) => {
+          const late = dueStatus({ ...task, done: false }, now) === "overdue";
+          return (
+            <li key={task.id}>
+              <Link
+                href={`${base}/lists/${task.listId}`}
+                onClick={onNavigate}
+                className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm transition-colors hover:bg-muted"
+              >
+                <span className="flex size-7 shrink-0 items-center justify-center" aria-hidden>
+                  <span suppressHydrationWarning className={cn("size-2 rounded-full", late ? "bg-[#d9452f]" : "bg-[#e0a21b]")} />
+                </span>
+                <span className="min-w-0 flex-1 truncate">
+                  {task.name}
+                  <span className="text-muted-foreground"> · {task.listName}</span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

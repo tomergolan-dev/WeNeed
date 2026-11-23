@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, CalendarDays, Check, Copy, Globe, PencilLine } from "lucide-react";
+import { Bell, CalendarDays, Camera, Check, Copy, Globe, PencilLine } from "lucide-react";
 import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
+import { AvatarPicker } from "@/components/avatar-picker";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ import { MyNameEditor, MyPeopleRow, MyPeopleView } from "./profile-editor";
 
 const LOCALES = ["he", "en"] as const;
 
-type AccountUser = { name: string; email: string | null; taskEmails: boolean };
+export type AccountUser = { name: string; email: string | null; taskEmails: boolean; avatar: string | null };
 
 /**
  * The user's own settings (their name, the language, task emails, the
@@ -36,7 +37,7 @@ export function AccountMenu({
         aria-label={t("open")}
         className={cn("flex shrink-0 rounded-full transition-opacity active:opacity-80", className)}
       >
-        <Avatar name={user?.name ?? null} />
+        <Avatar name={user?.name ?? null} avatar={user?.avatar} />
       </DrawerTrigger>
       <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] pt-2.5">
         <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-[#d5dad8]" />
@@ -50,20 +51,51 @@ export function AccountMenu({
   );
 }
 
-/** The settings themselves. Their open rows reset each time, since the panel mounts when shown. */
-export function AccountPanel({ user }: { user: AccountUser | null }) {
+/**
+ * The settings themselves. Their open rows reset each time, since the panel
+ * mounts when shown. `flat` (in the side menu) lays the rows edge to edge,
+ * like the menu's own rows, instead of in a card.
+ */
+export function AccountPanel({
+  user,
+  flat = false,
+  onPeople,
+}: {
+  user: AccountUser | null;
+  flat?: boolean;
+  /** Told when "החברים שלי" opens or closes, so a surrounding header can step aside for its own. */
+  onPeople?: (open: boolean) => void;
+}) {
   const t = useTranslations("Account");
   const [editing, setEditing] = useState(false);
+  const [picking, setPicking] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   // "החברים שלי" takes the whole panel, with a way back, since the list can be long.
   const [peopleOpen, setPeopleOpen] = useState(false);
 
-  if (user && peopleOpen) return <MyPeopleView onBack={() => setPeopleOpen(false)} />;
+  const showPeople = (open: boolean) => {
+    setPeopleOpen(open);
+    onPeople?.(open);
+  };
+
+  if (user && peopleOpen) return <MyPeopleView onBack={() => showPeople(false)} flat={flat} />;
   return (
     <>
       {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
       {user && !editing && (
         <div className="mb-5 text-center">
+          <button
+            type="button"
+            onClick={() => setPicking((p) => !p)}
+            aria-label={t("avatarChange")}
+            aria-expanded={picking}
+            className="relative mx-auto mb-2 flex rounded-full active:opacity-80"
+          >
+            <Avatar name={user.name} avatar={user.avatar} className="size-18 text-[28px]" />
+            <span className="absolute -end-0.5 bottom-0 flex size-6.5 items-center justify-center rounded-full border-2 border-card bg-muted text-muted-foreground">
+              <Camera className="size-3.5" aria-hidden />
+            </span>
+          </button>
           <p className="flex items-center justify-center gap-0.5 text-[17px] font-semibold">
             {user.name}
             <button
@@ -80,9 +112,10 @@ export function AccountPanel({ user }: { user: AccountUser | null }) {
               {user.email}
             </p>
           )}
+          {picking && <AvatarPicker name={user.name} avatar={user.avatar} onDone={() => setPicking(false)} />}
         </div>
       )}
-      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+      <div className={flat ? "-mx-4 border-y border-border/60" : "overflow-hidden rounded-2xl border border-border/60 bg-card"}>
         <div className="flex min-h-13 items-center gap-3 px-4 py-2">
           <Globe className="size-[18px] text-muted-foreground" aria-hidden />
           <span className="flex-1 text-[15px]">{t("language")}</span>
@@ -90,7 +123,7 @@ export function AccountPanel({ user }: { user: AccountUser | null }) {
         </div>
         {user && <TaskEmailsRow initial={user.taskEmails} />}
         {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
-        {user && <MyPeopleRow onOpen={() => setPeopleOpen(true)} />}
+        {user && <MyPeopleRow onOpen={() => showPeople(true)} />}
       </div>
       {user ? (
         <form action={logOut} className="mt-4 text-center">

@@ -94,7 +94,7 @@ export function MyPeopleRow({ onOpen }: { onOpen: () => void }) {
  * list with, each with a field for the user's own name for them ("אמא" for
  * נורית), which only the user sees, everywhere in the app.
  */
-export function MyPeopleView({ onBack }: { onBack: () => void }) {
+export function MyPeopleView({ onBack, flat = false }: { onBack: () => void; flat?: boolean }) {
   const t = useTranslations("Account");
   const tErrors = useTranslations("Errors");
   const [people, setPeople] = useState<Person[] | null>(null);
@@ -123,7 +123,7 @@ export function MyPeopleView({ onBack }: { onBack: () => void }) {
       {people === null && !error && <div className="h-15 animate-pulse rounded-[18px] bg-muted" />}
       {people?.length === 0 && <p className="text-sm text-muted-foreground">{t("peopleEmpty")}</p>}
       {people && people.length > 0 && (
-        <ul className="flex flex-col rounded-2xl border border-border/60 bg-card px-4">
+        <ul className={cn("flex flex-col px-4", flat ? "-mx-4 border-y border-border/60" : "rounded-2xl border border-border/60 bg-card")}>
           {people.map((person) => (
             <PersonRow key={person.id} person={person} onError={(code) => setError(tErrors(code))} />
           ))}

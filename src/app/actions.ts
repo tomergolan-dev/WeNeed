@@ -2,6 +2,7 @@
 
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
+import { del, put } from "@vercel/blob";
 import { redirectTo } from "@/i18n/navigation";
 import { z } from "zod";
 import { db } from "@/db";
@@ -15,6 +16,7 @@ import { isListType, type ListType } from "@/lib/list-kinds";
 import { ensureActiveRound } from "@/lib/lists";
 import { canSeeList, findEditableItem, findList, guessCategory, isPlaceAdmin, nextPosition } from "@/lib/list-access";
 import { isPlaceIcon } from "@/lib/place-icons";
+import { isAvatarIcon, MAX_AVATAR_BYTES, parseAvatar } from "@/lib/avatars";
 import { getMyPeople } from "@/lib/names";
 import { normalizeEmail } from "@/lib/email";
 import { endSession, startSession } from "@/lib/session";
@@ -452,6 +454,41 @@ export async function setMyName(name: string): Promise<ActionResult> {
   await db.update(users).set({ name: parsed.data }).where(eq(users.id, user.id));
   refresh();
   return ok;
+}
+
+/** The user's badge: an icon from the set, or null for the first letter of their name. Drops a photo they had. */
+export async function setAvatarIcon(key: string | null): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  if (key !== null && !isAvatarIcon(key)) return fail("invalid");
+  await replaceAvatar(user.id, user.avatar, key === null ? null : `icon:${key}`);
+  refresh();
+  return ok;
+}
+
+/** A photo for the user's badge, already made small and square in the browser (avatar-picker.tsx). */
+export async function setAvatarPhoto(form: FormData): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return fail("unauthorized");
+  const file = form.get("photo");
+  if (!(file instanceof File) || file.type !== "image/jpeg" || file.size === 0 || file.size > MAX_AVATAR_BYTES) {
+    return fail("invalid");
+  }
+  const blob = await put(`avatars/${user.id}/photo.jpg`, file, {
+    access: "private",
+    addRandomSuffix: true,
+    contentType: "image/jpeg",
+  });
+  await replaceAvatar(user.id, user.avatar, `photo:${blob.pathname}`);
+  refresh();
+  return ok;
+}
+
+/** Stores the new badge and deletes the old photo's file, if there was one. */
+async function replaceAvatar(userId: string, before: string | null, next: string | null) {
+  await db.update(users).set({ avatar: next }).where(eq(users.id, userId));
+  const old = parseAvatar(before);
+  if (old.kind === "photo") await del(old.pathname).catch(() => {});
 }
 
 export type MyPeople = { ok: true; people: { id: string; name: string; nickname: string | null }[] } | { ok: false; error: ActionError };

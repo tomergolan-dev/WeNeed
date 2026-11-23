@@ -9,7 +9,15 @@ import { canSeeListSql } from "./list-access";
 import { PERSONAL_ICON } from "./place-icons";
 import { getSessionUserId } from "./session";
 
-export type CurrentUser = { id: string; name: string; email: string | null; locale: string; taskEmails: boolean };
+export type CurrentUser = {
+  id: string;
+  name: string;
+  email: string | null;
+  locale: string;
+  taskEmails: boolean;
+  /** See users.avatar. */
+  avatar: string | null;
+};
 
 export type PlaceSummary = {
   id: string;
@@ -34,7 +42,14 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!userId) return null;
 
   const [user] = await db
-    .select({ id: users.id, name: users.name, email: users.email, locale: users.locale, taskEmails: users.taskEmails })
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      locale: users.locale,
+      taskEmails: users.taskEmails,
+      avatar: users.avatar,
+    })
     .from(users)
     .where(eq(users.id, userId));
   return user ?? null;

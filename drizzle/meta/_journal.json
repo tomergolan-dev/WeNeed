@@ -127,6 +127,13 @@
       "when": 1795441374733,
       "tag": "0017_overdue_email",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1795452943824,
+      "tag": "0018_avatar",
+      "breakpoints": true
     }
   ]
 }

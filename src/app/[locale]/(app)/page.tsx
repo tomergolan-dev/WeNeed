@@ -39,7 +39,7 @@ async function Menu() {
   const { groups, currentId, urgent } = await getNav(user);
   return (
     <MobileNav
-      user={{ name: user.name, email: user.email, taskEmails: user.taskEmails }}
+      user={{ name: user.name, email: user.email, taskEmails: user.taskEmails, avatar: user.avatar }}
       groups={groups}
       currentId={currentId}
       urgent={urgent}

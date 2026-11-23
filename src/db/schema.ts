@@ -45,6 +45,9 @@ export const users = pgTable("users", {
   taskEmails: boolean("task_emails").notNull().default(true),
   // The secret in the user's calendar feed link (/api/calendar/<token>.ics). Made on first use; a new one cuts off the old link.
   calendarToken: text("calendar_token").unique(),
+  // The user's badge: null for the first letter of their name, "icon:<key>" for a chosen icon
+  // (src/lib/avatars.ts), or "photo:<pathname>" for an uploaded photo in the private Blob store.
+  avatar: text("avatar"),
   createdAt: createdAt(),
 });
 
