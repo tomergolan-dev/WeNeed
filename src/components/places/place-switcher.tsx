@@ -101,8 +101,8 @@ export function PlaceSwitcher({
           <span className="text-xs text-muted-foreground">{shown.personal ? tNav("personalArea") : tNav("yourPlace")}</span>
           <span className="truncate text-[15px] font-semibold">{name(shown)}</span>
         </span>
-        <span className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <ChevronDown className="size-3.5" aria-hidden />
+        <span className="flex size-7 items-center justify-center text-muted-foreground">
+          <ChevronDown className="size-4" aria-hidden />
         </span>
       </DrawerTrigger>
 
@@ -112,9 +112,9 @@ export function PlaceSwitcher({
           <DrawerTitle className="text-lg font-extrabold">{t("title")}</DrawerTitle>
           <DrawerClose
             aria-label={t("close")}
-            className="flex size-10 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853]"
+            className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-muted"
           >
-            <X className="size-4" aria-hidden />
+            <X className="size-5" aria-hidden />
           </DrawerClose>
         </div>
 

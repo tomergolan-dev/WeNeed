@@ -17,33 +17,33 @@ export default async function PrivacyPage() {
   const t = await getTranslations("Privacy");
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 py-[18px]">
-      <header className="flex items-center justify-between">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 pt-[18px] pb-8">
+      <header className="flex h-9 items-center justify-between">
         <Link href="/">
           <Brand />
         </Link>
         <LanguageSwitch />
       </header>
-      <h1 className="mt-8 text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("updated")}</p>
-      <p className="mt-5 leading-7">{t("intro")}</p>
+      <h1 className="mt-7 text-xl font-extrabold tracking-tight">{t("title")}</h1>
+      <p className="mt-0.5 text-[13px] text-muted-foreground">{t("updated")}</p>
+      <p className="mt-4 text-[15px] leading-7">{t("intro")}</p>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-5 flex flex-col gap-2.5">
         {SECTIONS.map((key) => (
-          <section key={key} className="rounded-[18px] border bg-card p-4 shadow-soft">
-            <h2 className="font-bold">{t(`sections.${key}.title`)}</h2>
-            <p className="mt-1.5 text-[15px] leading-7 text-muted-foreground">{t(`sections.${key}.body`)}</p>
+          <section key={key} className="rounded-2xl border border-border/60 bg-card p-4">
+            <h2 className="text-[15px] font-semibold">{t(`sections.${key}.title`)}</h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(`sections.${key}.body`)}</p>
           </section>
         ))}
-        <section className="rounded-[18px] border bg-card p-4 shadow-soft">
-          <h2 className="font-bold">{t("contact")}</h2>
-          <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="mt-1.5 inline-block font-medium text-accent-foreground underline-offset-4 hover:underline">
+        <section className="rounded-2xl border border-border/60 bg-card p-4">
+          <h2 className="text-[15px] font-semibold">{t("contact")}</h2>
+          <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="mt-1 inline-block text-sm font-medium text-accent-foreground underline-offset-4 hover:underline">
             {CONTACT_EMAIL}
           </a>
         </section>
       </div>
 
-      <Link href="/" className="mt-8 mb-4 text-center text-sm font-semibold text-accent-foreground">
+      <Link href="/" className="mt-7 text-center text-sm font-medium text-accent-foreground">
         {t("back")}
       </Link>
     </main>

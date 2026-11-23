@@ -113,9 +113,9 @@ export function MyPeopleView({ onBack, flat = false }: { onBack: () => void; fla
           type="button"
           onClick={onBack}
           aria-label={t("back")}
-          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground active:bg-muted"
+          className="-ms-1.5 flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
         >
-          <ArrowRight className="size-[18px] ltr:-scale-x-100" aria-hidden />
+          <ArrowRight className="size-5 ltr:-scale-x-100" aria-hidden />
         </button>
         <h2 className="text-[15px] font-semibold">{t("people")}</h2>
       </div>

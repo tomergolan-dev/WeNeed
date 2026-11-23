@@ -26,9 +26,9 @@ export function LogoMark({ className }: { className?: string }) {
 /** The app logo: the icon and the name. */
 export function Brand() {
   return (
-    <span className="flex items-center gap-2.5">
-      <LogoMark className="size-10" />
-      <span dir="ltr" className="text-[19px] font-extrabold tracking-tight">
+    <span className="flex items-center gap-1.5">
+      <LogoMark className="size-6" />
+      <span dir="ltr" className="text-[15px] font-bold tracking-tight">
         WeNeed
       </span>
     </span>

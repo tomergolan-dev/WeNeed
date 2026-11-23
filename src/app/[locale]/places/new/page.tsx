@@ -28,9 +28,9 @@ async function NewPlace() {
         <Link
           href="/"
           aria-label={t("close")}
-          className="flex size-10 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853]"
+          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-muted"
         >
-          <X className="size-4" aria-hidden />
+          <X className="size-5" aria-hidden />
         </Link>
       </header>
       <h1 className="mt-8 text-[22px] font-extrabold tracking-tight">

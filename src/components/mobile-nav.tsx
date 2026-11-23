@@ -91,7 +91,7 @@ export function MobileNav({
                 <NavLists {...nav} onNavigate={() => setOpen(false)} />
               </div>
               {/* About the app, quietly at the bottom. */}
-              <footer className="flex flex-col gap-1 border-t border-border/60 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <footer className="flex flex-col gap-1 border-t border-border/60 ps-6 pe-4 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.75rem))]">
                 <span className="flex items-center gap-1.5">
                   <LogoMark className="size-5" />
                   <span dir="ltr" className="text-[13px] font-bold tracking-tight">
@@ -114,9 +114,9 @@ export function MobileNav({
                   type="button"
                   onClick={() => setView("nav")}
                   aria-label={t("back")}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-card text-muted-foreground active:bg-muted"
+                  className="-ms-1.5 flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
                 >
-                  <ArrowRight className="size-[18px] ltr:-scale-x-100" aria-hidden />
+                  <ArrowRight className="size-5 ltr:-scale-x-100" aria-hidden />
                 </button>
                 <DrawerTitle className="text-[15px] font-semibold">{t("profile")}</DrawerTitle>
               </div>
