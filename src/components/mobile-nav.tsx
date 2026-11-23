@@ -54,9 +54,9 @@ export function MobileNav({
         aria-label={t("menu")}
         className={cn("flex min-w-0 items-center gap-2.5 rounded-full pe-2 transition-opacity active:opacity-80", className)}
       >
-        <Avatar name={user?.name ?? null} avatar={user?.avatar} />
+        <Avatar name={user?.name ?? null} avatar={user?.avatar} className="size-8 text-sm" />
         {first && (
-          <span className="truncate text-[17px] font-semibold">
+          <span className="truncate text-[15px] font-semibold">
             {t("hi", { name: first })}
             <Greeting />
           </span>

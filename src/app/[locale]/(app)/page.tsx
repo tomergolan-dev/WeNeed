@@ -3,7 +3,6 @@ import { Settings } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { LogoMark } from "@/components/brand";
 import { MobileNav } from "@/components/mobile-nav";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceSwitcher } from "@/components/places/place-switcher";
@@ -18,10 +17,9 @@ export default async function HomePage() {
   return (
     <>
       <header className="sticky top-0 z-20 flex items-center justify-between bg-background px-5 pt-[18px] pb-2 lg:static lg:px-8 lg:pt-6">
-        <Suspense fallback={<span className="size-10 rounded-full bg-muted lg:invisible" />}>
+        <Suspense fallback={<span className="size-8 rounded-full bg-muted lg:invisible" />}>
           <Menu />
         </Suspense>
-        <LogoMark className="size-9 lg:invisible" />
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
         <Suspense fallback={<HomeSkeleton />}>
@@ -70,7 +68,7 @@ async function Home() {
       />
       {banners.length > 0 && <div className="mt-3 flex flex-col gap-2.5">{banners}</div>}
       <div className="flex items-center justify-between gap-3 pt-6 pb-1">
-        <h1 className="text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
+        <h1 className="text-xl font-extrabold tracking-tight">{t("title")}</h1>
         {/* A shared place's settings; the personal area has none. */}
         {!place.personal && (
           <Link
@@ -79,7 +77,7 @@ async function Home() {
             title={t("placeSettings")}
             className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-muted"
           >
-            <Settings className="size-5" aria-hidden />
+            <Settings className="size-[18px]" aria-hidden />
           </Link>
         )}
       </div>

@@ -94,15 +94,15 @@ export function PlaceSwitcher({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger
         aria-label={tNav("switchPlace")}
-        className="flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-3 text-start transition-colors active:bg-muted"
+        className="flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-2.5 text-start transition-colors active:bg-muted"
       >
         <PlaceBadge icon={shown.icon} />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="text-xs text-muted-foreground">{shown.personal ? tNav("personalArea") : tNav("yourPlace")}</span>
-          <span className="truncate text-[17px] font-bold">{name(shown)}</span>
+          <span className="truncate text-[15px] font-semibold">{name(shown)}</span>
         </span>
-        <span className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <ChevronDown className="size-4" aria-hidden />
+        <span className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <ChevronDown className="size-3.5" aria-hidden />
         </span>
       </DrawerTrigger>
 

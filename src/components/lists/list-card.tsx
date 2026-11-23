@@ -64,13 +64,13 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
   return (
     <Link
       href={href ?? `/lists/${list.id}`}
-      className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card py-3.5 ps-3 pe-3.5 transition-colors active:bg-muted"
+      className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card py-3 ps-3 pe-3.5 transition-colors active:bg-muted"
     >
-      <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", tone)}>
-        <Icon className="size-5" aria-hidden />
+      <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-full", tone)}>
+        <Icon className="size-[18px]" aria-hidden />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-semibold">{list.name}</span>
+        <span className="truncate text-[15px] font-semibold">{list.name}</span>
         <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[13px] text-muted-foreground">
           {access}
           {meta}
