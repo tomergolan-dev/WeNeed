@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 type Member = { id: string; name: string; role: "owner" | "member"; allLists: boolean; lists: string[] };
 type PendingInvite = { id: string; email: string; lists: string[] | null; when: string };
 
-const card = "rounded-[18px] border bg-card shadow-soft";
+const card = "rounded-2xl border border-border/60 bg-card";
 const heading = "px-1 pb-2 text-[13px] font-semibold text-muted-foreground";
 
 /** Members of a shared place: inviting (admins), roles, and pending invites. */
@@ -61,10 +61,10 @@ export function MembersManager({
                   : t("seesNothing");
             const role = m.role === "owner" ? t("admin") : t("member");
             return (
-              <li key={m.id} className="flex min-h-15 items-center gap-3 border-b border-[#f0f2f1] py-2 last:border-b-0">
+              <li key={m.id} className="flex min-h-15 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
                 <Initial name={m.name} />
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate font-semibold">
+                  <span className="truncate text-[15px] font-medium">
                     {m.name}
                     {m.id === userId && <span className="ms-1 font-normal text-muted-foreground">{t("me")}</span>}
                   </span>
@@ -79,15 +79,15 @@ export function MembersManager({
                       setConfirmRemove(false);
                       setEditing(m);
                     }}
-                    className="flex h-8.5 items-center gap-1 rounded-[10px] border bg-card px-2.5 text-[13px] font-semibold"
+                    className="flex h-8 items-center gap-1 rounded-[10px] border border-border/60 bg-card px-2.5 text-[13px]"
                   >
                     {role}
-                    <ChevronDown className="size-4" aria-hidden />
+                    <ChevronDown className="size-3.5" aria-hidden />
                   </button>
                 ) : (
                   <span
                     className={cn(
-                      "rounded-[10px] px-2.5 py-1.5 text-[13px] font-semibold",
+                      "rounded-[10px] px-2.5 py-1 text-[13px] font-medium",
                       m.role === "owner" ? "bg-accent text-accent-foreground" : "bg-[#eceff0] text-[#4c5853]",
                     )}
                   >
@@ -105,12 +105,12 @@ export function MembersManager({
           <h2 className={heading}>{t("pending", { count: invites.length })}</h2>
           <ul className={cn(card, "px-3.5")}>
             {invites.map((invite) => (
-              <li key={invite.id} className="flex min-h-15 items-center gap-3 border-b border-[#f0f2f1] py-2 last:border-b-0">
+              <li key={invite.id} className="flex min-h-15 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
                   <Mail className="size-4" aria-hidden />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span dir="ltr" className="truncate text-end font-semibold">
+                  <span dir="ltr" className="truncate text-end font-medium">
                     {invite.email}
                   </span>
                   <span className="truncate text-[13px] text-muted-foreground">
@@ -153,12 +153,12 @@ export function MembersManager({
                   disabled={pending}
                   onClick={() => (on ? setEditing(null) : run(() => setMemberRole(editing.id, role), () => setEditing(null)))}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-start",
+                    "flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-4 py-3 text-start",
                     on && "border-2 border-primary px-[15px] py-[11px]",
                   )}
                 >
                   <span className="flex flex-1 flex-col">
-                    <span className="font-semibold">{role === "owner" ? t("admin") : t("member")}</span>
+                    <span className="font-medium">{role === "owner" ? t("admin") : t("member")}</span>
                     <span className="text-[13px] text-muted-foreground">
                       {role === "owner" ? t("adminHint") : t("memberHint")}
                     </span>
@@ -184,7 +184,7 @@ export function MembersManager({
               <button
                 type="button"
                 onClick={() => setConfirmRemove(true)}
-                className="mt-2 h-12 font-semibold text-destructive"
+                className="mt-2 h-11 font-medium text-destructive"
               >
                 {t("remove")}
               </button>
@@ -225,7 +225,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
 
   return (
     <form onSubmit={submit} className={cn(card, "p-3.5")}>
-      <label htmlFor="invite-email" className="block text-[15px] font-bold">
+      <label htmlFor="invite-email" className="block text-sm font-semibold">
         {t("inviteTitle")}
       </label>
       <input
@@ -237,7 +237,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
         placeholder={t("emailPlaceholder")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="mt-2.5 h-11.5 w-full rounded-[14px] border border-[#dfe3e1] bg-card px-3.5 text-[15px] outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
+        className="mt-2.5 h-11 w-full rounded-xl border border-border/70 bg-card px-3.5 text-base outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
       />
       <div role="group" aria-label={t("to")} className="mt-2.5 flex gap-[3px] rounded-xl bg-[#eceff0] p-[3px]">
         {(["place", "lists"] as const).map((value) => (
@@ -247,7 +247,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
             aria-pressed={scope === value}
             onClick={() => setScope(value)}
             className={cn(
-              "h-9 flex-1 rounded-[9px] text-sm font-semibold text-muted-foreground",
+              "h-8 flex-1 rounded-[9px] text-[13px] font-medium text-muted-foreground",
               scope === value && "bg-card text-foreground shadow-[0_1px_2px_rgba(0,0,0,.08)]",
             )}
           >
@@ -273,7 +273,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
                   })
                 }
                 className={cn(
-                  "flex h-9 items-center gap-1 rounded-full border bg-card px-3 text-sm font-medium",
+                  "flex h-8 items-center gap-1 rounded-full border border-border/60 bg-card px-3 text-[13px]",
                   on && "border-primary bg-accent text-accent-foreground",
                 )}
               >
@@ -284,7 +284,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
           })}
         </div>
       )}
-      <Button type="submit" size="xl" disabled={pending || !ready} className="mt-2.5 h-11.5 w-full rounded-[14px] text-[15px] font-bold">
+      <Button type="submit" size="xl" disabled={pending || !ready} className="mt-2.5 w-full">
         {t("send")}
       </Button>
       {notice && (

@@ -31,7 +31,7 @@ const buttonVariants = cva(
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
         // App-sized actions from the design: 52px tall, full rounded corners.
-        xl: "h-13 gap-2 rounded-2xl px-5 text-base font-semibold [&_svg:not([class*='size-'])]:size-5",
+        xl: "h-11 gap-2 rounded-xl px-5 text-[15px] font-medium [&_svg:not([class*='size-'])]:size-5",
       },
     },
     defaultVariants: {

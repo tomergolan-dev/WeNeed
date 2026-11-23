@@ -20,7 +20,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const row =
-  "flex min-h-13 w-full items-center gap-3 px-3.5 py-3 text-start font-semibold text-destructive transition-colors active:bg-muted";
+  "flex min-h-12 w-full items-center gap-3 px-3.5 py-2.5 text-start text-[15px] font-medium text-destructive transition-colors active:bg-muted";
 
 /**
  * At the bottom of a shared place's settings: "יציאה מהמקום" for anyone (when
@@ -62,11 +62,11 @@ export function PlaceDanger({
 
   return (
     <section aria-label={t("danger")} className="flex flex-col gap-2">
-      <div className="overflow-hidden rounded-[18px] border bg-card shadow-soft">
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
         {!alone && (
           <AlertDialog onOpenChange={() => setError(null)}>
             <AlertDialogTrigger className={row}>
-              <LogOut className="size-[18px] ltr:-scale-x-100" aria-hidden />
+              <LogOut className="size-4 ltr:-scale-x-100" aria-hidden />
               {t("leave")}
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -106,8 +106,8 @@ export function PlaceDanger({
               setError(null);
             }}
           >
-            <AlertDialogTrigger className={`${row} ${alone ? "" : "border-t border-[#f0f2f1]"}`}>
-              <Trash2 className="size-[18px]" aria-hidden />
+            <AlertDialogTrigger className={`${row} ${alone ? "" : "border-t border-border/60"}`}>
+              <Trash2 className="size-4" aria-hidden />
               {t("delete")}
             </AlertDialogTrigger>
             <AlertDialogContent>

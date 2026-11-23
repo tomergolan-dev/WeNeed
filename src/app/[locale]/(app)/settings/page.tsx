@@ -41,13 +41,13 @@ async function PlaceSettings() {
       )}
       <Link
         href="/members"
-        className="flex min-h-15 items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 shadow-soft transition-colors active:bg-muted"
+        className="flex min-h-13 items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-2.5 transition-colors active:bg-muted"
       >
-        <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
-          <Users className="size-5" aria-hidden />
+        <span className="flex size-9 items-center justify-center rounded-full bg-accent text-accent-foreground">
+          <Users className="size-[18px]" aria-hidden />
         </span>
         <span className="flex flex-1 flex-col">
-          <span className="font-semibold">{t("membersLink")}</span>
+          <span className="text-[15px] font-medium">{t("membersLink")}</span>
           <span className="text-[13px] text-muted-foreground">
             {t("membersCount", { count: place.members.length })}
           </span>

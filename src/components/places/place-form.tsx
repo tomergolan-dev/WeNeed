@@ -45,7 +45,7 @@ export function PlaceForm(props: Props) {
       }}
     >
       <div className="flex flex-col gap-2">
-        <Label htmlFor="place-name">{t("nameLabel")}</Label>
+        <Label htmlFor="place-name" className="text-[13px] text-muted-foreground">{t("nameLabel")}</Label>
         <Input
           id="place-name"
           value={name}
@@ -56,12 +56,12 @@ export function PlaceForm(props: Props) {
           placeholder={t("namePlaceholder")}
           maxLength={60}
           autoFocus={props.mode === "create" && focusOnOpen()}
-          className="h-12 rounded-2xl bg-card px-4 text-base"
+          className="h-11 rounded-xl bg-card px-3.5 text-base"
         />
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">{t("iconLabel")}</legend>
+        <legend className="mb-2 text-[13px] font-medium text-muted-foreground">{t("iconLabel")}</legend>
         <div className="grid grid-cols-3 gap-2.5">
           {PLACE_ICON_KEYS.map((key) => {
             const { icon: Icon, tone } = PLACE_ICONS[key];
@@ -76,12 +76,12 @@ export function PlaceForm(props: Props) {
                   setMessage(null);
                 }}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-[18px] border bg-card py-3 text-[13px] transition-colors active:bg-muted",
-                  selected && "border-2 border-primary py-[11px] font-semibold",
+                  "flex flex-col items-center gap-1 rounded-2xl border border-border/60 bg-card py-2.5 text-xs transition-colors active:bg-muted",
+                  selected && "border-2 border-primary py-[9px] font-medium",
                 )}
               >
-                <span className={cn("flex size-10 items-center justify-center rounded-full", tone)}>
-                  <Icon className="size-5" aria-hidden />
+                <span className={cn("flex size-8 items-center justify-center rounded-full", tone)}>
+                  <Icon className="size-4" aria-hidden />
                 </span>
                 {t(`icons.${key}`)}
               </button>
