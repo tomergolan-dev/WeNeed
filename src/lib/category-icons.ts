@@ -19,12 +19,12 @@ import {
 } from "lucide-react";
 import type { Category } from "./categories";
 
-const green = "bg-[#eef4e8] text-[#557a3c]";
-const blue = "bg-[#e8f1f7] text-[#3c6f8c]";
-const amber = "bg-[#faf1de] text-[#8f6814]";
-const violet = "bg-[#f0ecf7] text-[#6a5794]";
-const rose = "bg-[#f9ecea] text-[#9c4f47]";
-const teal = "bg-[#e4f3ec] text-[#11684b]";
+const green = "bg-tone-olive text-tone-olive-ink";
+const blue = "bg-tone-blue text-tone-blue-ink";
+const amber = "bg-tone-amber text-tone-amber-ink";
+const violet = "bg-tone-purple text-tone-purple-ink";
+const rose = "bg-tone-rose text-tone-rose-ink";
+const teal = "bg-tone-green text-tone-green-ink";
 
 /** An icon and a soft tone for each store section's heading. */
 export const CATEGORY_ICONS: Record<Category, { icon: LucideIcon; tone: string }> = {

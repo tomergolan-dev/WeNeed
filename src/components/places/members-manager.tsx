@@ -88,7 +88,7 @@ export function MembersManager({
                   <span
                     className={cn(
                       "rounded-[10px] px-2.5 py-1 text-[13px] font-medium",
-                      m.role === "owner" ? "bg-accent text-accent-foreground" : "bg-[#eceff0] text-[#4c5853]",
+                      m.role === "owner" ? "bg-accent text-accent-foreground" : "bg-chip text-chip-ink",
                     )}
                   >
                     {role}
@@ -106,7 +106,7 @@ export function MembersManager({
           <ul className={cn(card, "px-3.5")}>
             {invites.map((invite) => (
               <li key={invite.id} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-tone-amber text-tone-amber-ink">
                   <Mail className="size-4" aria-hidden />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
@@ -239,7 +239,7 @@ function InviteCard({ lists }: { lists: { id: string; name: string }[] }) {
         onChange={(e) => setEmail(e.target.value)}
         className="mt-2.5 h-11 w-full rounded-xl border border-border/70 bg-card px-3.5 text-base outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
       />
-      <div role="group" aria-label={t("to")} className="mt-2.5 flex gap-[3px] rounded-xl bg-[#eceff0] p-[3px]">
+      <div role="group" aria-label={t("to")} className="mt-2.5 flex gap-[3px] rounded-xl bg-chip p-[3px]">
         {(["place", "lists"] as const).map((value) => (
           <button
             key={value}

@@ -79,7 +79,7 @@ export function MyPeopleRow({ onOpen }: { onOpen: () => void }) {
       onClick={onOpen}
       className="flex min-h-12 w-full items-center gap-3 border-t border-border/60 px-4 py-2 text-start transition-colors active:bg-muted"
     >
-      <Users className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+      <Users className="size-[18px] shrink-0 self-start mt-px text-muted-foreground" aria-hidden />
       <span className="flex flex-1 flex-col gap-0.5">
         <span className="text-sm">{t("people")}</span>
         <span className="text-xs leading-snug text-muted-foreground">{t("peopleHint")}</span>

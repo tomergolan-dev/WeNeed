@@ -190,7 +190,7 @@ export function SelectCircle({ item, selection, className }: { item: Item; selec
       disabled={isDraft(item)}
       onClick={() => selection.toggle(item.id)}
       className={cn(
-        "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-white transition-colors",
+        "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-check bg-card text-white transition-colors",
         on && "border-destructive bg-destructive",
         className,
       )}

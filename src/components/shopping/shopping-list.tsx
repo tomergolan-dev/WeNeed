@@ -178,7 +178,7 @@ export function ShoppingList({
               <Section
                 title={t("inCart", { count: bought.length })}
                 icon={<ShoppingCart className="size-3" />}
-                tone="bg-[#e4f3ec] text-[#11684b]"
+                tone="bg-tone-green text-tone-green-ink"
               >
                 {bought.map((item) => (
                   <ItemRow key={item.id} item={item} people={people} selection={selection} {...handlers} />

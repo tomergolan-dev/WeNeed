@@ -7,9 +7,9 @@ export const LIST_TYPES: ListType[] = ["shopping", "tasks", "checklist"];
 
 /** Each kind's icon and soft tone. Hebrew names live under "ListKinds" in the messages. */
 export const LIST_KINDS: Record<ListType, { icon: LucideIcon; tone: string }> = {
-  shopping: { icon: ShoppingCart, tone: "bg-[#e4f3ec] text-[#11684b]" },
-  tasks: { icon: CalendarCheck, tone: "bg-[#f0ecf7] text-[#6a5794]" },
-  checklist: { icon: ListChecks, tone: "bg-[#faf1de] text-[#8f6814]" },
+  shopping: { icon: ShoppingCart, tone: "bg-tone-green text-tone-green-ink" },
+  tasks: { icon: CalendarCheck, tone: "bg-tone-purple text-tone-purple-ink" },
+  checklist: { icon: ListChecks, tone: "bg-tone-amber text-tone-amber-ink" },
 };
 
 export function isListType(value: string): value is ListType {

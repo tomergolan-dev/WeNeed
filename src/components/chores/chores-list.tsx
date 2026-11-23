@@ -216,7 +216,7 @@ export function ChoresList({
               <FilterButton
                 on={filter === "soon"}
                 onClick={() => setFilter("soon")}
-                dot="bg-[#e0a21b]"
+                dot="bg-dot-soon"
                 count={counts.soon}
               >
                 {t("soon")}
@@ -224,7 +224,7 @@ export function ChoresList({
               <FilterButton
                 on={filter === "overdue"}
                 onClick={() => setFilter("overdue")}
-                dot="bg-[#d9452f]"
+                dot="bg-dot-late"
                 count={counts.overdue}
               >
                 {t("overdue")}
@@ -237,7 +237,7 @@ export function ChoresList({
 
             {chores.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
-                <span className="flex size-14 items-center justify-center rounded-full bg-[#f0ecf7] text-[#6a5794]">
+                <span className="flex size-14 items-center justify-center rounded-full bg-tone-purple text-tone-purple-ink">
                   <CalendarCheck className="size-6" aria-hidden />
                 </span>
                 {t("empty")}
@@ -396,7 +396,7 @@ function ChoreRow({
     <li
       {...longPress}
       className={cn(
-        "flex items-start gap-3 border-b border-[#f0f2f1] px-3.5 py-3 last:border-b-0",
+        "flex items-start gap-3 border-b border-line px-3.5 py-3 last:border-b-0",
         longPressRow,
         status === "overdue" && "shadow-[inset_-4px_0_0_#d9452f] ltr:shadow-[inset_4px_0_0_#d9452f]",
         status === "soon" && "shadow-[inset_-4px_0_0_#e0a21b] ltr:shadow-[inset_4px_0_0_#e0a21b]",
@@ -413,7 +413,7 @@ function ChoreRow({
           disabled={draft}
           onClick={() => onToggle(chore)}
           className={cn(
-            "mt-px flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+            "mt-px flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-check bg-card text-primary-foreground transition-colors",
             chore.done && "border-primary bg-primary",
           )}
         >

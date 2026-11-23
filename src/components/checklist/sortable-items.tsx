@@ -77,7 +77,7 @@ function SortableRow({ item }: { item: Item }) {
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "relative flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] bg-card px-3.5 last:border-b-0",
+        "relative flex min-h-[50px] items-center gap-3 border-b border-line bg-card px-3.5 last:border-b-0",
         isDragging && "z-10 rounded-[14px] shadow-lg",
       )}
     >

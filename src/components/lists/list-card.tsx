@@ -18,15 +18,15 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
     meta = (
       <>
         <span>{t("choresOpen", { count: open })}</span>
-        {list.overdue > 0 && <Pill className="bg-[#fdecea] text-[#b42318]">{t("overdue", { count: list.overdue })}</Pill>}
-        {list.soon > 0 && <Pill className="bg-[#fff3d6] text-[#8a5a00]">{t("soon", { count: list.soon })}</Pill>}
+        {list.overdue > 0 && <Pill className="bg-danger-soft text-danger">{t("overdue", { count: list.overdue })}</Pill>}
+        {list.soon > 0 && <Pill className="bg-warning-soft text-warning">{t("soon", { count: list.soon })}</Pill>}
       </>
     );
   } else if (list.total === 0) {
     meta = t("listEmpty");
   } else if (list.type === "checklist") {
     meta = t("checked", { done: list.done, total: list.total });
-    bar = "bg-[#c9962a]";
+    bar = "bg-gold";
   } else {
     meta = list.done > 0 ? t("itemsInCart", { count: list.total, done: list.done }) : t("items", { count: list.total });
     bar = "bg-primary";
@@ -76,7 +76,7 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
           {meta}
         </span>
         {bar && list.total > 0 && (
-          <span className="mt-2 block h-1 overflow-hidden rounded-full bg-[#eef1f0]">
+          <span className="mt-2 block h-1 overflow-hidden rounded-full bg-track">
             <span className={cn("block h-full rounded-full", bar)} style={{ width: `${(list.done / list.total) * 100}%` }} />
           </span>
         )}
@@ -96,7 +96,7 @@ function Pill({ className, children }: { className: string; children: React.Reac
 /** The separator between the parts of a card's line, as its own item so the gaps on both sides match. */
 function Dot() {
   return (
-    <span aria-hidden className="text-[#b9c0bd]">
+    <span aria-hidden className="text-faint">
       ·
     </span>
   );

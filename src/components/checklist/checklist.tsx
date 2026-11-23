@@ -81,7 +81,7 @@ export function Checklist({
             <div className="flex flex-col gap-2.5">
               {/* The progress with "בחירה" beside it; under it the tools, or the picking row while picking. */}
               <div className="flex min-h-8 items-center gap-3 ps-1">
-                <ListProgress done={done} total={total} label={t("progress", { done, total })} bar="bg-[#c9962a]" />
+                <ListProgress done={done} total={total} label={t("progress", { done, total })} bar="bg-gold" />
               </div>
               <SelectBar
                 selection={selection}
@@ -116,7 +116,7 @@ export function Checklist({
 
           {total === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
-              <span className="flex size-14 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
+              <span className="flex size-14 items-center justify-center rounded-full bg-tone-amber text-tone-amber-ink">
                 <ListChecks className="size-6" aria-hidden />
               </span>
               {t("empty")}
@@ -148,8 +148,8 @@ export function Checklist({
                             )
                           }
                           className={cn(
-                            "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-white transition-colors",
-                            item.done && "border-[#c9962a] bg-[#c9962a]",
+                            "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-check bg-card text-white transition-colors",
+                            item.done && "border-gold bg-gold",
                           )}
                         >
                           {item.done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
@@ -226,7 +226,7 @@ function PickableRow({ item, selection, children }: { item: Item; selection: Sel
     <li
       {...longPress}
       className={cn(
-        "flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0",
+        "flex min-h-[50px] items-center gap-3 border-b border-line px-3.5 last:border-b-0",
         longPressRow,
       )}
     >

@@ -7,6 +7,8 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { DirectionProvider } from "@/components/ui/direction";
 import { PortraitOnly } from "@/components/portrait-only";
+import { ThemeWatcher } from "@/components/theme-watcher";
+import { THEME_SCRIPT } from "@/lib/theme";
 import { directionOf, routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -59,11 +61,17 @@ export default async function RootLayout({ children }: LayoutProps<"/[locale]">)
       lang={locale}
       dir={dir}
       className={`${fontSans.variable} h-full antialiased`}
+      // The theme script adds "dark" before React loads.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <DirectionProvider direction={dir}>{children}</DirectionProvider>
           <PortraitOnly />
+          <ThemeWatcher />
         </NextIntlClientProvider>
       </body>
     </html>

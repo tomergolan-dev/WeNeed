@@ -23,6 +23,10 @@
     "night": "Good night"
   },
   "Account": {
+    "appearance": "Appearance",
+    "theme_system": "Automatic",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
     "title": "My account",
     "open": "Account and settings",
     "language": "Language",

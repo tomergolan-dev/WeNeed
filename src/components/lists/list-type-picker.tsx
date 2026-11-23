@@ -34,7 +34,7 @@ export function ListTypePicker({ value, onChange }: { value: ListType; onChange:
             </span>
             <span
               className={cn(
-                "flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-[#c9cfcc]",
+                "flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-check",
                 selected && "border-primary bg-primary text-primary-foreground",
               )}
             >

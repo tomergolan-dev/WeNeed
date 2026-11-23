@@ -39,7 +39,7 @@ export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete 
     <li
       {...longPress}
       className={cn(
-        "flex min-h-[50px] items-center gap-3 border-b border-[#f0f2f1] px-3.5 last:border-b-0",
+        "flex min-h-[50px] items-center gap-3 border-b border-line px-3.5 last:border-b-0",
         longPressRow,
       )}
     >
@@ -54,7 +54,7 @@ export function ItemRow({ item, people, selection, onToggle, onUpdate, onDelete 
           disabled={draft}
           onClick={() => onToggle(item.id, !item.done)}
           className={cn(
-            "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#c9cfcc] bg-card text-primary-foreground transition-colors",
+            "flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] border-check bg-card text-primary-foreground transition-colors",
             item.done && "border-primary bg-primary",
           )}
         >

@@ -456,7 +456,7 @@ function useChangeText(now: number) {
 function ChangeRow({ change, now }: { change: Change; now: number }) {
   const describe = useChangeText(now);
   return (
-    <li className="flex items-center gap-2.5 border-t border-[#f0f2f1] py-2 first:border-t-0">
+    <li className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
       <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
         <PencilLine className="size-3.5" aria-hidden />
       </span>
@@ -472,7 +472,7 @@ function AddedRow({ item, now, unitsLabel }: { item: AddedItem; now: number; uni
     .filter(Boolean)
     .join(" · ");
   return (
-    <li className="flex items-center gap-2.5 border-t border-[#f0f2f1] py-2 first:border-t-0">
+    <li className="flex items-center gap-2.5 border-t border-line py-2 first:border-t-0">
       <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
         <Check className="size-3.5" strokeWidth={3} aria-hidden />
       </span>

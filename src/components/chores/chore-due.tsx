@@ -59,7 +59,7 @@ export function DuePill({ chore, status, now }: { chore: Dated; status: DueStatu
       suppressHydrationWarning
       className={cn(
         "inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold",
-        status === "overdue" ? "bg-[#fdecea] text-[#b42318]" : "bg-[#fff3d6] text-[#8a5a00]",
+        status === "overdue" ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning",
       )}
     >
       {text}

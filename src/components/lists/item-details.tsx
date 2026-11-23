@@ -90,7 +90,7 @@ export function ClipChip({
         open(item, onEdit);
       }}
       aria-label={t("openFor", { name: item.name, count: n })}
-      className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#eceff0] text-[#4c5853] active:bg-[#dfe3e1]"
+      className="flex size-6 shrink-0 items-center justify-center rounded-full bg-chip text-chip-ink active:bg-chip-press"
     >
       {n > 0 ? <Paperclip className="size-3.5" aria-hidden /> : <StickyNote className="size-3.5" aria-hidden />}
     </button>
@@ -311,7 +311,7 @@ function DetailsSheet({
                       key={link.id}
                       className="flex items-center gap-2.5 rounded-[14px] border bg-card py-2.5 ps-3 pe-1.5"
                     >
-                      <span className="flex size-8.5 shrink-0 items-center justify-center rounded-full bg-[#e8f1f7] text-[#3c6f8c]">
+                      <span className="flex size-8.5 shrink-0 items-center justify-center rounded-full bg-tone-blue text-tone-blue-ink">
                         <Link2 className="size-4" aria-hidden />
                       </span>
                       <a
@@ -331,7 +331,7 @@ function DetailsSheet({
                         </span>
                       </a>
                       <ExternalLink
-                        className="size-4 shrink-0 text-[#9aa5a0]"
+                        className="size-4 shrink-0 text-faint-ink"
                         aria-hidden
                       />
                       {!readOnly && (
@@ -371,7 +371,7 @@ function DetailsSheet({
                         href={fileUrl(file)}
                         target="_blank"
                         rel="noopener"
-                        className="flex size-21 flex-col items-center justify-center gap-1 overflow-hidden rounded-[14px] border bg-[#eef1f0] text-[11px] text-muted-foreground"
+                        className="flex size-21 flex-col items-center justify-center gap-1 overflow-hidden rounded-[14px] border bg-track text-[11px] text-muted-foreground"
                       >
                         {isImageType(file.contentType) ? (
                           // eslint-disable-next-line @next/next/no-img-element -- private file behind our own route
@@ -401,7 +401,7 @@ function DetailsSheet({
                   {uploading.map((key) => (
                     <li
                       key={key}
-                      className="flex size-21 flex-col items-center justify-center gap-1 rounded-[14px] border border-dashed border-[#c3cbc7] text-[11px] text-muted-foreground"
+                      className="flex size-21 flex-col items-center justify-center gap-1 rounded-[14px] border border-dashed border-dashed text-[11px] text-muted-foreground"
                     >
                       <LoaderCircle
                         className="size-5 animate-spin text-primary"
@@ -531,7 +531,7 @@ function LinkForm({
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const field =
-    "h-11 w-full rounded-xl border border-[#dfe3e1] bg-card px-3 text-[15px] outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15";
+    "h-11 w-full rounded-xl border border-chip-press bg-card px-3 text-[15px] outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15";
   return (
     <form
       onSubmit={(e) => {

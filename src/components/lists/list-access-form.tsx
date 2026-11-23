@@ -127,13 +127,13 @@ export function ListAccessForm({
                   onClick={() => choose(value)}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl border bg-card px-3.5 py-3 text-start transition-colors",
-                    on && "border-primary bg-[#f3faf6]",
+                    on && "border-primary bg-picked",
                   )}
                 >
                   <span
                     aria-hidden
                     className={cn(
-                      "size-5.5 shrink-0 rounded-full border-2 border-[#c9cfcc] bg-card",
+                      "size-5.5 shrink-0 rounded-full border-2 border-check bg-card",
                       on && "border-[6px] border-primary",
                     )}
                   />
@@ -171,7 +171,7 @@ export function ListAccessForm({
                 {isLocked ? (
                   <span
                     aria-label={t("always", { name: person.name })}
-                    className="flex size-7 items-center justify-center rounded-lg bg-[#cfe7db] text-[#11684b]"
+                    className="flex size-7 items-center justify-center rounded-lg bg-picked-strong text-tone-green-ink"
                   >
                     <Check className="size-4" strokeWidth={3} aria-hidden />
                   </span>
@@ -183,7 +183,7 @@ export function ListAccessForm({
                     aria-label={person.name}
                     onClick={() => toggle(person)}
                     className={cn(
-                      "flex size-7 items-center justify-center rounded-lg border-2 border-[#c9cfcc] bg-card",
+                      "flex size-7 items-center justify-center rounded-lg border-2 border-check bg-card",
                       checked && "border-primary bg-primary text-primary-foreground",
                     )}
                   >
@@ -195,7 +195,7 @@ export function ListAccessForm({
           })}
           {access.pending.map((address) => (
             <li key={address} className="flex min-h-13 items-center gap-3 border-b border-border/60 py-2 last:border-b-0">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#faf1de] text-[#8f6814]">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-tone-amber text-tone-amber-ink">
                 <Mail className="size-4" aria-hidden />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
@@ -223,7 +223,7 @@ export function ListAccessForm({
             placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12 min-w-0 flex-1 rounded-[14px] border border-[#dfe3e1] bg-card px-3.5 text-[15px] outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
+            className="h-12 min-w-0 flex-1 rounded-[14px] border border-chip-press bg-card px-3.5 text-[15px] outline-none focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
           />
           <Button type="submit" size="xl" disabled={pending || !email.trim()} className="h-12 rounded-[14px] px-4">
             {t("invite")}
@@ -241,7 +241,7 @@ export function ListAccessForm({
         size="xl"
         disabled={pending}
         onClick={save}
-        className="mt-1 h-11 w-full rounded-xl bg-[#1d2522] text-[15px] font-medium text-white hover:bg-[#1d2522]/90"
+        className="mt-1 h-11 w-full rounded-xl bg-ink text-[15px] font-medium text-ink-foreground hover:bg-ink/90"
       >
         {t("save")}
       </Button>

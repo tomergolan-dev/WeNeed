@@ -2,18 +2,18 @@ import { Bike, Cat, Coffee, Dog, Flower2, Leaf, Music, Rocket, Smile, Star, Sun,
 
 /** Icons the user can choose for their badge; the key is stored in users.avatar as "icon:<key>". */
 export const AVATAR_ICONS = {
-  smile: { icon: Smile, tone: "bg-[#e4f3ec] text-[#11684b]" },
-  sun: { icon: Sun, tone: "bg-[#faf1de] text-[#8f6814]" },
-  star: { icon: Star, tone: "bg-[#fff3d6] text-[#8a5a00]" },
-  flower: { icon: Flower2, tone: "bg-[#f9ecef] text-[#a14a64]" },
-  leaf: { icon: Leaf, tone: "bg-[#eef4e8] text-[#557a3c]" },
-  cat: { icon: Cat, tone: "bg-[#f0ecf7] text-[#6a5794]" },
-  dog: { icon: Dog, tone: "bg-[#f3ece6] text-[#7a5a3f]" },
-  coffee: { icon: Coffee, tone: "bg-[#efe9e4] text-[#6b4f3a]" },
-  music: { icon: Music, tone: "bg-[#e8f1f7] text-[#3c6f8c]" },
-  bike: { icon: Bike, tone: "bg-[#e6f4f4] text-[#2f7a78]" },
-  rocket: { icon: Rocket, tone: "bg-[#f9ecea] text-[#9c4f47]" },
-  zap: { icon: Zap, tone: "bg-[#fdf6d8] text-[#7d6a10]" },
+  smile: { icon: Smile, tone: "bg-tone-green text-tone-green-ink" },
+  sun: { icon: Sun, tone: "bg-tone-amber text-tone-amber-ink" },
+  star: { icon: Star, tone: "bg-warning-soft text-warning" },
+  flower: { icon: Flower2, tone: "bg-tone-pink text-tone-pink-ink" },
+  leaf: { icon: Leaf, tone: "bg-tone-olive text-tone-olive-ink" },
+  cat: { icon: Cat, tone: "bg-tone-purple text-tone-purple-ink" },
+  dog: { icon: Dog, tone: "bg-tone-brown text-tone-brown-ink" },
+  coffee: { icon: Coffee, tone: "bg-tone-coffee text-tone-coffee-ink" },
+  music: { icon: Music, tone: "bg-tone-blue text-tone-blue-ink" },
+  bike: { icon: Bike, tone: "bg-tone-teal text-tone-teal-ink" },
+  rocket: { icon: Rocket, tone: "bg-tone-rose text-tone-rose-ink" },
+  zap: { icon: Zap, tone: "bg-tone-yellow text-tone-yellow-ink" },
 } satisfies Record<string, { icon: LucideIcon; tone: string }>;
 
 export type AvatarIcon = keyof typeof AVATAR_ICONS;

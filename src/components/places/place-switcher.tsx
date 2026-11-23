@@ -71,7 +71,7 @@ export function PlaceSwitcher({
                 <span
                   className={cn(
                     "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                    place.role === "owner" ? "bg-accent text-accent-foreground" : "bg-[#eceff0] text-[#4c5853]",
+                    place.role === "owner" ? "bg-accent text-accent-foreground" : "bg-chip text-chip-ink",
                   )}
                 >
                   {place.role === "owner" ? t("admin") : t("member")}
@@ -106,8 +106,8 @@ export function PlaceSwitcher({
         </span>
       </DrawerTrigger>
 
-      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
-        <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
+      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-sheet px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+        <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-handle" />
         <div className="mb-3.5 flex items-center justify-between">
           <DrawerTitle className="text-lg font-extrabold">{t("title")}</DrawerTitle>
           <DrawerClose
@@ -130,7 +130,7 @@ export function PlaceSwitcher({
           <Link
             href="/places/new"
             onClick={() => setOpen(false)}
-            className="mt-4 flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-[#c3cbc7] text-sm font-medium text-accent-foreground transition-colors active:bg-muted"
+            className="mt-4 flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-dashed text-sm font-medium text-accent-foreground transition-colors active:bg-muted"
           >
             <Plus className="size-4" aria-hidden />
             {t("newPlace")}

@@ -91,7 +91,7 @@ async function Home() {
         <NewListButton />
       </div>
       {lists.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-[#c3cbc7] px-4 py-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
           {t("empty")}
         </p>
       ) : (

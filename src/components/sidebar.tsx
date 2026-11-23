@@ -203,7 +203,7 @@ function Urgent({ tasks, base, onNavigate }: { tasks: UrgentTask[]; base: string
   return (
     <section className="flex flex-col gap-0.5">
       <h2 className="flex items-center gap-2 px-2 py-1.5 text-[13px] font-semibold text-muted-foreground">
-        <span className="flex size-6 items-center justify-center rounded-full bg-[#fdecea] text-[#b42318]" aria-hidden>
+        <span className="flex size-6 items-center justify-center rounded-full bg-danger-soft text-danger" aria-hidden>
           <AlarmClock className="size-3.5" />
         </span>
         {t("urgent")}
@@ -219,7 +219,7 @@ function Urgent({ tasks, base, onNavigate }: { tasks: UrgentTask[]; base: string
                 className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm transition-colors hover:bg-muted"
               >
                 <span className="flex size-7 shrink-0 items-center justify-center" aria-hidden>
-                  <span suppressHydrationWarning className={cn("size-2 rounded-full", late ? "bg-[#d9452f]" : "bg-[#e0a21b]")} />
+                  <span suppressHydrationWarning className={cn("size-2 rounded-full", late ? "bg-dot-late" : "bg-dot-soon")} />
                 </span>
                 <span className="min-w-0 flex-1 truncate">
                   {task.name}
@@ -239,14 +239,14 @@ function Count({ list }: { list: SidebarList }) {
   const t = useTranslations("Home");
   if (list.type === "tasks" && list.overdue > 0) {
     return (
-      <span className="rounded-full bg-[#fdecea] px-1.5 text-[11px] font-semibold text-[#b42318]">
+      <span className="rounded-full bg-danger-soft px-1.5 text-[11px] font-semibold text-danger">
         {t("overdue", { count: list.overdue })}
       </span>
     );
   }
   if (list.type === "tasks" && list.soon > 0) {
     return (
-      <span className="rounded-full bg-[#fff3d6] px-1.5 text-[11px] font-semibold text-[#8a5a00]">
+      <span className="rounded-full bg-warning-soft px-1.5 text-[11px] font-semibold text-warning">
         {t("soon", { count: list.soon })}
       </span>
     );

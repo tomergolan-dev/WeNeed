@@ -23,6 +23,10 @@
     "night": "לילה טוב"
   },
   "Account": {
+    "appearance": "תצוגה",
+    "theme_system": "אוטומטי",
+    "theme_light": "בהיר",
+    "theme_dark": "כהה",
     "title": "החשבון שלי",
     "open": "החשבון וההגדרות",
     "language": "שפה",

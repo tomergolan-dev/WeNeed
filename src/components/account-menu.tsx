@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, CalendarDays, Camera, Check, Copy, Globe, PencilLine } from "lucide-react";
+import { Bell, CalendarDays, Camera, Check, Copy, Globe, PencilLine, SunMoon } from "lucide-react";
 import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
 import { AvatarPicker } from "@/components/avatar-picker";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { readTheme, setTheme, subscribeTheme, THEMES, type Theme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { MyNameEditor, MyPeopleRow, MyPeopleView } from "./profile-editor";
 
@@ -39,8 +40,8 @@ export function AccountMenu({
       >
         <Avatar name={user?.name ?? null} avatar={user?.avatar} />
       </DrawerTrigger>
-      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] pt-2.5">
-        <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-[#d5dad8]" />
+      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-sheet pt-2.5">
+        <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-handle" />
         {/* Scrolls when an open row makes the menu taller than the screen. */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
           <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
@@ -117,10 +118,11 @@ export function AccountPanel({
       )}
       <div className={flat ? "-mx-4 border-y border-border/60" : "overflow-hidden rounded-2xl border border-border/60 bg-card"}>
         <div className="flex min-h-12 items-center gap-3 px-4 py-2">
-          <Globe className="size-[18px] text-muted-foreground" aria-hidden />
+          <Globe className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
           <span className="flex-1 text-sm">{t("language")}</span>
           <LanguagePicker />
         </div>
+        <AppearanceRow />
         {user && <TaskEmailsRow initial={user.taskEmails} />}
         {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
         {user && <MyPeopleRow onOpen={() => showPeople(true)} />}
@@ -166,7 +168,7 @@ function LanguagePicker() {
             disabled={pending}
             onClick={() => !on && startTransition(() => router.replace(pathname, { locale: code }))}
             className={cn(
-              "h-7 rounded-full px-3 text-[13px] text-muted-foreground transition-colors",
+              "h-6.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
               on && "bg-card font-medium text-foreground shadow-sm",
             )}
           >
@@ -174,6 +176,38 @@ function LanguagePicker() {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/** Light, dark, or the device's setting ("אוטומטי"), for this device. */
+function AppearanceRow() {
+  const t = useTranslations("Account");
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, () => "system" as Theme);
+  return (
+    <div className="flex min-h-12 items-center gap-3 border-t border-border/60 px-4 py-2">
+      <SunMoon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+      <span className="flex-1 text-sm">{t("appearance")}</span>
+      <div role="radiogroup" aria-label={t("appearance")} className="flex shrink-0 rounded-full bg-muted p-0.5">
+        {THEMES.map((option) => {
+          const on = option === theme;
+          return (
+            <button
+              key={option}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => setTheme(option)}
+              className={cn(
+                "h-6.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors",
+                on && "bg-card font-medium text-foreground shadow-sm",
+              )}
+            >
+              {t(`theme_${option}`)}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -216,7 +250,7 @@ function CalendarRow({ open, onToggle }: { open: boolean; onToggle: () => void }
         }}
         className="flex min-h-9 w-full items-center gap-3 text-start"
       >
-        <CalendarDays className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+        <CalendarDays className="size-[18px] shrink-0 self-start mt-px text-muted-foreground" aria-hidden />
         <span className="flex flex-1 flex-col gap-0.5">
           <span className="text-sm">{t("calendar")}</span>
           <span className="text-xs leading-snug text-muted-foreground">{t("calendarHint")}</span>
@@ -282,7 +316,7 @@ function TaskEmailsRow({ initial }: { initial: boolean }) {
   const [on, setOn] = useState(initial);
   return (
     <label className="flex min-h-12 cursor-pointer items-center gap-3 border-t border-border/60 px-4 py-2">
-      <Bell className="size-[18px] shrink-0 text-muted-foreground" aria-hidden />
+      <Bell className="size-[18px] shrink-0 self-start mt-px text-muted-foreground" aria-hidden />
       <span className="flex flex-1 flex-col gap-0.5">
         <span className="text-sm">{t("taskEmails")}</span>
         <span className="text-xs leading-snug text-muted-foreground">{t("taskEmailsHint")}</span>
@@ -301,7 +335,7 @@ function TaskEmailsRow({ initial }: { initial: boolean }) {
       <span
         aria-hidden
         className={cn(
-          "relative h-6 w-10 shrink-0 rounded-full bg-[#d5dad8] transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
+          "relative h-6 w-10 shrink-0 rounded-full bg-handle transition-colors peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
           on && "bg-primary",
           "after:absolute after:start-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform",
           on && "after:translate-x-4 rtl:after:-translate-x-4",

@@ -16,9 +16,9 @@ export async function InviteBanner({ invite }: { invite: InviteView }) {
   return (
     <Link
       href={`/invites/${invite.id}`}
-      className="flex items-center gap-3 rounded-2xl bg-[#fff3d6] px-3.5 py-3 text-[#5c3d00] transition-colors active:bg-[#fbe9bd]"
+      className="flex items-center gap-3 rounded-2xl bg-warning-soft px-3.5 py-3 text-warning-ink transition-colors active:bg-warning-press"
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-[#8a5a00]">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-warning">
         <Mail className="size-4.5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1 text-sm leading-snug">

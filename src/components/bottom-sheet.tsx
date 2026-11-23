@@ -21,8 +21,8 @@ export function BottomSheet({
   const t = useTranslations("Places");
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
-        <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
+      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-sheet px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+        <div aria-hidden className="mx-auto mb-3.5 h-1.5 w-10 rounded-full bg-handle" />
         <div className="mb-3.5 flex items-center justify-between">
           <div className="min-w-0">
             <DrawerTitle className="text-lg font-extrabold">{title}</DrawerTitle>
