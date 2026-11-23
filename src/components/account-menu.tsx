@@ -26,8 +26,17 @@ export function AccountMenu({
 }) {
   const t = useTranslations("Account");
   const [editing, setEditing] = useState(false);
+  // One row open at a time (the calendar or my people), so the menu stays short.
+  const [row, setRow] = useState<"calendar" | "people" | null>(null);
+  const toggle = (which: "calendar" | "people") => setRow((current) => (current === which ? null : which));
   return (
-    <Drawer onOpenChange={(open) => !open && setEditing(false)}>
+    <Drawer
+      onOpenChange={(open) => {
+        if (open) return;
+        setEditing(false);
+        setRow(null);
+      }}
+    >
       <DrawerTrigger
         aria-label={t("open")}
         className={cn(
@@ -37,56 +46,59 @@ export function AccountMenu({
       >
         <Menu className="size-5" aria-hidden />
       </DrawerTrigger>
-      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
-        <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
-        <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
-        {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
-        {user && !editing && (
-          <div className="mb-4 text-center">
-            <p className="flex items-center justify-center gap-1 font-semibold">
-              {user.name}
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                aria-label={t("editName")}
-                className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
-              >
-                <PencilLine className="size-4" aria-hidden />
-              </button>
-            </p>
-            {user.email && (
-              <p dir="ltr" className="text-sm text-muted-foreground">
-                {user.email}
+      <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] pt-2.5">
+        <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-[#d5dad8]" />
+        {/* Scrolls when an open row makes the menu taller than the screen. */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+          <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
+          {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
+          {user && !editing && (
+            <div className="mb-4 text-center">
+              <p className="flex items-center justify-center gap-1 font-semibold">
+                {user.name}
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  aria-label={t("editName")}
+                  className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
+                >
+                  <PencilLine className="size-4" aria-hidden />
+                </button>
               </p>
-            )}
+              {user.email && (
+                <p dir="ltr" className="text-sm text-muted-foreground">
+                  {user.email}
+                </p>
+              )}
+            </div>
+          )}
+          <div className="rounded-[18px] border bg-card">
+            <div className="flex min-h-15 items-center gap-3 px-4 py-2.5">
+              <Globe className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1">{t("language")}</span>
+              <LanguagePicker />
+            </div>
+            {user && <TaskEmailsRow initial={user.taskEmails} />}
+            {user && <CalendarRow open={row === "calendar"} onToggle={() => toggle("calendar")} />}
+            {user && <MyPeopleRow open={row === "people"} onToggle={() => toggle("people")} />}
           </div>
-        )}
-        <div className="rounded-[18px] border bg-card">
-          <div className="flex min-h-15 items-center gap-3 px-4 py-2.5">
-            <Globe className="size-5 text-muted-foreground" aria-hidden />
-            <span className="flex-1">{t("language")}</span>
-            <LanguagePicker />
-          </div>
-          {user && <TaskEmailsRow initial={user.taskEmails} />}
-          {user && <CalendarRow />}
-          {user && <MyPeopleRow />}
+          {user ? (
+            <form action={logOut} className="mt-5 text-center">
+              <button type="submit" className="h-10 px-4 text-[15px] text-muted-foreground active:text-foreground">
+                {t("logOut")}
+              </button>
+            </form>
+          ) : (
+            <div className="mt-5 text-center">
+              <Link
+                href="/login"
+                className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
+              >
+                {t("signIn")}
+              </Link>
+            </div>
+          )}
         </div>
-        {user ? (
-          <form action={logOut} className="mt-5 text-center">
-            <button type="submit" className="h-10 px-4 text-[15px] text-muted-foreground active:text-foreground">
-              {t("logOut")}
-            </button>
-          </form>
-        ) : (
-          <div className="mt-5 text-center">
-            <Link
-              href="/login"
-              className="inline-flex h-10 items-center px-4 text-[15px] font-semibold text-accent-foreground"
-            >
-              {t("signIn")}
-            </Link>
-          </div>
-        )}
       </DrawerContent>
     </Drawer>
   );
@@ -129,11 +141,10 @@ function LanguagePicker() {
  * "Tasks in my calendar": opens to buttons that add the user's private feed
  * to Google Calendar or the iPhone calendar, copy the link, or replace it.
  */
-function CalendarRow() {
+function CalendarRow({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const t = useTranslations("Account");
   const tErrors = useTranslations("Errors");
   const [links, setLinks] = useState<Extract<CalendarLinks, { ok: true }> | null>(null);
-  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -159,7 +170,7 @@ function CalendarRow() {
         type="button"
         aria-expanded={open}
         onClick={() => {
-          setOpen((o) => !o);
+          onToggle();
           if (!links) load();
         }}
         className="flex min-h-10 w-full items-center gap-3 text-start"

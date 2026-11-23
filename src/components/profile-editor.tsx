@@ -74,10 +74,9 @@ export function MyNameEditor({ name, onDone }: { name: string; onDone: () => voi
  * or a list with, each with a field for the user's own name for them ("אמא"
  * for נורית), which only the user sees, everywhere in the app.
  */
-export function MyPeopleRow() {
+export function MyPeopleRow({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const t = useTranslations("Account");
   const tErrors = useTranslations("Errors");
-  const [open, setOpen] = useState(false);
   const [people, setPeople] = useState<Person[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,7 +91,7 @@ export function MyPeopleRow() {
         type="button"
         aria-expanded={open}
         onClick={() => {
-          setOpen((o) => !o);
+          onToggle();
           if (!people) load();
         }}
         className="flex min-h-10 w-full items-center gap-3 text-start"
