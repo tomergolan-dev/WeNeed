@@ -43,7 +43,7 @@ export function ChoreFields({
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="col-span-2 flex flex-col gap-1.5">
-        <Label htmlFor={`${id}-title`}>{t("titleLabel")}</Label>
+        <Label htmlFor={`${id}-title`} className="text-[13px] text-muted-foreground">{t("titleLabel")}</Label>
         <Input
           id={`${id}-title`}
           value={draft.title}
@@ -54,7 +54,7 @@ export function ChoreFields({
         />
       </div>
       <div className="flex min-w-0 flex-col gap-1.5">
-        <Label htmlFor={`${id}-date`}>{t("date")}</Label>
+        <Label htmlFor={`${id}-date`} className="text-[13px] text-muted-foreground">{t("date")}</Label>
         <Input
           id={`${id}-date`}
           type="date"
@@ -64,7 +64,7 @@ export function ChoreFields({
         />
       </div>
       <div className="flex min-w-0 flex-col gap-1.5">
-        <Label htmlFor={`${id}-time`}>{t("time")}</Label>
+        <Label htmlFor={`${id}-time`} className="text-[13px] text-muted-foreground">{t("time")}</Label>
         <Input
           id={`${id}-time`}
           type="time"
@@ -77,7 +77,7 @@ export function ChoreFields({
       {/* A list only one person sees has no one else to assign: its tasks are theirs. */}
       {(people.length > 1 || draft.assigneeId !== "") && (
         <div className="col-span-2 flex flex-col gap-1.5">
-          <Label htmlFor={`${id}-assignee`}>{t("assignee")}</Label>
+          <Label htmlFor={`${id}-assignee`} className="text-[13px] text-muted-foreground">{t("assignee")}</Label>
           <NativeSelect
             id={`${id}-assignee`}
             className="w-full"

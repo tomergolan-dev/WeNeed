@@ -50,7 +50,7 @@ export function ItemFields({ draft, onChange, showName = true }: Props) {
     <div className="grid grid-cols-2 gap-3">
       {showName && (
         <div className="col-span-2 flex flex-col gap-1.5">
-          <Label htmlFor={`${id}-name`}>{t("name")}</Label>
+          <Label htmlFor={`${id}-name`} className="text-[13px] text-muted-foreground">{t("name")}</Label>
           <Input
             id={`${id}-name`}
             value={draft.name}
@@ -61,7 +61,7 @@ export function ItemFields({ draft, onChange, showName = true }: Props) {
         </div>
       )}
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${id}-quantity`}>{t("quantity")}</Label>
+        <Label htmlFor={`${id}-quantity`} className="text-[13px] text-muted-foreground">{t("quantity")}</Label>
         <Input
           id={`${id}-quantity`}
           inputMode="decimal"
@@ -70,7 +70,7 @@ export function ItemFields({ draft, onChange, showName = true }: Props) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${id}-unit`}>{t("unit")}</Label>
+        <Label htmlFor={`${id}-unit`} className="text-[13px] text-muted-foreground">{t("unit")}</Label>
         <Input
           id={`${id}-unit`}
           value={draft.unit}
@@ -80,7 +80,7 @@ export function ItemFields({ draft, onChange, showName = true }: Props) {
         />
       </div>
       <div className="col-span-2 flex flex-col gap-1.5">
-        <Label htmlFor={`${id}-category`}>{t("category")}</Label>
+        <Label htmlFor={`${id}-category`} className="text-[13px] text-muted-foreground">{t("category")}</Label>
         <NativeSelect
           id={`${id}-category`}
           className="w-full"

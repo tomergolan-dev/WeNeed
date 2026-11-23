@@ -34,21 +34,21 @@ export function DemoHome() {
         </span>
         <Link
           href="/login"
-          className="flex h-11 items-center rounded-[14px] bg-primary px-3.5 text-sm font-semibold text-primary-foreground"
+          className="flex h-9 items-center rounded-xl bg-primary px-3.5 text-sm font-medium text-primary-foreground"
         >
           {tDemo("signIn")}
         </Link>
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
-        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-2.5">
           <PlaceBadge icon="home" />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="text-xs text-muted-foreground">{tNav("yourPlace")}</span>
-            <span className="truncate text-[17px] font-bold">{state.place}</span>
+            <span className="truncate text-[15px] font-semibold">{state.place}</span>
           </span>
         </div>
         <div className="pt-6 pb-1">
-          <h1 className="text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-xl font-extrabold tracking-tight">{t("title")}</h1>
         </div>
         <div className="flex items-center justify-between px-1 pt-4 pb-2.5">
           <h2 className="text-[13px] font-semibold text-muted-foreground">{t("lists")}</h2>

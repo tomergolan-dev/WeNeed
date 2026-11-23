@@ -5,7 +5,7 @@ import { placeIcon } from "@/lib/place-icons";
 export function PlaceBadge({ icon, className }: { icon: string; className?: string }) {
   const { icon: Icon, tone } = placeIcon(icon);
   return (
-    <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", tone, className)}>
+    <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-full", tone, className)}>
       <Icon className="size-5" aria-hidden />
     </span>
   );
