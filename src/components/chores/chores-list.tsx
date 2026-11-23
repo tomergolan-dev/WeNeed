@@ -398,8 +398,8 @@ function ChoreRow({
       className={cn(
         "flex items-start gap-3 border-b border-line px-3.5 py-3 last:border-b-0",
         longPressRow,
-        status === "overdue" && "shadow-[inset_-4px_0_0_#d9452f] ltr:shadow-[inset_4px_0_0_#d9452f]",
-        status === "soon" && "shadow-[inset_-4px_0_0_#e0a21b] ltr:shadow-[inset_4px_0_0_#e0a21b]",
+        status === "overdue" && "shadow-[inset_-4px_0_0_var(--dot-late)] ltr:shadow-[inset_4px_0_0_var(--dot-late)]",
+        status === "soon" && "shadow-[inset_-4px_0_0_var(--dot-soon)] ltr:shadow-[inset_4px_0_0_var(--dot-soon)]",
       )}
     >
       {selection.selecting ? (
