@@ -105,7 +105,7 @@ async function loadTask(itemId: string) {
     .where(eq(items.id, itemId));
   return row ?? null;
 }
-type Task = NonNullable<Awaited<ReturnType<typeof loadTask>>>;
+export type Task = NonNullable<Awaited<ReturnType<typeof loadTask>>>;
 
 /**
  * The one person who sees a list, when only one does. Their unassigned tasks
@@ -201,7 +201,8 @@ function dueText(task: Task, locale: Locale, t: (key: string) => string) {
   return task.dueTime ? `${day}, ${task.dueTime.slice(0, 5)}` : day;
 }
 
-async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmailKind, senderName: string | null) {
+/** A task email's subject, HTML and plain text. */
+export function renderTaskEmail(locale: Locale, task: Task, kind: TaskEmailKind, senderName: string | null) {
   const t = createTranslator({ locale, messages: MESSAGES[locale], namespace: "TaskEmail" });
   const name = isolate(task.name);
   const heading =
@@ -216,6 +217,20 @@ async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmai
           : kind === "morning"
             ? t("morning", { task: name })
             : t("evening", { task: name });
+  // In the email itself the task is in the card below, so the title leaves it out.
+  const sender = isolate(senderName ?? t("someone"));
+  const title =
+    kind === "assigned"
+      ? t("assignedTitle", { name: sender })
+      : kind === "manual"
+        ? t("manualTitle", { name: sender })
+        : kind === "hour_before"
+          ? t("hourBeforeTitle")
+          : kind === "quarter_before"
+            ? t("quarterBeforeTitle")
+            : kind === "morning"
+              ? t("morningTitle")
+              : t("eveningTitle");
   const due = dueText(task, locale, (key) => t(key as "today"));
   const where = task.personal ? task.listName : `${task.listName} · ${task.placeName}`;
   // The task's note, shortened so a long one doesn't fill the email.
@@ -225,23 +240,12 @@ async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmai
   const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
   const url = `${(process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}${prefix}/lists/${task.listId}`;
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[task-email] to ${email}: ${heading} (${url})`);
-      return;
-    }
-    throw new Error("RESEND_API_KEY is not set");
-  }
-  const from = process.env.EMAIL_FROM;
-  if (!from) throw new Error("EMAIL_FROM is not set");
-
   // Inline styles only: email clients ignore stylesheets. Colors follow the app theme.
   const html = `<!doctype html><html lang="${locale}" dir="${directionOf(locale)}"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
-<div style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
+<div dir="${directionOf(locale)}" style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
 <p dir="ltr" style="margin:0 0 24px;font-size:16px;font-weight:800;color:#16835f">WeNeed</p>
-<h1 style="margin:0 0 20px;font-size:20px;line-height:1.4">${escape(heading)}</h1>
-<div style="margin:0 0 24px;padding:16px;border-radius:16px;background:#fff;border:1px solid #e6eae8;text-align:start">
+<h1 style="margin:0 0 20px;font-size:20px;line-height:1.4">${escape(title)}</h1>
+<div style="margin:0 0 24px;padding:16px;border-radius:16px;background:#fff;border:1px solid #e6eae8;text-align:${directionOf(locale) === "rtl" ? "right" : "left"}">
 <p style="margin:0;font-size:17px;font-weight:700">${escape(task.name)}</p>
 ${due ? `<p style="margin:6px 0 0;font-size:14px;color:#11684b">${escape(due)}</p>` : ""}
 <p style="margin:6px 0 0;font-size:13px;color:#66736e">${escape(where)}</p>
@@ -251,13 +255,26 @@ ${note ? `<div style="margin:12px 0 0;padding:10px 12px;border-radius:12px;backg
 <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#8a958f">${t("footer")}</p>
 </div></body></html>`;
 
-  const { error } = await new Resend(apiKey).emails.send({
-    from,
-    to: email,
-    subject: heading,
-    html,
-    text: [heading, "", task.name, due, where, "", url, "", t("footer")].filter((l) => l !== null).join("\n"),
-  });
+  const text = [title, "", task.name, due, where, note || null, "", url, "", t("footer")]
+    .filter((l) => l !== null)
+    .join("\n");
+  return { subject: heading, html, text, url };
+}
+
+async function deliver(email: string, locale: Locale, task: Task, kind: TaskEmailKind, senderName: string | null) {
+  const { subject, html, text, url } = renderTaskEmail(locale, task, kind, senderName);
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`[task-email] to ${email}: ${subject} (${url})`);
+      return;
+    }
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  const from = process.env.EMAIL_FROM;
+  if (!from) throw new Error("EMAIL_FROM is not set");
+
+  const { error } = await new Resend(apiKey).emails.send({ from, to: email, subject, html, text });
   if (error) throw new Error(`Resend: ${error.message}`);
 }
 

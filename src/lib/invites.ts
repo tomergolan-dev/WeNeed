@@ -133,7 +133,7 @@ export async function sendInviteEmail(input: { email: string; inviteId: string; 
 
   const heading = t("heading", { name: input.from, what: input.what });
   const html = `<!doctype html><html lang="${locale}" dir="${directionOf(locale)}"><body style="margin:0;background:#fafbfa;font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1d2522">
-<div style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
+<div dir="${directionOf(locale)}" style="max-width:440px;margin:0 auto;padding:32px 24px;text-align:center">
 <p dir="ltr" style="margin:0 0 24px;font-size:16px;font-weight:800;color:#16835f">WeNeed</p>
 <h1 style="margin:0 0 12px;font-size:20px">${escape(heading)}</h1>
 <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#66736e">${t("body")}</p>

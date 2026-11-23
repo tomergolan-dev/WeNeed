@@ -692,7 +692,7 @@
     "assigned": "{name} שייך/ה לך משימה: {task}",
     "manual": "{name} מזכיר/ה לך: {task}",
     "hourBefore": "בעוד שעה: {task}",
-    "quarterBefore": "בעוד רבע שעה: {task}",
+    "quarterBefore": "בעוד 15 דקות: {task}",
     "morning": "להיום: {task}",
     "evening": "עוד פתוח להיום: {task}",
     "someone": "מישהו",
@@ -700,7 +700,13 @@
     "tomorrow": "מחר",
     "button": "לצפייה במשימה",
     "footer": "קיבלת את המייל כי המשימה משויכת אליך. אפשר לכבות מיילים על משימות בתפריט החשבון ב-WeNeed.",
-    "note": "הערה"
+    "note": "הערה",
+    "assignedTitle": "{name} שייך/ה לך משימה",
+    "manualTitle": "{name} מזכיר/ה לך משימה",
+    "hourBeforeTitle": "תזכורת: בעוד שעה",
+    "quarterBeforeTitle": "תזכורת: בעוד 15 דקות",
+    "morningTitle": "תזכורת: משימה להיום",
+    "eveningTitle": "המשימה עוד פתוחה להיום"
   },
   "BulkDelete": {
     "menu": "בחירת פריטים",

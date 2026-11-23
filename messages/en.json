@@ -673,7 +673,13 @@
     "tomorrow": "Tomorrow",
     "button": "View the task",
     "footer": "You got this email because the task is assigned to you. You can turn task emails off in the account menu in WeNeed.",
-    "note": "Note"
+    "note": "Note",
+    "assignedTitle": "{name} assigned you a task",
+    "manualTitle": "{name} is reminding you of a task",
+    "hourBeforeTitle": "Reminder: in an hour",
+    "quarterBeforeTitle": "Reminder: in 15 minutes",
+    "morningTitle": "Reminder: a task for today",
+    "eveningTitle": "This task is still open today"
   },
   "BulkDelete": {
     "menu": "Select items",
