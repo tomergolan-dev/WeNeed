@@ -5,10 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import { AccountPanel, type AccountUser } from "@/components/account-menu";
 import { Avatar } from "@/components/avatar";
-import { LogoMark } from "@/components/brand";
-import { NavLists, type SidebarGroup, type UrgentTask } from "@/components/sidebar";
+import { AboutApp, NavLists, type SidebarGroup, type UrgentTask } from "@/components/sidebar";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 /**
@@ -90,22 +88,11 @@ export function MobileNav({
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-4 pb-4">
                 <NavLists {...nav} onNavigate={() => setOpen(false)} />
               </div>
-              {/* About the app, quietly at the bottom. */}
-              <footer className="flex flex-col gap-1 border-t border-border/60 ps-6 pe-4 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.75rem))]">
-                <span className="flex items-center gap-1.5">
-                  <LogoMark className="size-5" />
-                  <span dir="ltr" className="text-[13px] font-bold tracking-tight">
-                    WeNeed
-                  </span>
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  <Link href="/privacy" onClick={() => setOpen(false)} className="underline-offset-2 active:underline">
-                    {t("privacy")}
-                  </Link>
-                  {" · "}
-                  {t("madeBy")}
-                </span>
-              </footer>
+              {/* Clear of the iPhone's rounded corner. */}
+              <AboutApp
+                onNavigate={() => setOpen(false)}
+                className="ps-6 pe-4 pt-3 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.75rem))]"
+              />
             </>
           ) : (
             <>

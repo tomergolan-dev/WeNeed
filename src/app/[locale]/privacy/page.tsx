@@ -17,8 +17,9 @@ export default async function PrivacyPage() {
   const t = await getTranslations("Privacy");
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 pt-[18px] pb-8">
-      <header className="flex h-9 items-center justify-between">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 pt-2.5 pb-8">
+      {/* Stays put on a solid background, so iOS tints the status bar instead of blurring what scrolls under it. */}
+      <header className="sticky top-0 z-20 flex items-center justify-between bg-background py-2">
         <Link href="/">
           <Brand />
         </Link>

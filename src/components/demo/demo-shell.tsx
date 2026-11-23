@@ -10,10 +10,13 @@ import { DEMO_PLACE, DemoProvider, demoUrgent, summarizeLists, useDemo } from ".
 export function DemoShell({ children }: { children: React.ReactNode }) {
   return (
     <DemoProvider fallback={<DemoSkeleton />}>
-      <DemoStrip />
       <div className="flex w-full flex-1">
         <DemoSidebar />
-        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col lg:max-w-3xl xl:max-w-4xl">{children}</div>
+        {/* The strip sits above the content, not the sidebar, so the sidebar keeps the full screen height. */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <DemoStrip />
+          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col lg:max-w-3xl xl:max-w-4xl">{children}</div>
+        </div>
       </div>
     </DemoProvider>
   );

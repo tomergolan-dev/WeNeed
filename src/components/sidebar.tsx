@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { AlarmClock } from "lucide-react";
 import { switchPlace } from "@/app/actions";
-import { Brand } from "@/components/brand";
+import { Brand, LogoMark } from "@/components/brand";
 import { AccountMenu, type AccountUser } from "@/components/account-menu";
 import { NewListButton } from "@/components/lists/new-list-button";
 import { PlaceBadge } from "@/components/places/place-badge";
@@ -55,12 +55,10 @@ type NavProps = {
  */
 export function Sidebar({
   user = null,
-  footer,
   ...nav
 }: NavProps & {
   /** For the account menu; null in the demo. */
   user?: AccountUser | null;
-  footer?: React.ReactNode;
 }) {
   const home = nav.base || "/";
   return (
@@ -74,8 +72,41 @@ export function Sidebar({
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         <NavLists {...nav} />
       </div>
-      {footer}
+      {/* The logo is already at the top here. */}
+      <AboutApp logo={false} className="px-4 py-3" />
     </aside>
+  );
+}
+
+/** Quietly at the bottom of the side menu: the logo, the privacy policy and who made the app. */
+export function AboutApp({
+  logo = true,
+  onNavigate,
+  className,
+}: {
+  logo?: boolean;
+  onNavigate?: () => void;
+  className?: string;
+}) {
+  const t = useTranslations("Nav");
+  return (
+    <footer className={cn("flex flex-col gap-1 border-t border-border/60", className)}>
+      {logo && (
+        <span className="flex items-center gap-1.5">
+          <LogoMark className="size-5" />
+          <span dir="ltr" className="text-[13px] font-bold tracking-tight">
+            WeNeed
+          </span>
+        </span>
+      )}
+      <span className="text-xs text-muted-foreground">
+        <Link href="/privacy" onClick={onNavigate} className="underline-offset-2 hover:underline active:underline">
+          {t("privacy")}
+        </Link>
+        {" · "}
+        {t("madeBy")}
+      </span>
+    </footer>
   );
 }
 

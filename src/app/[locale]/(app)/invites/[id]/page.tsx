@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export default function InvitePage({ params }: PageProps<"/[locale]/invites/[id]">) {
   return (
     <>
-      <header className="px-5 pt-[18px]">
+      <header className="sticky top-0 z-20 bg-background px-5 pt-[18px] pb-2">
         <Brand />
       </header>
       <main className="flex flex-1 flex-col justify-center px-5 pt-6 pb-10">
