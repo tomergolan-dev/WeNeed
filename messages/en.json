@@ -30,17 +30,17 @@
     "calendarPrivate": "Changes to tasks reach the calendar on their own; sometimes they may take a little while to show up. The link is personal; don't share it. If you did by mistake:",
     "calendarNew": "New link",
     "calendarStep": "Pick the calendar you use, and confirm adding it on the screen that opens. You only do this once.",
-    "editDetails": "Edit details",
     "myName": "My name",
     "myNameHint": "This is how everyone sees you in the app.",
     "save": "Save",
     "saved": "Saved",
-    "people": "How others appear to me",
-    "peopleHint": "A name you enter shows only to you, in every list. Without one, the name they chose shows.",
+    "people": "My people",
+    "peopleHint": "Names you choose for them show only to you",
     "peopleEmpty": "No one shares a place or a list with you yet.",
     "nicknamePlaceholder": "My name for them",
     "nicknameFor": "My name for {name}",
-    "done": "Done"
+    "editName": "Edit my name",
+    "cancel": "Cancel"
   },
   "Home": {
     "title": "What do we need today?",

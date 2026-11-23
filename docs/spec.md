@@ -93,9 +93,9 @@ We Need is also a portfolio project, so it includes a public demo.
   - It holds open tasks with a date, assigned to the user or to no one, in lists the user can see; tasks assigned to others, done tasks and tasks without a date stay out. Tasks overdue by more than 60 days are left out too.
   - A task with a time is a half-hour event at that time; a task with only a date is an all-day event. Each event links back to its list.
   - The link is the only key (calendar apps fetch it without signing in), so "קישור חדש" replaces it and the old one stops working.
-- **Names** (decided 2026-11-23, at Tomer's request): "עריכת פרטים" under the user's name in the account menu.
-  - "השם שלי": the user's own name, which everyone sees. A new user gets the Google profile's name (or the address); this changes it.
-  - "איך אחרים מופיעים אצלי": like contact names in a phone, the user can give anyone they share a place or a list with their own name for them ("אמא" for נורית, "תמיר" for תמיר ליטבק). Only that user sees it, everywhere: who added an item, the assignee picker, members, who sees a list, history, lists shared with them, task emails sent to them, and the AI chat ("תשייך לאמא"). Empty goes back to the name the person chose.
+- **Names** (decided 2026-11-23, at Tomer's request), in the account menu:
+  - A pencil beside the user's name at the top edits it ("השם שלי"). Everyone sees it. A new user gets the Google profile's name (or the address); this changes it.
+  - "החברים שלי", a row under the calendar: like contact names in a phone, the user can give anyone they share a place or a list with their own name for them ("אמא" for נורית, "תמיר" for תמיר ליטבק). Only that user sees it, everywhere: who added an item, the assignee picker, members, who sees a list, history, lists shared with them, task emails sent to them, and the AI chat ("תשייך לאמא"). Empty goes back to the name the person chose.
   - Not in the demo (it has no account).
 
 ### Checklists

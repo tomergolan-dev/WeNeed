@@ -7,7 +7,7 @@ import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/a
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { ProfileEditor } from "./profile-editor";
+import { MyNameEditor, MyPeopleRow } from "./profile-editor";
 
 const LOCALES = ["he", "en"] as const;
 
@@ -40,23 +40,25 @@ export function AccountMenu({
       <DrawerContent className="mx-auto max-w-xl rounded-t-[28px] bg-[#f6f8f7] px-5 pt-2.5 pb-[max(1.75rem,env(safe-area-inset-bottom))]">
         <div aria-hidden className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[#d5dad8]" />
         <DrawerTitle className="sr-only">{t("title")}</DrawerTitle>
-        {user && editing && <ProfileEditor name={user.name} onDone={() => setEditing(false)} />}
+        {user && editing && <MyNameEditor name={user.name} onDone={() => setEditing(false)} />}
         {user && !editing && (
-          <div className="mb-4 flex flex-col items-center">
-            <p className="font-semibold">{user.name}</p>
+          <div className="mb-4 text-center">
+            <p className="flex items-center justify-center gap-1 font-semibold">
+              {user.name}
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                aria-label={t("editName")}
+                className="flex size-8 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
+              >
+                <PencilLine className="size-4" aria-hidden />
+              </button>
+            </p>
             {user.email && (
               <p dir="ltr" className="text-sm text-muted-foreground">
                 {user.email}
               </p>
             )}
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="mt-1.5 flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-accent-foreground active:bg-muted"
-            >
-              <PencilLine className="size-4" aria-hidden />
-              {t("editDetails")}
-            </button>
           </div>
         )}
         <div className="rounded-[18px] border bg-card">
@@ -67,6 +69,7 @@ export function AccountMenu({
           </div>
           {user && <TaskEmailsRow initial={user.taskEmails} />}
           {user && <CalendarRow />}
+          {user && <MyPeopleRow />}
         </div>
         {user ? (
           <form action={logOut} className="mt-5 text-center">
