@@ -70,14 +70,14 @@ async function Home() {
       />
       {banners.length > 0 && <div className="mt-3 flex flex-col gap-2.5">{banners}</div>}
       <div className="flex items-center justify-between gap-3 pt-6 pb-1">
-        <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
+        <h1 className="text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
         {/* A shared place's settings; the personal area has none. */}
         {!place.personal && (
           <Link
             href="/settings"
             aria-label={t("placeSettings")}
             title={t("placeSettings")}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground transition-colors active:bg-muted"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-muted"
           >
             <Settings className="size-5" aria-hidden />
           </Link>
@@ -88,7 +88,7 @@ async function Home() {
         <NewListButton />
       </div>
       {lists.length === 0 ? (
-        <p className="rounded-[18px] border border-dashed border-[#c3cbc7] px-4 py-6 text-center text-sm text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-[#c3cbc7] px-4 py-6 text-center text-sm text-muted-foreground">
           {t("empty")}
         </p>
       ) : (
@@ -119,10 +119,10 @@ async function Home() {
 function HomeSkeleton() {
   return (
     <div className="flex flex-col gap-2.5" aria-hidden>
-      <div className="h-[70px] animate-pulse rounded-[18px] bg-muted" />
+      <div className="h-[70px] animate-pulse rounded-2xl bg-muted" />
       <div className="mt-6 h-9 w-48 animate-pulse rounded-lg bg-muted" />
       {Array.from({ length: 3 }, (_, i) => (
-        <div key={i} className="h-[74px] animate-pulse rounded-[18px] bg-muted" />
+        <div key={i} className="h-[74px] animate-pulse rounded-2xl bg-muted" />
       ))}
     </div>
   );

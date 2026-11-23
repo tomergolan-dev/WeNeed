@@ -59,7 +59,7 @@ export function PlaceSwitcher({
           onClick={() => choose(place)}
           aria-current={selected ? "true" : undefined}
           className={cn(
-            "flex w-full items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 text-start transition-colors active:bg-muted",
+            "flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-3 text-start transition-colors active:bg-muted",
             selected && "border-2 border-primary px-[13px] py-[11px]",
           )}
         >
@@ -94,7 +94,7 @@ export function PlaceSwitcher({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger
         aria-label={tNav("switchPlace")}
-        className="flex w-full items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 text-start shadow-soft transition-colors active:bg-muted"
+        className="flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-3 text-start transition-colors active:bg-muted"
       >
         <PlaceBadge icon={shown.icon} />
         <span className="flex min-w-0 flex-1 flex-col">

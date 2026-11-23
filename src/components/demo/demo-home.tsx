@@ -40,7 +40,7 @@ export function DemoHome() {
         </Link>
       </header>
       <main className="flex flex-1 flex-col px-5 pt-3 pb-8 lg:px-8">
-        <div className="flex items-center gap-3 rounded-[18px] border bg-card px-3.5 py-3 shadow-soft">
+        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card px-3.5 py-3">
           <PlaceBadge icon="home" />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="text-xs text-muted-foreground">{tNav("yourPlace")}</span>
@@ -48,14 +48,14 @@ export function DemoHome() {
           </span>
         </div>
         <div className="pt-6 pb-1">
-          <h1 className="text-[26px] font-extrabold tracking-tight">{t("title")}</h1>
+          <h1 className="text-[22px] font-extrabold tracking-tight">{t("title")}</h1>
         </div>
         <div className="flex items-center justify-between px-1 pt-4 pb-2.5">
           <h2 className="text-[13px] font-semibold text-muted-foreground">{t("lists")}</h2>
           <NewListButton />
         </div>
         {lists.length === 0 ? (
-          <p className="rounded-[18px] border border-dashed border-[#c3cbc7] px-4 py-6 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-dashed border-[#c3cbc7] px-4 py-6 text-center text-sm text-muted-foreground">
             {t("empty")}
           </p>
         ) : (

@@ -64,7 +64,7 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
   return (
     <Link
       href={href ?? `/lists/${list.id}`}
-      className="flex items-center gap-3 rounded-[18px] border bg-card py-3.5 ps-3 pe-3.5 shadow-soft transition-colors active:bg-muted"
+      className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card py-3.5 ps-3 pe-3.5 transition-colors active:bg-muted"
     >
       <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", tone)}>
         <Icon className="size-5" aria-hidden />
@@ -76,7 +76,7 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
           {meta}
         </span>
         {bar && list.total > 0 && (
-          <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[#eef1f0]">
+          <span className="mt-2 block h-1 overflow-hidden rounded-full bg-[#eef1f0]">
             <span className={cn("block h-full rounded-full", bar)} style={{ width: `${(list.done / list.total) * 100}%` }} />
           </span>
         )}
@@ -87,7 +87,7 @@ export function ListCard({ list, personal, href }: { list: ListSummary; personal
 
 function Pill({ className, children }: { className: string; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex h-[22px] items-center rounded-full px-2 text-xs font-semibold", className)}>
+    <span className={cn("inline-flex h-[22px] items-center rounded-full px-2 text-xs font-medium", className)}>
       {children}
     </span>
   );
