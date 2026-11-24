@@ -15,19 +15,22 @@ export default async function LoginPage({ searchParams }: PageProps<"/[locale]/l
 
   return (
     <div className="flex w-full flex-1">
-      <main className="flex w-full flex-col px-5 py-[18px] lg:w-1/2 lg:px-12 lg:py-8">
-        <header className="sticky top-0 z-20 mx-auto flex w-full max-w-md items-center justify-between bg-background py-2 lg:static lg:max-w-none lg:py-0">
-          <Brand />
-          <div className="flex items-center gap-2">
-            <Link
-              href="/demo"
-              dir="ltr"
-              className="flex h-11 items-center gap-1 rounded-full border bg-card ps-4 pe-3 text-sm font-semibold tracking-wide text-accent-foreground transition-colors hover:bg-accent active:bg-accent"
-            >
-              {tDemo("view")}
-              <ArrowUpRight className="size-4" aria-hidden />
-            </Link>
-            <LanguageSwitch className="rounded-full" />
+      <main className="flex w-full flex-col px-5 pb-[18px] lg:w-1/2 lg:px-12 lg:py-8">
+        {/* From the very top and edge to edge on a phone, so iOS doesn't blur what scrolls under the status bar. */}
+        <header className="sticky top-0 z-20 -mx-5 bg-background px-5 pt-[18px] pb-2 lg:static lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0">
+          <div className="mx-auto flex w-full max-w-md items-center justify-between lg:max-w-none">
+            <Brand />
+            <div className="flex items-center gap-2">
+              <Link
+                href="/demo"
+                dir="ltr"
+                className="flex h-11 items-center gap-1 rounded-full border bg-card ps-4 pe-3 text-sm font-semibold tracking-wide text-accent-foreground transition-colors hover:bg-accent active:bg-accent"
+              >
+                {tDemo("view")}
+                <ArrowUpRight className="size-4" aria-hidden />
+              </Link>
+              <LanguageSwitch className="rounded-full" />
+            </div>
           </div>
         </header>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center pb-10">

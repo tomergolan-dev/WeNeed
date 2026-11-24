@@ -4,6 +4,7 @@ import { useOptimistic, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { ActionResult } from "@/app/actions";
 import type { Item } from "@/db/schema";
+import { newId } from "@/lib/new-id";
 
 export type ItemChange =
   | { type: "add"; item: Item }
@@ -38,7 +39,7 @@ function reduce(items: Item[], change: ItemChange): Item[] {
 /** A new item shown right away, until the server confirms it. */
 export function draftItem(fields: Partial<Item> & { name: string }): Item {
   return {
-    id: `draft-${crypto.randomUUID()}`,
+    id: `draft-${newId()}`,
     roundId: "",
     note: null,
     quantity: null,

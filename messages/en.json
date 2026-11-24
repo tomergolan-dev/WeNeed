@@ -34,6 +34,7 @@
     "en": "English",
     "logOut": "Sign out",
     "signIn": "Sign in",
+    "afterSignIn": "After sign-in",
     "taskEmails": "Task emails",
     "taskEmailsHint": "When a task is assigned to you, and a reminder before it's due",
     "calendar": "Add my tasks to my calendar",
@@ -514,7 +515,7 @@
     "tooBig": "The file is too big. Up to 15MB."
   },
   "Demo": {
-    "banner": "This is a demo. Try anything: changes are saved only in your browser.",
+    "banner": "This is a demo. Try anything; changes stay on your device.",
     "reset": "Start over",
     "signIn": "Sign in",
     "view": "Demo",
@@ -622,7 +623,7 @@
             "Take out the trash",
             0,
             "21:00",
-            "dan"
+            "me"
           ],
           [
             "Book an AC technician",

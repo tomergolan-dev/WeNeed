@@ -27,6 +27,7 @@ import {
 } from "@/lib/attachment-rules";
 import type { AttachmentView } from "@/lib/attachments";
 import { cn } from "@/lib/utils";
+import { newId } from "@/lib/new-id";
 
 type Opened = { item: Item; onEdit?: () => void };
 type Details = {
@@ -217,7 +218,7 @@ function DetailsSheet({
         setError(t("tooBig"));
         continue;
       }
-      const key = `${file.name}-${crypto.randomUUID()}`;
+      const key = `${file.name}-${newId()}`;
       setUploading((current) => [...current, key]);
       try {
         const result = await uploadFile(item.id, file);

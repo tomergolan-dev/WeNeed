@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, CalendarDays, Camera, Check, Copy, Globe, PencilLine, SunMoon } from "lucide-react";
+import { Bell, CalendarDays, Camera, Check, Copy, Globe, PencilLine, SunMoon, Users } from "lucide-react";
 import { getCalendarLinks, logOut, setTaskEmails, type CalendarLinks } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
 import { AvatarPicker } from "@/components/avatar-picker";
@@ -126,6 +126,7 @@ export function AccountPanel({
         {user && <TaskEmailsRow initial={user.taskEmails} />}
         {user && <CalendarRow open={calendarOpen} onToggle={() => setCalendarOpen((o) => !o)} />}
         {user && <MyPeopleRow onOpen={() => showPeople(true)} />}
+        {!user && <SignedInOnlyRows />}
       </div>
       {user ? (
         <form action={logOut} className="mt-4 text-center">
@@ -145,6 +146,31 @@ export function AccountPanel({
       )}
     </>
   );
+}
+
+/**
+ * In the demo: the settings that need an account, shown quietly with
+ * "זמין אחרי כניסה", so visitors see what else the app has.
+ */
+function SignedInOnlyRows() {
+  const t = useTranslations("Account");
+  const rows = [
+    { icon: Bell, title: t("taskEmails"), hint: t("taskEmailsHint") },
+    { icon: CalendarDays, title: t("calendar"), hint: t("calendarHint") },
+    { icon: Users, title: t("people"), hint: t("peopleHint") },
+  ];
+  return rows.map(({ icon: Icon, title, hint }) => (
+    <div key={title} className="flex min-h-12 items-center gap-3 border-t border-border/60 px-4 py-2">
+      <Icon className="mt-px size-[18px] shrink-0 self-start text-muted-foreground" aria-hidden />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-sm text-muted-foreground">{title}</span>
+        <span className="text-xs leading-snug text-muted-foreground/80">{hint}</span>
+      </span>
+      <span className="shrink-0 self-start rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+        {t("afterSignIn")}
+      </span>
+    </div>
+  ));
 }
 
 /** עברית | English, as two segments; the chosen language is remembered for a year. */

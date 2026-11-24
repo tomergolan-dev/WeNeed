@@ -24,6 +24,7 @@ import type { UrgentTask } from "@/components/sidebar";
 import { combineQuantities, findOpenItem } from "@/lib/items";
 import type { ListType } from "@/lib/list-kinds";
 import type { ListSummary } from "@/lib/lists";
+import { newId } from "@/lib/new-id";
 
 // The public demo keeps a whole place in the visitor's browser
 // (localStorage, one copy per language). Nothing is sent to the database:
@@ -54,7 +55,7 @@ type SeedTask = [string, number | null, string | null, string | null];
 
 function newItem(listId: string, fields: Partial<Item> & { name: string }, position: number): Item {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     roundId: listId,
     note: null,
     quantity: null,
@@ -88,9 +89,9 @@ function useSeed() {
       { id: "noa", name: t("noa") },
       { id: "dan", name: t("dan") },
     ];
-    const shopping = { id: crypto.randomUUID(), name: t("shopping.name"), type: "shopping" as const };
-    const tasks = { id: crypto.randomUUID(), name: t("tasks.name"), type: "tasks" as const };
-    const checklist = { id: crypto.randomUUID(), name: t("checklist.name"), type: "checklist" as const };
+    const shopping = { id: newId(), name: t("shopping.name"), type: "shopping" as const };
+    const tasks = { id: newId(), name: t("tasks.name"), type: "tasks" as const };
+    const checklist = { id: newId(), name: t("checklist.name"), type: "checklist" as const };
     const today = todayIn();
 
     const items: Item[] = [
@@ -122,7 +123,7 @@ function useSeed() {
       withNote.note = t("tasks.note");
       attachments[withNote.id] = [
         {
-          id: crypto.randomUUID(),
+          id: newId(),
           kind: "link",
           name: t("tasks.linkName"),
           url: t("tasks.link"),
@@ -407,7 +408,7 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       return ok;
     },
     async createList(name, type) {
-      const list = { id: crypto.randomUUID(), name: name.trim(), type };
+      const list = { id: newId(), name: name.trim(), type };
       update((s) => ({ ...s, lists: [...s.lists, list] }));
       router.push(`/demo/lists/${list.id}`);
       return ok;
@@ -532,7 +533,7 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
         return { ok: false, error: "invalid" };
       }
       const attachment: AttachmentView = {
-        id: crypto.randomUUID(),
+        id: newId(),
         kind: "link",
         name: title?.trim() || href.hostname.replace(/^www\./, ""),
         url: href.toString(),
@@ -561,7 +562,7 @@ function createBackend(update: Update, get: () => DemoState, router: Router): Ba
       if (attachmentsOf(itemId).length >= MAX_ATTACHMENTS_PER_ITEM) return { ok: false, error: "tooManyAttachments" };
       // Kept in this browser tab only: it disappears when the page reloads.
       const attachment: AttachmentView = {
-        id: crypto.randomUUID(),
+        id: newId(),
         kind: "file",
         name: file.name,
         url: URL.createObjectURL(file),

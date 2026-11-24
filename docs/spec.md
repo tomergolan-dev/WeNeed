@@ -182,7 +182,8 @@ We Need is also a portfolio project, so it includes a public demo.
 - Shows a sample place ("הבית לדוגמה" / "Sample home") with a shopping list, a tasks list (one overdue, one due soon, one with a note and a link) and a checklist, in the page's language.
 - Visitors can do everything they can in the app on those lists: add, check, edit, delete, reorder, finish a shopping trip, create, rename and delete lists, and add notes, links and files (decided 2026-11-17).
   - Everything stays in the visitor's browser (localStorage, one copy per language). Files stay only until the page reloads. "Start over" brings back the sample place.
-  - No history of finished trips, no members, invites or settings.
+  - No history of finished trips, no members or invites. The settings have the language and the theme; task emails, the calendar and "החברים שלי" show greyed with "זמין אחרי כניסה" (decided 2026-11-24).
+- The home screen has the app's top row (the menu and the logo) and under it a green note: "זה דמו. אפשר לנסות הכל, והשינויים נשמרים רק אצלך.", with "כניסה" and "להתחיל מחדש" (decided 2026-11-24; the note used to be a strip above every demo screen, which iOS blurred under the status bar). A task of "me" due today puts one row under "דחוף" in the menu.
 - The AI chat works in the demo (decided 2026-11-17), with limits: 10 messages per visitor and 200 for all visitors per day. The server only reads the message and returns what it understood; the browser adds the items, with the same rules as the app (`src/lib/assistant-plan.ts`).
   - For the limits, the database keeps one row per message with a keyed hash of the visitor's IP address (`demo_ai_requests`), never the address or the message.
 - Nothing else a demo visitor does reaches the database, and demo visitors never see real places or real data.
